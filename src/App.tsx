@@ -15,6 +15,7 @@ import { AppointmentsPage } from "@/pages/appointments";
 import { UsersPage } from "@/pages/users";
 import { DoctorsPage } from "@/pages/doctors";
 import { TreatmentsPage } from "@/pages/treatments";
+import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
@@ -77,6 +78,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                       <UsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <SettingsPage />
                     </ProtectedRoute>
                   }
                 />

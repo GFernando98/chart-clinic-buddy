@@ -37,11 +37,11 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Treatment, TreatmentCategory } from '@/types';
-import { TreatmentCategoryBadge } from './components/TreatmentCategoryBadge';
+import { Treatment } from '@/types';
 import { TreatmentFormDialog } from './components/TreatmentFormDialog';
 import { TreatmentDetailDialog } from './components/TreatmentDetailDialog';
 import { useTreatments, useCreateTreatment, useUpdateTreatment } from '@/hooks/useTreatments';
+import { useTreatmentCategories } from '@/hooks/useTreatmentCategories';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -59,24 +59,11 @@ export const TreatmentsPage = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null);
 
-  // Fetch treatments from API
+  // Fetch treatments and categories from API
   const { data: treatments = [], isLoading, error } = useTreatments();
+  const { data: categories = [] } = useTreatmentCategories();
   const createTreatment = useCreateTreatment();
   const updateTreatment = useUpdateTreatment();
-
-  // Category options for filter
-  const categoryOptions = [
-    { value: TreatmentCategory.Preventive, label: t('treatments.preventive') },
-    { value: TreatmentCategory.Restorative, label: t('treatments.restorative') },
-    { value: TreatmentCategory.Endodontics, label: t('treatments.endodontics') },
-    { value: TreatmentCategory.Periodontics, label: t('treatments.periodontics') },
-    { value: TreatmentCategory.Orthodontics, label: t('treatments.orthodontics') },
-    { value: TreatmentCategory.Prosthodontics, label: t('treatments.prosthodontics') },
-    { value: TreatmentCategory.OralSurgery, label: t('treatments.oralSurgery') },
-    { value: TreatmentCategory.Pediatric, label: t('treatments.pediatric') },
-    { value: TreatmentCategory.Cosmetic, label: t('treatments.cosmetic') },
-    { value: TreatmentCategory.Diagnostic, label: t('treatments.diagnostic') },
-  ];
 
   // Filtered treatments
   const filteredTreatments = useMemo(() => {
@@ -91,7 +78,7 @@ export const TreatmentsPage = () => {
 
       // Category filter
       const matchesCategory =
-        categoryFilter === 'all' || treatment.category === Number(categoryFilter);
+        categoryFilter === 'all' || treatment.categoryId === categoryFilter;
 
       // Status filter
       const matchesStatus =
@@ -198,9 +185,9 @@ export const TreatmentsPage = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('treatments.allCategories')}</SelectItem>
-            {categoryOptions.map((option) => (
-              <SelectItem key={option.value} value={String(option.value)}>
-                {option.label}
+            {categories.filter(c => c.isActive).map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -258,7 +245,9 @@ export const TreatmentsPage = () => {
                       <span className="text-sm font-mono text-muted-foreground">
                         {treatment.code}
                       </span>
-                      <TreatmentCategoryBadge category={treatment.category} />
+                      <Badge variant="outline">
+                        {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
+                      </Badge>
                     </div>
                     <p className="text-sm font-medium">{formatPrice(treatment.defaultPrice)}</p>
                   </div>
@@ -338,7 +327,9 @@ export const TreatmentsPage = () => {
                   <TableCell className="font-mono">{treatment.code}</TableCell>
                   <TableCell className="font-medium">{treatment.name}</TableCell>
                   <TableCell>
-                    <TreatmentCategoryBadge category={treatment.category} />
+                    <Badge variant="outline">
+                      {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatPrice(treatment.defaultPrice)}</TableCell>
                   <TableCell className="text-center">

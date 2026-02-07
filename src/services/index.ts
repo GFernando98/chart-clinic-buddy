@@ -17,6 +17,8 @@ export { authService } from './authService';
 export { patientService } from './patientService';
 export { doctorService } from './doctorService';
 export { treatmentService } from './treatmentService';
+export { treatmentCategoryService } from './treatmentCategoryService';
+export type { TreatmentCategoryDto, TreatmentCategoryFormData } from './treatmentCategoryService';
 export { appointmentService } from './appointmentService';
 export type { AppointmentFilters } from './appointmentService';
 export { userService } from './userService';
