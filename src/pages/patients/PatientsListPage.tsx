@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,11 +43,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockPatients } from '@/mocks/data';
+import { usePatients, useDeletePatient } from '@/hooks/usePatients';
 import { Patient, Gender } from '@/types';
-import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
 const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
@@ -54,18 +53,20 @@ const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 export default function PatientsListPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.roles.includes('Admin');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [patients, setPatients] = useState<Patient[]>(mockPatients);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
   const dateLocale = i18n.language === 'es' ? es : enUS;
+
+  // Fetch patients from API
+  const { data: patients = [], isLoading, error } = usePatients();
+  const deletePatient = useDeletePatient();
 
   // Filter patients based on search
   const filteredPatients = useMemo(() => {
@@ -103,11 +104,7 @@ export default function PatientsListPage() {
 
   const handleDeleteConfirm = () => {
     if (patientToDelete) {
-      setPatients((prev) => prev.filter((p) => p.id !== patientToDelete.id));
-      toast({
-        title: t('patients.deleteSuccess'),
-        description: t('patients.deleteSuccessMessage', { name: patientToDelete.fullName }),
-      });
+      deletePatient.mutate(patientToDelete.id);
       setPatientToDelete(null);
     }
     setDeleteDialogOpen(false);
@@ -136,6 +133,26 @@ export default function PatientsListPage() {
     setItemsPerPage(Number(value));
     setCurrentPage(1);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <Users className="h-12 w-12 text-destructive mb-4" />
+        <h3 className="text-lg font-semibold">{t('common.error')}</h3>
+        <p className="text-muted-foreground">{(error as Error).message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

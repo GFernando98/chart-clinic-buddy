@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   FileText,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,11 +37,11 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockTreatments } from '@/mocks/data';
 import { Treatment, TreatmentCategory } from '@/types';
 import { TreatmentCategoryBadge } from './components/TreatmentCategoryBadge';
 import { TreatmentFormDialog } from './components/TreatmentFormDialog';
 import { TreatmentDetailDialog } from './components/TreatmentDetailDialog';
+import { useTreatments, useCreateTreatment, useUpdateTreatment } from '@/hooks/useTreatments';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -50,7 +51,6 @@ export const TreatmentsPage = () => {
   const isMobile = useIsMobile();
 
   // State
-  const [treatments, setTreatments] = useState<Treatment[]>(mockTreatments);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -58,6 +58,11 @@ export const TreatmentsPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null);
+
+  // Fetch treatments from API
+  const { data: treatments = [], isLoading, error } = useTreatments();
+  const createTreatment = useCreateTreatment();
+  const updateTreatment = useUpdateTreatment();
 
   // Category options for filter
   const categoryOptions = [
@@ -125,40 +130,39 @@ export const TreatmentsPage = () => {
 
   const handleSaveTreatment = (treatmentData: Partial<Treatment>) => {
     if (editingTreatment) {
-      // Update existing treatment
-      setTreatments((prev) =>
-        prev.map((t) =>
-          t.id === editingTreatment.id ? ({ ...t, ...treatmentData } as Treatment) : t
-        )
-      );
-      toast({
-        title: t('success.updated'),
-        description: `${treatmentData.name} ${t('treatments.editTreatment').toLowerCase()}`,
-      });
+      updateTreatment.mutate({ id: editingTreatment.id, data: treatmentData as any });
     } else {
-      // Create new treatment
-      setTreatments((prev) => [...prev, treatmentData as Treatment]);
-      toast({
-        title: t('success.created'),
-        description: `${treatmentData.name} ${t('treatments.newTreatment').toLowerCase()}`,
-      });
+      createTreatment.mutate(treatmentData as any);
     }
     setEditingTreatment(null);
+    setIsFormOpen(false);
   };
 
   const handleToggleActive = (treatment: Treatment) => {
     const newStatus = treatment.isActive === false ? true : false;
-    setTreatments((prev) =>
-      prev.map((t) => (t.id === treatment.id ? { ...t, isActive: newStatus } : t))
-    );
+    updateTreatment.mutate({ id: treatment.id, data: { ...treatment, isActive: newStatus } as any });
     setIsDetailOpen(false);
-    toast({
-      title: t('success.updated'),
-      description: newStatus
-        ? `${treatment.name} ha sido activado`
-        : `${treatment.name} ha sido desactivado`,
-    });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <FileText className="h-12 w-12 text-destructive mb-4" />
+        <h3 className="text-lg font-semibold">{t('common.error')}</h3>
+        <p className="text-muted-foreground">{(error as Error).message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
