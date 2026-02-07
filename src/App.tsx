@@ -2,25 +2,86 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { MainLayout } from "@/components/layout/MainLayout";
+import LoginPage from "@/pages/LoginPage";
+import DashboardPage from "@/pages/DashboardPage";
+import OdontogramPage from "@/pages/OdontogramPage";
+import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
+import "@/i18n/i18n";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+              
+              {/* Protected routes with layout */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <MainLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/patients" element={<div className="p-4">Patients Page (Coming Soon)</div>} />
+                <Route path="/patients/:id" element={<div className="p-4">Patient Detail (Coming Soon)</div>} />
+                <Route
+                  path="/odontogram"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
+                      <OdontogramPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/appointments" element={<div className="p-4">Appointments Page (Coming Soon)</div>} />
+                <Route
+                  path="/doctors"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <div className="p-4">Doctors Page (Coming Soon)</div>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/treatments"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <div className="p-4">Treatments Page (Coming Soon)</div>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <div className="p-4">Users Page (Coming Soon)</div>
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+              
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
