@@ -39,7 +39,8 @@
     "other": "Other",
     "showing": "Showing",
     "of": "of",
-    "results": "results"
+    "results": "results",
+    "optional": "optional"
   },
   "auth": {
     "login": "Sign In",
@@ -262,6 +263,11 @@
     "doctorDetails": "Doctor Details",
     "licenseNumber": "License Number",
     "specialty": "Specialty",
+    "selectSpecialty": "Select specialty",
+    "allSpecialties": "All Specialties",
+    "linkedUser": "Linked User",
+    "selectUser": "Select user",
+    "noLinkedUser": "No linked user",
     "noDoctors": "No doctors registered",
     "deleteConfirm": "Are you sure you want to delete this doctor?"
   },

@@ -39,7 +39,8 @@
     "other": "Otro",
     "showing": "Mostrando",
     "of": "de",
-    "results": "resultados"
+    "results": "resultados",
+    "optional": "opcional"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -262,6 +263,11 @@
     "doctorDetails": "Detalles del Doctor",
     "licenseNumber": "Número de Colegiado",
     "specialty": "Especialidad",
+    "selectSpecialty": "Seleccionar especialidad",
+    "allSpecialties": "Todas las Especialidades",
+    "linkedUser": "Usuario Vinculado",
+    "selectUser": "Seleccionar usuario",
+    "noLinkedUser": "Sin usuario vinculado",
     "noDoctors": "No hay doctores registrados",
     "deleteConfirm": "¿Está seguro que desea eliminar este doctor?"
   },
