@@ -44,7 +44,7 @@ export const odontogramService = {
    * Get all odontograms for a patient
    */
   async getByPatient(patientId: string): Promise<Odontogram[]> {
-    const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/odontogram/patient/${patientId}`);
+    const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/Odontogram/patient/${patientId}`);
     return extractData(response.data);
   },
 
@@ -52,7 +52,7 @@ export const odontogramService = {
    * Get full odontogram by ID with all teeth records
    */
   async getById(id: string): Promise<Odontogram> {
-    const response = await apiClient.get<ApiResponse<Odontogram>>(`/odontogram/${id}`);
+    const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/${id}`);
     return extractData(response.data);
   },
 
@@ -60,7 +60,7 @@ export const odontogramService = {
    * Create a new odontogram for a patient
    */
   async create(data: CreateOdontogramData): Promise<Odontogram> {
-    const response = await apiClient.post<ApiResponse<Odontogram>>('/odontogram', data);
+    const response = await apiClient.post<ApiResponse<Odontogram>>('/Odontogram', data);
     return extractData(response.data);
   },
 
@@ -68,7 +68,7 @@ export const odontogramService = {
    * Update a tooth record's condition
    */
   async updateTooth(toothRecordId: string, data: UpdateToothData): Promise<ToothRecord> {
-    const response = await apiClient.put<ApiResponse<ToothRecord>>(`/odontogram/tooth/${toothRecordId}`, data);
+    const response = await apiClient.put<ApiResponse<ToothRecord>>(`/Odontogram/tooth/${toothRecordId}`, data);
     return extractData(response.data);
   },
 
@@ -76,7 +76,7 @@ export const odontogramService = {
    * Add or update a surface condition on a tooth
    */
   async addSurface(toothRecordId: string, data: AddSurfaceData): Promise<ToothRecord> {
-    const response = await apiClient.post<ApiResponse<ToothRecord>>(`/odontogram/tooth/${toothRecordId}/surface`, data);
+    const response = await apiClient.post<ApiResponse<ToothRecord>>(`/Odontogram/tooth/${toothRecordId}/surface`, data);
     return extractData(response.data);
   },
 
@@ -84,7 +84,7 @@ export const odontogramService = {
    * Record a treatment on a tooth
    */
   async addTreatment(toothRecordId: string, data: AddToothTreatmentData): Promise<ToothTreatmentRecord> {
-    const response = await apiClient.post<ApiResponse<ToothTreatmentRecord>>(`/odontogram/tooth/${toothRecordId}/treatment`, data);
+    const response = await apiClient.post<ApiResponse<ToothTreatmentRecord>>(`/Odontogram/tooth/${toothRecordId}/treatment`, data);
     return extractData(response.data);
   },
 
@@ -92,7 +92,7 @@ export const odontogramService = {
    * Get treatment history for a specific tooth
    */
   async getToothTreatments(toothRecordId: string): Promise<ToothTreatmentRecord[]> {
-    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/odontogram/tooth/${toothRecordId}/treatments`);
+    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/tooth/${toothRecordId}/treatments`);
     return extractData(response.data);
   },
 };

@@ -6,7 +6,7 @@ export const patientService = {
    * Get all patients
    */
   async getAll(): Promise<Patient[]> {
-    const response = await apiClient.get<ApiResponse<Patient[]>>('/patients');
+    const response = await apiClient.get<ApiResponse<Patient[]>>('/Patients');
     return extractData(response.data);
   },
 
@@ -14,7 +14,7 @@ export const patientService = {
    * Get patient by ID
    */
   async getById(id: string): Promise<Patient> {
-    const response = await apiClient.get<ApiResponse<Patient>>(`/patients/${id}`);
+    const response = await apiClient.get<ApiResponse<Patient>>(`/Patients/${id}`);
     return extractData(response.data);
   },
 
@@ -23,7 +23,7 @@ export const patientService = {
    */
   async search(query: string, type: 'name' | 'identityNumber' = 'name'): Promise<Patient[]> {
     const param = type === 'name' ? 'name' : 'identityNumber';
-    const response = await apiClient.get<ApiResponse<Patient[]>>(`/patients/search?${param}=${encodeURIComponent(query)}`);
+    const response = await apiClient.get<ApiResponse<Patient[]>>(`/Patients/search?${param}=${encodeURIComponent(query)}`);
     return extractData(response.data);
   },
 
@@ -31,7 +31,7 @@ export const patientService = {
    * Create a new patient
    */
   async create(data: PatientFormData): Promise<Patient> {
-    const response = await apiClient.post<ApiResponse<Patient>>('/patients', data);
+    const response = await apiClient.post<ApiResponse<Patient>>('/Patients', data);
     return extractData(response.data);
   },
 
@@ -39,7 +39,7 @@ export const patientService = {
    * Update an existing patient
    */
   async update(id: string, data: PatientFormData): Promise<Patient> {
-    const response = await apiClient.put<ApiResponse<Patient>>(`/patients/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Patient>>(`/Patients/${id}`, data);
     return extractData(response.data);
   },
 
@@ -47,7 +47,7 @@ export const patientService = {
    * Delete a patient (Admin only)
    */
   async delete(id: string): Promise<boolean> {
-    const response = await apiClient.delete<ApiResponse<boolean>>(`/patients/${id}`);
+    const response = await apiClient.delete<ApiResponse<boolean>>(`/Patients/${id}`);
     return extractData(response.data);
   },
 };

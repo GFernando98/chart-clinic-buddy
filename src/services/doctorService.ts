@@ -6,7 +6,7 @@ export const doctorService = {
    * Get all doctors
    */
   async getAll(): Promise<Doctor[]> {
-    const response = await apiClient.get<ApiResponse<Doctor[]>>('/doctors');
+    const response = await apiClient.get<ApiResponse<Doctor[]>>('/Doctors');
     return extractData(response.data);
   },
 
@@ -14,7 +14,7 @@ export const doctorService = {
    * Get doctor by ID
    */
   async getById(id: string): Promise<Doctor> {
-    const response = await apiClient.get<ApiResponse<Doctor>>(`/doctors/${id}`);
+    const response = await apiClient.get<ApiResponse<Doctor>>(`/Doctors/${id}`);
     return extractData(response.data);
   },
 
@@ -22,7 +22,7 @@ export const doctorService = {
    * Create a new doctor (Admin only)
    */
   async create(data: DoctorFormData): Promise<Doctor> {
-    const response = await apiClient.post<ApiResponse<Doctor>>('/doctors', data);
+    const response = await apiClient.post<ApiResponse<Doctor>>('/Doctors', data);
     return extractData(response.data);
   },
 
@@ -30,7 +30,7 @@ export const doctorService = {
    * Update an existing doctor (Admin only)
    */
   async update(id: string, data: DoctorFormData): Promise<Doctor> {
-    const response = await apiClient.put<ApiResponse<Doctor>>(`/doctors/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Doctor>>(`/Doctors/${id}`, data);
     return extractData(response.data);
   },
 
@@ -38,7 +38,7 @@ export const doctorService = {
    * Toggle doctor active status
    */
   async toggleActive(id: string): Promise<boolean> {
-    const response = await apiClient.put<ApiResponse<boolean>>(`/doctors/${id}/toggle-active`);
+    const response = await apiClient.put<ApiResponse<boolean>>(`/Doctors/${id}/toggle-active`);
     return extractData(response.data);
   },
 };
