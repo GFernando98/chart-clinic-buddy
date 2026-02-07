@@ -12,6 +12,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import OdontogramPage from "@/pages/OdontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
 import { AppointmentsPage } from "@/pages/appointments";
+import { UsersPage } from "@/pages/users";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
@@ -73,7 +74,7 @@ const App = () => (
                   path="/users"
                   element={
                     <ProtectedRoute allowedRoles={['Admin']}>
-                      <div className="p-4">Users Page (Coming Soon)</div>
+                      <UsersPage />
                     </ProtectedRoute>
                   }
                 />
