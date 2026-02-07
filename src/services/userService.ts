@@ -6,15 +6,7 @@ export const userService = {
    * Get all users (Admin only)
    */
   async getAll(): Promise<User[]> {
-    const response = await apiClient.get<ApiResponse<User[]>>('/Users');
-    return extractData(response.data);
-  },
-
-  /**
-   * Get user by ID
-   */
-  async getById(id: string): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>(`/Users/${id}`);
+    const response = await apiClient.get<ApiResponse<User[]>>('/Users/GetAll');
     return extractData(response.data);
   },
 
@@ -22,7 +14,7 @@ export const userService = {
    * Toggle user active status (Admin only)
    */
   async toggleActive(id: string): Promise<boolean> {
-    const response = await apiClient.put<ApiResponse<boolean>>(`/Users/${id}/toggle-active`);
+    const response = await apiClient.put<ApiResponse<boolean>>(`/Users/ToggleActive/${id}`);
     return extractData(response.data);
   },
 
@@ -30,7 +22,7 @@ export const userService = {
    * Update user roles (Admin only)
    */
   async updateRoles(id: string, roles: UserRole[]): Promise<User> {
-    const response = await apiClient.put<ApiResponse<User>>(`/Users/${id}/roles`, roles);
+    const response = await apiClient.put<ApiResponse<User>>(`/Users/UpdateRoles/${id}`, roles);
     return extractData(response.data);
   },
 };

@@ -20,7 +20,7 @@ export const appointmentService = {
     if (filters?.status) params.append('status', filters.status.toString());
     
     const queryString = params.toString();
-    const url = queryString ? `/Appointments?${queryString}` : '/Appointments';
+    const url = queryString ? `/Appointments/GetAll?${queryString}` : '/Appointments/GetAll';
     
     const response = await apiClient.get<ApiResponse<Appointment[]>>(url);
     return extractData(response.data);
@@ -30,7 +30,7 @@ export const appointmentService = {
    * Get appointment by ID
    */
   async getById(id: string): Promise<Appointment> {
-    const response = await apiClient.get<ApiResponse<Appointment>>(`/Appointments/${id}`);
+    const response = await apiClient.get<ApiResponse<Appointment>>(`/Appointments/GetById/${id}`);
     return extractData(response.data);
   },
 
@@ -38,7 +38,7 @@ export const appointmentService = {
    * Get appointments for a specific patient
    */
   async getByPatient(patientId: string): Promise<Appointment[]> {
-    const response = await apiClient.get<ApiResponse<Appointment[]>>(`/Appointments/patient/${patientId}`);
+    const response = await apiClient.get<ApiResponse<Appointment[]>>(`/Appointments/GetByPatient/${patientId}`);
     return extractData(response.data);
   },
 
@@ -46,7 +46,7 @@ export const appointmentService = {
    * Get today's appointments
    */
   async getToday(doctorId?: string): Promise<Appointment[]> {
-    const url = doctorId ? `/Appointments/today?doctorId=${doctorId}` : '/Appointments/today';
+    const url = doctorId ? `/Appointments/GetToday?doctorId=${doctorId}` : '/Appointments/GetToday';
     const response = await apiClient.get<ApiResponse<Appointment[]>>(url);
     return extractData(response.data);
   },
@@ -55,7 +55,7 @@ export const appointmentService = {
    * Create a new appointment
    */
   async create(data: AppointmentFormData): Promise<Appointment> {
-    const response = await apiClient.post<ApiResponse<Appointment>>('/Appointments', data);
+    const response = await apiClient.post<ApiResponse<Appointment>>('/Appointments/Create', data);
     return extractData(response.data);
   },
 
@@ -63,7 +63,7 @@ export const appointmentService = {
    * Update an existing appointment
    */
   async update(id: string, data: AppointmentFormData): Promise<Appointment> {
-    const response = await apiClient.put<ApiResponse<Appointment>>(`/Appointments/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Appointment>>(`/Appointments/Update/${id}`, data);
     return extractData(response.data);
   },
 
@@ -71,7 +71,7 @@ export const appointmentService = {
    * Update appointment status
    */
   async updateStatus(id: string, status: AppointmentStatus, cancellationReason?: string): Promise<Appointment> {
-    const response = await apiClient.put<ApiResponse<Appointment>>(`/Appointments/${id}/status`, {
+    const response = await apiClient.put<ApiResponse<Appointment>>(`/Appointments/UpdateStatus/${id}/status`, {
       status,
       cancellationReason,
     });
@@ -82,7 +82,7 @@ export const appointmentService = {
    * Delete an appointment
    */
   async delete(id: string): Promise<boolean> {
-    const response = await apiClient.delete<ApiResponse<boolean>>(`/Appointments/${id}`);
+    const response = await apiClient.delete<ApiResponse<boolean>>(`/Appointments/Delete/${id}`);
     return extractData(response.data);
   },
 };
