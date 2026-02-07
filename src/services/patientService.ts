@@ -31,7 +31,7 @@ export const patientService = {
    * Create a new patient
    */
   async create(data: PatientFormData): Promise<Patient> {
-    const response = await apiClient.post<ApiResponse<Patient>>('/Patients', data);
+    const response = await apiClient.post<ApiResponse<Patient>>('/Patients/Create', data);
     return extractData(response.data);
   },
 
@@ -39,7 +39,7 @@ export const patientService = {
    * Update an existing patient
    */
   async update(id: string, data: PatientFormData): Promise<Patient> {
-    const response = await apiClient.put<ApiResponse<Patient>>(`/Patients/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Patient>>(`/Patients/Update/${id}`, data);
     return extractData(response.data);
   },
 
@@ -47,7 +47,7 @@ export const patientService = {
    * Delete a patient (Admin only)
    */
   async delete(id: string): Promise<boolean> {
-    const response = await apiClient.delete<ApiResponse<boolean>>(`/Patients/${id}`);
+    const response = await apiClient.delete<ApiResponse<boolean>>(`/Patients/Delete/${id}`);
     return extractData(response.data);
   },
 };
