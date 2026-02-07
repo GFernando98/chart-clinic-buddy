@@ -3,7 +3,9 @@ import { UserInfo } from '@/types';
 import { 
   authService, 
   setTokens, 
-  clearTokens, 
+  clearTokens,
+  getTokens,
+  hasValidTokens,
   setOnTokenRefreshed, 
   setOnAuthError, 
   setOnActivityTracked,
@@ -14,8 +16,6 @@ import { useTranslation } from 'react-i18next';
 
 interface AuthContextType {
   user: UserInfo | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -32,8 +32,6 @@ const WARNING_BEFORE_TIMEOUT = 5 * 60 * 1000; // 5 minutes before timeout
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
   
@@ -57,8 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignore logout errors, still clear local state
     }
     setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
     setShowSessionWarning(false);
     clearTokens();
   }, [clearTimeouts]);
@@ -89,9 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Set up API client callbacks
   useEffect(() => {
-    setOnTokenRefreshed((newAccessToken, newRefreshToken) => {
-      setAccessToken(newAccessToken);
-      setRefreshToken(newRefreshToken);
+    setOnTokenRefreshed(() => {
+      // Tokens are already saved in cookies by apiClient
+      // Just reset the inactivity timer
+      resetInactivityTimer();
     });
 
     setOnAuthError(() => {
@@ -137,11 +134,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, resetInactivityTimer, clearTimeouts]);
 
-  // Initial loading check - try to get current user if tokens exist
+  // Initial loading check - try to restore session from cookies
   useEffect(() => {
     const initAuth = async () => {
-      // In a real scenario, we might have tokens from a previous session
-      // For now, just mark as not loading
+      if (hasValidTokens()) {
+        try {
+          // Try to get current user info from the server
+          const userInfo = await authService.getCurrentUser();
+          setUser(userInfo);
+        } catch {
+          // Tokens are invalid, clear them
+          clearTokens();
+        }
+      }
       setIsLoading(false);
     };
     initAuth();
@@ -154,9 +159,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await authService.login({ email, password });
       
       if (response.succeeded) {
+        // Save tokens to cookies
+        setTokens(response.accessToken, response.refreshToken);
         setUser(response.user);
-        setAccessToken(response.accessToken);
-        setRefreshToken(response.refreshToken);
         
         toast({
           title: `${t('auth.welcomeBack')}, ${response.user.firstName}!`,
@@ -195,8 +200,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    accessToken,
-    refreshToken,
     login,
     logout,
     isAuthenticated: !!user,
