@@ -2,11 +2,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getDashboardStats, getAppointmentsByDay, getTreatmentsByCategory, mockAppointments } from '@/mocks/data';
+import { useDashboardStats, useAppointmentsByDay, useTreatmentsByCategory, useUpcomingAppointments } from '@/hooks/useDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Clock, ClipboardList, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Clock, ClipboardList, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -37,43 +37,38 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const stats = getDashboardStats();
-  const appointmentsByDay = getAppointmentsByDay();
-  const treatmentsByCategory = getTreatmentsByCategory();
+  const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
+  const { data: appointmentsByDay, isLoading: chartLoading } = useAppointmentsByDay();
+  const { data: treatmentsByCategory, isLoading: pieLoading } = useTreatmentsByCategory();
+  const { data: upcomingAppointments, isLoading: appointmentsLoading } = useUpcomingAppointments(5);
   
   const locale = i18n.language === 'es' ? es : enUS;
-  
-  // Get upcoming appointments (next 5)
-  const upcomingAppointments = mockAppointments
-    .filter(apt => apt.status === AppointmentStatus.Scheduled || apt.status === AppointmentStatus.Confirmed)
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
-    .slice(0, 5);
 
   const statCards = [
     { 
       title: t('dashboard.todayAppointments'), 
-      value: stats.todayAppointments, 
+      value: stats?.todayAppointments ?? 0, 
       icon: Calendar,
       color: 'text-info',
       bgColor: 'bg-info/10',
     },
     { 
       title: t('dashboard.totalPatients'), 
-      value: stats.totalPatients, 
+      value: stats?.totalPatients ?? 0, 
       icon: Users,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
     { 
       title: t('dashboard.pendingAppointments'), 
-      value: stats.pendingAppointments, 
+      value: stats?.pendingAppointments ?? 0, 
       icon: Clock,
       color: 'text-warning',
       bgColor: 'bg-warning/10',
     },
     { 
       title: t('dashboard.monthTreatments'), 
-      value: stats.monthTreatments, 
+      value: stats?.monthTreatments ?? 0, 
       icon: ClipboardList,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -100,7 +95,13 @@ export default function DashboardPage() {
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  {statsLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  ) : statsError ? (
+                    <AlertCircle className="w-5 h-5 text-destructive" />
+                  ) : (
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                  )}
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                 </div>
               </div>
@@ -119,29 +120,39 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={appointmentsByDay}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                    axisLine={{ stroke: 'hsl(var(--border))' }}
-                  />
-                  <YAxis 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                    axisLine={{ stroke: 'hsl(var(--border))' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {chartLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : appointmentsByDay && appointmentsByDay.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={appointmentsByDay}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      axisLine={{ stroke: 'hsl(var(--border))' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  {t('common.noData')}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -154,42 +165,54 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={treatmentsByCategory}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {treatmentsByCategory.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center mt-2">
-              {treatmentsByCategory.map((entry, index) => (
-                <div key={entry.name} className="flex items-center gap-1.5">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                  />
-                  <span className="text-xs text-muted-foreground">{entry.name}</span>
+              {pieLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
-              ))}
+              ) : treatmentsByCategory && treatmentsByCategory.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={treatmentsByCategory}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {treatmentsByCategory.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  {t('common.noData')}
+                </div>
+              )}
             </div>
+            {treatmentsByCategory && treatmentsByCategory.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center mt-2">
+                {treatmentsByCategory.map((entry, index) => (
+                  <div key={entry.name} className="flex items-center gap-1.5">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                    />
+                    <span className="text-xs text-muted-foreground">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -206,7 +229,11 @@ export default function DashboardPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          {upcomingAppointments.length === 0 ? (
+          {appointmentsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : !upcomingAppointments || upcomingAppointments.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">{t('appointments.noAppointments')}</p>
           ) : (
             <div className="space-y-3">
@@ -236,7 +263,7 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <Badge className={getStatusBadgeClass(apt.status)}>
-                      {t(`appointments.${AppointmentStatus[apt.status].toLowerCase()}`)}
+                      {t(`appointments.${AppointmentStatus[apt.status]?.toLowerCase() ?? 'scheduled'}`)}
                     </Badge>
                   </div>
                 </div>
