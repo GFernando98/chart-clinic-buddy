@@ -1,223 +1,178 @@
 
 
-# 🦷 DentalClinic - Sistema de Gestión de Clínica Dental
+# Pagina de Citas - Vista de Lista y Calendario
 
-## Visión General
-Un sistema moderno y completo para gestión de clínicas dentales con odontograma interactivo como característica principal. Interfaz en español (con soporte para inglés), diseño contemporáneo y elegante, totalmente responsive con soporte para modo oscuro.
-
----
-
-## Fase 1: Fundamentos del Sistema
-
-### 1.1 Configuración del Proyecto
-- Configurar react-i18next con español como idioma predeterminado e inglés secundario
-- Crear archivos de traducción organizados por módulo
-- Configurar Axios con interceptores para autenticación y refresh de tokens
-- Implementar sistema de mock API que simule todas las respuestas del backend .NET
-
-### 1.2 Sistema de Autenticación
-- Pantalla de login centrada con branding "Clínica Dental"
-- AuthContext para manejo de tokens en memoria (nunca localStorage)
-- Interceptor de Axios para:
-  - Agregar Bearer token a cada request
-  - Detectar 401 y auto-refresh del token
-  - Tracking de inactividad (logout automático a 60 min)
-  - Diálogo de advertencia a los 55 minutos
-- Protección de rutas basada en roles
-
-### 1.3 Layout Principal
-- **Sidebar colapsible** (240px expandido → 64px colapsado → menú hamburguesa en móvil)
-  - Navegación con íconos Lucide
-  - Indicador visual de ruta activa
-  - Items filtrados por rol del usuario
-- **Top Bar**:
-  - Toggle de modo oscuro (Sol/Luna)
-  - Selector de idioma (🇪🇸/🇺🇸)
-  - Nombre de usuario, badge de rol, botón logout
-- **Tema visual**: Colores médicos profesionales con toque moderno, bordes redondeados, sombras sutiles
+## Resumen
+Implementar una pagina de citas completa con dos modos de visualizacion: **Lista** (tabla con filtros) y **Calendario** (vista semanal interactiva). El usuario podra alternar entre ambas vistas con un toggle.
 
 ---
 
-## Fase 2: Odontograma Interactivo (Característica Principal)
+## Componentes a Crear
 
-### 2.1 Componente SVG de Dientes
-- SVG interactivo semi-realista mostrando los 32 dientes (adulto) o 20 dientes (pediátrico)
-- Disposición anatómica correcta:
-  ```
-       Maxilar Superior
-  18 17 16 15 14 13 12 11 | 21 22 23 24 25 26 27 28
-  ─────────────────────────────────────────────────
-  48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38
-       Mandíbula Inferior
-  ```
-- Cada diente renderizado con formas estilizadas según tipo (molar, premolar, canino, incisivo)
-- 5 superficies clicables por diente con códigos de color por condición:
-  - Sano (blanco), Cariado (rojo), Obturado (azul), Ausente (gris punteado), etc.
-- Indicadores visuales: X para extraído, línea punteada para ausente
-- Números de diente visibles, tooltips al hover
+### 1. AppointmentsPage.tsx (Pagina principal)
+- Header con titulo, subtitulo y boton "Nueva Cita"
+- Toggle para alternar entre vista Lista/Calendario
+- Filtros: Doctor, Estado, Rango de fechas
+- Renderiza el componente de vista activa
 
-### 2.2 Panel de Detalles del Diente
-- Panel lateral que aparece al seleccionar un diente
-- Muestra: número, condición actual, superficies
-- Dropdown para cambiar condición del diente
-- Lista de superficies con edición de condición por superficie
-- Botón "Agregar Tratamiento"
-- Historial de tratamientos realizados en ese diente
+### 2. AppointmentListView.tsx
+- Tabla con columnas: Fecha/Hora, Paciente, Doctor, Motivo, Estado, Acciones
+- Badges de estado coloreados segun especificacion
+- Paginacion y ordenamiento
+- Vista de tarjetas en movil
+- Acciones rapidas: Ver detalles, Cambiar estado
 
-### 2.3 Gestión de Odontogramas
-- Vista de historial de odontogramas por paciente
-- Selector dropdown para ver odontogramas anteriores
-- Botón "Nuevo Odontograma"
-- Toggle Adulto/Pediátrico
-- Opción de impresión
+### 3. AppointmentCalendarView.tsx
+- Calendario semanal (Lunes a Domingo)
+- Horario de 8:00 AM a 6:00 PM en slots de 30 minutos
+- Navegacion: semana anterior/siguiente, ir a hoy
+- Citas renderizadas como bloques coloreados por estado
+- Click en slot vacio: abrir formulario de nueva cita
+- Click en cita: abrir detalle/edicion
+- Vista adaptativa: 7 dias en desktop, 3 dias en tablet, lista diaria en movil
 
-### 2.4 Responsive del Odontograma
-- Scroll horizontal con indicadores visuales en tablet
-- Pinch-to-zoom en móvil
-- Panel de detalles como modal en pantallas pequeñas
+### 4. AppointmentFormDialog.tsx
+- Modal/Dialog para crear/editar citas
+- Campos:
+  - Paciente: dropdown con busqueda (usa mockPatients)
+  - Doctor: dropdown (usa mockDoctors)
+  - Fecha: DatePicker
+  - Hora inicio/fin: Time selectors
+  - Motivo: input texto
+  - Notas: textarea opcional
+- Validacion con Zod
 
----
-
-## Fase 3: Gestión de Pacientes
-
-### 3.1 Lista de Pacientes
-- Búsqueda por nombre o número de identidad
-- Tabla con columnas: Nombre, Identidad, Teléfono, Email, Ciudad, Acciones
-- Paginación y ordenamiento
-- Acciones: Ver, Editar, Eliminar (solo Admin)
-- Vista de tarjetas en móvil
-
-### 3.2 Detalle del Paciente
-- Tarjeta de encabezado con foto, nombre, edad, género
-- Sistema de tabs:
-  - **Datos Personales**: Información organizada en secciones
-  - **Historial Dental**: Lista de odontogramas con acceso directo
-  - **Citas**: Historial y próximas citas del paciente
-  - **Historial Médico**: Alergias, condiciones, medicamentos
-
-### 3.3 Formulario de Paciente
-- Organizado en secciones colapsables:
-  - Información Personal
-  - Contacto
-  - Información Laboral
-  - Contacto de Emergencia
-  - Información Médica
-- Validación con Zod (campos requeridos marcados)
-- Diseño de 2 columnas en desktop, 1 columna en móvil
+### 5. AppointmentDetailDialog.tsx
+- Modal mostrando detalles completos de la cita
+- Informacion del paciente y doctor
+- Botones de accion rapida para cambiar estado:
+  - Confirmar (si esta Programada)
+  - Iniciar (si esta Confirmada)
+  - Completar (si esta En Progreso)
+  - Cancelar (cualquier estado, pide motivo)
+  - Marcar No Show
+- Boton Editar que abre AppointmentFormDialog
 
 ---
 
-## Fase 4: Gestión de Citas
+## Estructura de Archivos
 
-### 4.1 Vista de Calendario
-- Calendario semanal con slots de 8:00 AM - 6:00 PM
-- Bloques de citas coloreados por estado
-- Filtro por doctor
-- Click en slot vacío → crear cita
-- Click en cita → ver/editar detalles
-- Vista de 3 días en tablet, lista diaria en móvil
-
-### 4.2 Vista de Lista
-- Tabla con: Fecha/Hora, Paciente, Doctor, Motivo, Estado, Acciones
-- Badges de estado coloreados
-- Filtros: rango de fechas, doctor, estado
-
-### 4.3 Formulario y Gestión de Citas
-- Búsqueda de paciente en dropdown
-- Selección de doctor
-- Date/Time pickers con formato Honduras
-- Botones rápidos para cambiar estado (Confirmar, Iniciar, Completar, Cancelar)
-- Validación de conflictos de horario
+```text
+src/pages/appointments/
+  +-- index.ts                    (barrel export)
+  +-- AppointmentsPage.tsx        (pagina principal)
+  +-- components/
+      +-- AppointmentListView.tsx
+      +-- AppointmentCalendarView.tsx
+      +-- AppointmentFormDialog.tsx
+      +-- AppointmentDetailDialog.tsx
+      +-- AppointmentStatusBadge.tsx
+      +-- TimeSlot.tsx
+```
 
 ---
 
-## Fase 5: Dashboard
+## Colores de Estado (CSS Variables existentes)
 
-### 5.1 Tarjetas de Estadísticas
-- Citas Hoy (contador)
-- Pacientes Totales
-- Citas Pendientes (Programadas + Confirmadas)
-- Tratamientos del Mes
-
-### 5.2 Gráficos con Recharts
-- **Gráfico de barras**: Citas por día (últimos 7 días)
-- **Gráfico de pastel**: Tratamientos por categoría
-- Adaptación automática a modo oscuro
-
-### 5.3 Próximas Citas
-- Tabla con las 5 próximas citas
-- Nombre del paciente, doctor, hora, badge de estado
+| Estado | Color | Variable CSS |
+|--------|-------|--------------|
+| Scheduled (Programada) | Azul | --status-scheduled |
+| Confirmed (Confirmada) | Verde | --status-confirmed |
+| InProgress (En Progreso) | Amarillo | --status-inprogress |
+| Completed (Completada) | Gris | --status-completed |
+| Cancelled (Cancelada) | Rojo | --status-cancelled |
+| NoShow | Naranja | --status-noshow |
 
 ---
 
-## Fase 6: Módulos Administrativos
+## Vista del Calendario (Detalle Tecnico)
 
-### 6.1 Gestión de Doctores (Solo Admin)
-- CRUD completo de doctores
-- Campos: Nombre, Colegiado, Especialidad, Teléfono, Email
-- Activar/Desactivar doctores
+```text
+            Semana del 3 al 9 de Febrero 2025
+         [< Anterior]  [Hoy]  [Siguiente >]
++--------+--------+--------+--------+--------+--------+--------+
+|   Lun  |   Mar  |   Mie  |   Jue  |   Vie  |   Sab  |   Dom  |
+|   3    |   4    |   5    |   6    |   7    |   8    |   9    |
++--------+--------+--------+--------+--------+--------+--------+
+| 8:00   |        | Juan P |        |        |        |        |
+|        |        | Limpieza        |        |        |        |
++--------+--------+--------+--------+--------+--------+--------+
+| 8:30   |        |        |        |        |        |        |
++--------+--------+--------+--------+--------+--------+--------+
+| 9:00   | Maria G|        | Ana L  |        |        |        |
+|        | Conducto       | Extrac.|        |        |        |
++--------+--------+--------+--------+--------+--------+--------+
+...
+```
 
-### 6.2 Catálogo de Tratamientos (Solo Admin)
-- CRUD de tratamientos
-- Campos: Código, Nombre, Descripción, Categoría, Precio, Duración
-- Badges de categoría coloreados
-
-### 6.3 Gestión de Usuarios (Solo Admin)
-- Lista de usuarios con roles como badges
-- Crear nuevos usuarios (no hay auto-registro)
-- Cambiar roles (modal multi-select)
-- Activar/Desactivar usuarios
-
----
-
-## Fase 7: Funcionalidades Transversales
-
-### 7.1 Modo Oscuro
-- Toggle en top bar con animación suave
-- Colores adaptados para sidebar, cards, tablas, formularios
-- Odontograma adaptado (contornos de dientes ajustados)
-- Gráficos con colores para fondo oscuro
-- Preferencia persistida en contexto React
-
-### 7.2 Internacionalización
-- Español como idioma predeterminado
-- Toggle de idioma en top bar
-- Todos los textos desde archivos de traducción
-- Formatos de fecha localizados (dd/MM/yyyy HH:mm)
-- Números de teléfono en formato Honduras
-
-### 7.3 Experiencia de Usuario
-- Loading states con skeletons
-- Toasts para todas las acciones (éxito, error, info)
-- Estados vacíos amigables con iconos
-- Validación inline en formularios
-- Diálogos de confirmación para acciones destructivas
-
-### 7.4 Sistema de Mocks
-- Mock API layer completo simulando respuestas del backend .NET
-- Datos de ejemplo realistas en español
-- Estructura lista para conectar al backend real cuando esté disponible
+- Cada bloque de cita muestra: nombre del paciente, motivo (truncado)
+- Color de fondo segun estado
+- Hover muestra tooltip con detalles
+- Drag & drop para reagendar (opcional/futuro)
 
 ---
 
-## Resumen Técnico
+## Traducciones a Agregar
 
-| Aspecto | Implementación |
-|---------|---------------|
-| **Framework** | React 18 + TypeScript |
-| **Estilos** | Tailwind CSS + shadcn/ui |
-| **Routing** | React Router v6 |
-| **HTTP** | Axios con interceptores |
-| **Forms** | React Hook Form + Zod |
-| **i18n** | react-i18next (ES/EN) |
-| **Icons** | Lucide React |
-| **Charts** | Recharts |
-| **Dates** | date-fns (locale español) |
-| **Estado** | React Context (auth, theme, language) |
+```json
+{
+  "appointments": {
+    "subtitle": "Gestiona las citas de tus pacientes",
+    "viewCalendar": "Calendario",
+    "viewList": "Lista", 
+    "thisWeek": "Esta Semana",
+    "previousWeek": "Semana Anterior",
+    "nextWeek": "Semana Siguiente",
+    "goToToday": "Ir a Hoy",
+    "allDoctors": "Todos los Doctores",
+    "allStatuses": "Todos los Estados",
+    "noAppointmentsToday": "No hay citas programadas para hoy",
+    "noAppointmentsWeek": "No hay citas esta semana",
+    "clickToCreate": "Haz clic en un horario para crear una cita",
+    "appointmentCreated": "Cita Creada",
+    "appointmentUpdated": "Cita Actualizada",
+    "appointmentCancelled": "Cita Cancelada",
+    "statusChanged": "Estado Actualizado",
+    "confirmCancel": "Confirmar Cancelacion",
+    "cancelReason": "Motivo de la cancelacion",
+    "selectPatient": "Buscar paciente...",
+    "selectDoctor": "Seleccionar doctor",
+    "startTime": "Hora de Inicio",
+    "endTime": "Hora de Fin",
+    "reasonPlaceholder": "Ej: Limpieza dental, Revision general..."
+  }
+}
+```
 
 ---
 
-## Resultado Final
+## Flujo de Usuario
 
-Una aplicación web moderna, profesional y completamente funcional para gestión de clínicas dentales, con énfasis especial en el odontograma interactivo, preparada para conectarse al backend .NET cuando esté disponible.
+1. **Ver citas en calendario**: Usuario ve la semana actual con todas las citas como bloques coloreados
+2. **Cambiar a lista**: Click en toggle "Lista" para ver tabla filtrable
+3. **Crear cita desde calendario**: Click en slot vacio abre formulario con fecha/hora prellenados
+4. **Crear cita desde lista**: Click en "Nueva Cita" abre formulario vacio
+5. **Ver detalles**: Click en cita abre panel de detalles
+6. **Cambiar estado**: Desde el panel de detalles, usar botones de accion rapida
+7. **Cancelar cita**: Requiere ingresar motivo de cancelacion
+8. **Navegar semanas**: Flechas para ir a semana anterior/siguiente
+9. **Filtrar por doctor**: Dropdown en header para filtrar citas
+
+---
+
+## Responsive
+
+| Viewport | Calendario | Lista |
+|----------|-----------|-------|
+| Desktop (lg+) | 7 dias completos | Tabla completa |
+| Tablet (md) | 3 dias con scroll | Tabla con scroll horizontal |
+| Movil (sm) | Lista diaria (agenda) | Cards por cita |
+
+---
+
+## Integracion
+
+- Actualizar `App.tsx` para usar `AppointmentsPage` en lugar del placeholder
+- Agregar traducciones a `es.json` y `en.json`
+- Usar datos de `mockAppointments`, `mockPatients`, `mockDoctors`
 
