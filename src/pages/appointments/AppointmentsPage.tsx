@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, List, CalendarDays } from 'lucide-react';
+import { Plus, List, CalendarDays, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -11,22 +11,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useToast } from '@/hooks/use-toast';
 import { Appointment, AppointmentStatus } from '@/types';
-import { mockAppointments, mockDoctors } from '@/mocks/data';
 import { AppointmentListView } from './components/AppointmentListView';
 import { AppointmentCalendarView } from './components/AppointmentCalendarView';
 import { AppointmentFormDialog } from './components/AppointmentFormDialog';
 import { AppointmentDetailDialog } from './components/AppointmentDetailDialog';
+import { useAppointments, useCreateAppointment, useUpdateAppointment, useUpdateAppointmentStatus } from '@/hooks/useAppointments';
+import { useDoctors } from '@/hooks/useDoctors';
 
 type ViewMode = 'list' | 'calendar';
 
 export default function AppointmentsPage() {
   const { t } = useTranslation();
-  const { toast } = useToast();
   
   // State
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedDoctor, setSelectedDoctor] = useState<string>('all');
@@ -38,6 +36,15 @@ export default function AppointmentsPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [defaultDate, setDefaultDate] = useState<Date | undefined>();
   const [defaultTime, setDefaultTime] = useState<string | undefined>();
+
+  // Fetch data from API
+  const { data: appointments = [], isLoading: appointmentsLoading } = useAppointments();
+  const { data: doctors = [], isLoading: doctorsLoading } = useDoctors();
+  const createAppointment = useCreateAppointment();
+  const updateAppointment = useUpdateAppointment();
+  const updateStatus = useUpdateAppointmentStatus();
+
+  const isLoading = appointmentsLoading || doctorsLoading;
 
   // Filter appointments
   const filteredAppointments = useMemo(() => {
@@ -75,37 +82,11 @@ export default function AppointmentsPage() {
 
   const handleSaveAppointment = (data: Partial<Appointment>) => {
     if (data.id) {
-      // Update existing
-      setAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === data.id ? { ...apt, ...data } : apt
-        )
-      );
-      toast({
-        title: t('appointments.appointmentUpdated'),
-        description: data.patientName,
-      });
+      updateAppointment.mutate({ id: data.id, data: data as any });
     } else {
-      // Create new
-      const newAppointment: Appointment = {
-        id: `apt-${Date.now()}`,
-        patientId: data.patientId!,
-        patientName: data.patientName!,
-        doctorId: data.doctorId!,
-        doctorName: data.doctorName!,
-        scheduledDate: data.scheduledDate!,
-        scheduledEndDate: data.scheduledEndDate,
-        status: AppointmentStatus.Scheduled,
-        reason: data.reason!,
-        notes: data.notes,
-        reminderSent: false,
-      };
-      setAppointments((prev) => [...prev, newAppointment]);
-      toast({
-        title: t('appointments.appointmentCreated'),
-        description: data.patientName,
-      });
+      createAppointment.mutate(data as any);
     }
+    setFormDialogOpen(false);
   };
 
   const handleStatusChange = (
@@ -113,19 +94,18 @@ export default function AppointmentsPage() {
     newStatus: AppointmentStatus,
     cancellationReason?: string
   ) => {
-    setAppointments((prev) =>
-      prev.map((apt) =>
-        apt.id === appointmentId
-          ? { ...apt, status: newStatus, cancellationReason }
-          : apt
-      )
-    );
+    updateStatus.mutate({ id: appointmentId, status: newStatus, cancellationReason });
     setDetailDialogOpen(false);
-    toast({
-      title: t('appointments.statusChanged'),
-      description: t(`appointments.status${newStatus}`),
-    });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -172,7 +152,7 @@ export default function AppointmentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('appointments.allDoctors')}</SelectItem>
-                  {mockDoctors.map((doctor) => (
+                  {doctors.map((doctor) => (
                     <SelectItem key={doctor.id} value={doctor.id}>
                       {doctor.fullName}
                     </SelectItem>

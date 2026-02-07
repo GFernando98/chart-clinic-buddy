@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Stethoscope,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,10 +37,10 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockDoctors } from '@/mocks/data';
 import { Doctor } from '@/types';
 import { DoctorFormDialog } from './components/DoctorFormDialog';
 import { DoctorDetailDialog } from './components/DoctorDetailDialog';
+import { useDoctors, useCreateDoctor, useUpdateDoctor } from '@/hooks/useDoctors';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -49,7 +50,6 @@ export const DoctorsPage = () => {
   const isMobile = useIsMobile();
 
   // State
-  const [doctors, setDoctors] = useState<Doctor[]>(mockDoctors);
   const [searchQuery, setSearchQuery] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -57,6 +57,11 @@ export const DoctorsPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
+
+  // Fetch doctors from API
+  const { data: doctors = [], isLoading, error } = useDoctors();
+  const createDoctor = useCreateDoctor();
+  const updateDoctor = useUpdateDoctor();
 
   // Get unique specialties
   const specialties = useMemo(() => {
@@ -108,40 +113,39 @@ export const DoctorsPage = () => {
 
   const handleSaveDoctor = (doctorData: Partial<Doctor>) => {
     if (editingDoctor) {
-      // Update existing doctor
-      setDoctors((prev) =>
-        prev.map((d) =>
-          d.id === editingDoctor.id ? ({ ...d, ...doctorData } as Doctor) : d
-        )
-      );
-      toast({
-        title: t('success.updated'),
-        description: `${doctorData.fullName} ${t('doctors.editDoctor').toLowerCase()}`,
-      });
+      updateDoctor.mutate({ id: editingDoctor.id, data: doctorData as any });
     } else {
-      // Create new doctor
-      setDoctors((prev) => [...prev, doctorData as Doctor]);
-      toast({
-        title: t('success.created'),
-        description: `${doctorData.fullName} ${t('doctors.newDoctor').toLowerCase()}`,
-      });
+      createDoctor.mutate(doctorData as any);
     }
     setEditingDoctor(null);
+    setIsFormOpen(false);
   };
 
   const handleToggleActive = (doctor: Doctor) => {
     const newStatus = doctor.isActive === false ? true : false;
-    setDoctors((prev) =>
-      prev.map((d) => (d.id === doctor.id ? { ...d, isActive: newStatus } : d))
-    );
+    updateDoctor.mutate({ id: doctor.id, data: { ...doctor, isActive: newStatus } as any });
     setIsDetailOpen(false);
-    toast({
-      title: t('success.updated'),
-      description: newStatus
-        ? `${doctor.fullName} ha sido activado`
-        : `${doctor.fullName} ha sido desactivado`,
-    });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <Stethoscope className="h-12 w-12 text-destructive mb-4" />
+        <h3 className="text-lg font-semibold">{t('common.error')}</h3>
+        <p className="text-muted-foreground">{(error as Error).message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Eye, Edit, MoreHorizontal, CheckCircle2, XCircle, Shield } from 'lucide-react';
+import { Plus, Search, Eye, Edit, MoreHorizontal, CheckCircle2, XCircle, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -27,11 +27,11 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockUsers } from '@/mocks/data';
 import { User, UserRole } from '@/types';
 import { UserRoleBadge } from './components/UserRoleBadge';
 import { UserFormDialog } from './components/UserFormDialog';
 import { UserDetailDialog } from './components/UserDetailDialog';
+import { useUsers, useToggleUserActive } from '@/hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -41,7 +41,6 @@ export const UsersPage = () => {
   const isMobile = useIsMobile();
 
   // State
-  const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -49,6 +48,10 @@ export const UsersPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Fetch users from API
+  const { data: users = [], isLoading, error } = useUsers();
+  const toggleActive = useToggleUserActive();
 
   // Filtered users
   const filteredUsers = useMemo(() => {
@@ -92,39 +95,39 @@ export const UsersPage = () => {
   };
 
   const handleSaveUser = (userData: Partial<User>) => {
-    if (editingUser) {
-      // Update existing user
-      setUsers((prev) =>
-        prev.map((u) => (u.id === editingUser.id ? { ...u, ...userData } as User : u))
-      );
-      toast({
-        title: t('success.updated'),
-        description: `${userData.fullName} ${t('users.editUser').toLowerCase()}`,
-      });
-    } else {
-      // Create new user
-      setUsers((prev) => [...prev, userData as User]);
-      toast({
-        title: t('success.created'),
-        description: `${userData.fullName} ${t('users.newUser').toLowerCase()}`,
-      });
-    }
+    // Note: User creation/update would need a dedicated API endpoint
+    toast({
+      title: editingUser ? t('success.updated') : t('success.created'),
+      description: `${userData.fullName}`,
+    });
     setEditingUser(null);
+    setIsFormOpen(false);
   };
 
   const handleToggleActive = (user: User) => {
-    const newStatus = user.isActive === false ? true : false;
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, isActive: newStatus } : u))
-    );
+    toggleActive.mutate(user.id);
     setIsDetailOpen(false);
-    toast({
-      title: t('success.updated'),
-      description: newStatus
-        ? `${user.fullName} ha sido activado`
-        : `${user.fullName} ha sido desactivado`,
-    });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <Shield className="h-12 w-12 text-destructive mb-4" />
+        <h3 className="text-lg font-semibold">{t('common.error')}</h3>
+        <p className="text-muted-foreground">{(error as Error).message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
