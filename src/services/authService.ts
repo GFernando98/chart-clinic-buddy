@@ -13,7 +13,7 @@ export const authService = {
    * Login with email and password
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
+    const response = await apiClient.post<ApiResponse<LoginResponse>>('/Auth/login', credentials);
     const data = extractData(response.data);
     
     // Store tokens in memory
@@ -27,7 +27,7 @@ export const authService = {
    */
   async logout(): Promise<void> {
     try {
-      await apiClient.post('/auth/logout');
+      await apiClient.post('/Auth/logout');
     } finally {
       // Always clear tokens, even if API call fails
       clearTokens();
@@ -38,7 +38,7 @@ export const authService = {
    * Get current user info
    */
   async getCurrentUser(): Promise<UserInfo> {
-    const response = await apiClient.get<ApiResponse<UserInfo>>('/auth/me');
+    const response = await apiClient.get<ApiResponse<UserInfo>>('/Auth/me');
     return extractData(response.data);
   },
 
@@ -46,7 +46,7 @@ export const authService = {
    * Register a new user (Admin only)
    */
   async register(userData: RegisterUserRequest): Promise<UserInfo> {
-    const response = await apiClient.post<ApiResponse<UserInfo>>('/auth/register', userData);
+    const response = await apiClient.post<ApiResponse<UserInfo>>('/Auth/register', userData);
     return extractData(response.data);
   },
 
@@ -54,7 +54,7 @@ export const authService = {
    * Change password for current user
    */
   async changePassword(data: ChangePasswordRequest): Promise<boolean> {
-    const response = await apiClient.post<ApiResponse<boolean>>('/auth/change-password', data);
+    const response = await apiClient.post<ApiResponse<boolean>>('/Auth/change-password', data);
     return extractData(response.data);
   },
 };

@@ -6,7 +6,7 @@ export const treatmentService = {
    * Get all treatments
    */
   async getAll(): Promise<Treatment[]> {
-    const response = await apiClient.get<ApiResponse<Treatment[]>>('/treatments');
+    const response = await apiClient.get<ApiResponse<Treatment[]>>('/Treatments');
     return extractData(response.data);
   },
 
@@ -14,7 +14,7 @@ export const treatmentService = {
    * Get treatment by ID
    */
   async getById(id: string): Promise<Treatment> {
-    const response = await apiClient.get<ApiResponse<Treatment>>(`/treatments/${id}`);
+    const response = await apiClient.get<ApiResponse<Treatment>>(`/Treatments/${id}`);
     return extractData(response.data);
   },
 
@@ -22,7 +22,7 @@ export const treatmentService = {
    * Create a new treatment (Admin only)
    */
   async create(data: TreatmentFormData): Promise<Treatment> {
-    const response = await apiClient.post<ApiResponse<Treatment>>('/treatments', data);
+    const response = await apiClient.post<ApiResponse<Treatment>>('/Treatments', data);
     return extractData(response.data);
   },
 
@@ -30,7 +30,7 @@ export const treatmentService = {
    * Update an existing treatment (Admin only)
    */
   async update(id: string, data: TreatmentFormData): Promise<Treatment> {
-    const response = await apiClient.put<ApiResponse<Treatment>>(`/treatments/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Treatment>>(`/Treatments/${id}`, data);
     return extractData(response.data);
   },
 
@@ -38,7 +38,7 @@ export const treatmentService = {
    * Toggle treatment active status
    */
   async toggleActive(id: string): Promise<boolean> {
-    const response = await apiClient.put<ApiResponse<boolean>>(`/treatments/${id}/toggle-active`);
+    const response = await apiClient.put<ApiResponse<boolean>>(`/Treatments/${id}/toggle-active`);
     return extractData(response.data);
   },
 };
