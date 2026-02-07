@@ -10,6 +10,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OdontogramPage from "@/pages/OdontogramPage";
+import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
@@ -38,8 +39,10 @@ const App = () => (
                 }
               >
                 <Route path="/" element={<DashboardPage />} />
-                <Route path="/patients" element={<div className="p-4">Patients Page (Coming Soon)</div>} />
-                <Route path="/patients/:id" element={<div className="p-4">Patient Detail (Coming Soon)</div>} />
+                <Route path="/patients" element={<PatientsListPage />} />
+                <Route path="/patients/new" element={<PatientFormPage />} />
+                <Route path="/patients/:id" element={<PatientDetailPage />} />
+                <Route path="/patients/:id/edit" element={<PatientFormPage />} />
                 <Route
                   path="/odontogram"
                   element={
