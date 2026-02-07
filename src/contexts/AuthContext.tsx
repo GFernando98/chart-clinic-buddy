@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { UserInfo, LoginResponse } from '@/types';
-import { mockUsers } from '@/mocks/data';
+import { UserInfo } from '@/types';
+import { 
+  authService, 
+  setTokens, 
+  clearTokens, 
+  setOnTokenRefreshed, 
+  setOnAuthError, 
+  setOnActivityTracked,
+  getErrorMessage 
+} from '@/services';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +49,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (logoutTimeoutRef.current) clearTimeout(logoutTimeoutRef.current);
   }, []);
 
+  const performLogout = useCallback(async () => {
+    clearTimeouts();
+    try {
+      await authService.logout();
+    } catch {
+      // Ignore logout errors, still clear local state
+    }
+    setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    setShowSessionWarning(false);
+    clearTokens();
+  }, [clearTimeouts]);
+
   const resetInactivityTimer = useCallback(() => {
     lastActivityRef.current = Date.now();
     setShowSessionWarning(false);
@@ -52,18 +74,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }, INACTIVITY_TIMEOUT - WARNING_BEFORE_TIMEOUT);
 
       logoutTimeoutRef.current = setTimeout(() => {
-        logout();
+        performLogout();
         toast({
           title: t('auth.sessionExpired'),
           variant: 'destructive',
         });
       }, INACTIVITY_TIMEOUT);
     }
-  }, [user, clearTimeouts, toast, t]);
+  }, [user, clearTimeouts, performLogout, toast, t]);
 
   const extendSession = useCallback(() => {
     resetInactivityTimer();
   }, [resetInactivityTimer]);
+
+  // Set up API client callbacks
+  useEffect(() => {
+    setOnTokenRefreshed((newAccessToken, newRefreshToken) => {
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken);
+    });
+
+    setOnAuthError(() => {
+      performLogout();
+      toast({
+        title: t('auth.sessionExpired'),
+        variant: 'destructive',
+      });
+    });
+
+    setOnActivityTracked(() => {
+      const now = Date.now();
+      if (now - lastActivityRef.current > 1000) {
+        resetInactivityTimer();
+      }
+    });
+  }, [performLogout, toast, t, resetInactivityTimer]);
 
   // Track user activity
   useEffect(() => {
@@ -92,65 +137,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, resetInactivityTimer, clearTimeouts]);
 
-  // Initial loading check
+  // Initial loading check - try to get current user if tokens exist
   useEffect(() => {
-    // In a real app, we might check for an existing session
-    // For now, we just mark as not loading
-    setIsLoading(false);
+    const initAuth = async () => {
+      // In a real scenario, we might have tokens from a previous session
+      // For now, just mark as not loading
+      setIsLoading(false);
+    };
+    initAuth();
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Mock authentication - in real app, this would call the API
-    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (foundUser && password === 'Admin@123!') {
-      const mockResponse: LoginResponse = {
-        succeeded: true,
-        accessToken: 'mock-access-token-' + Date.now(),
-        refreshToken: 'mock-refresh-token-' + Date.now(),
-        accessTokenExpiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        user: {
-          id: foundUser.id,
-          email: foundUser.email,
-          firstName: foundUser.firstName,
-          lastName: foundUser.lastName,
-          fullName: foundUser.fullName,
-          roles: foundUser.roles,
-        },
-      };
+    try {
+      const response = await authService.login({ email, password });
       
-      setUser(mockResponse.user);
-      setAccessToken(mockResponse.accessToken);
-      setRefreshToken(mockResponse.refreshToken);
-      setIsLoading(false);
-      
+      if (response.succeeded) {
+        setUser(response.user);
+        setAccessToken(response.accessToken);
+        setRefreshToken(response.refreshToken);
+        
+        toast({
+          title: `${t('auth.welcomeBack')}, ${response.user.firstName}!`,
+        });
+        
+        return true;
+      } else {
+        toast({
+          title: t('auth.invalidCredentials'),
+          variant: 'destructive',
+        });
+        return false;
+      }
+    } catch (error) {
+      const message = getErrorMessage(error);
       toast({
-        title: `${t('auth.welcomeBack')}, ${mockResponse.user.firstName}!`,
+        title: t('auth.invalidCredentials'),
+        description: message,
+        variant: 'destructive',
       });
-      
-      return true;
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
-    toast({
-      title: t('auth.invalidCredentials'),
-      variant: 'destructive',
-    });
-    return false;
   }, [toast, t]);
 
   const logout = useCallback(async () => {
-    clearTimeouts();
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-    setShowSessionWarning(false);
-  }, [clearTimeouts]);
+    await performLogout();
+  }, [performLogout]);
 
   const hasRole = useCallback((role: string | string[]): boolean => {
     if (!user) return false;
