@@ -1,4 +1,4 @@
-import apiClient, { extractData, setTokens, clearTokens } from './apiClient';
+import apiClient, { extractData, clearTokens } from './apiClient';
 import { 
   ApiResponse, 
   LoginRequest, 
@@ -14,12 +14,7 @@ export const authService = {
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await apiClient.post<ApiResponse<LoginResponse>>('/Auth/login', credentials);
-    const data = extractData(response.data);
-    
-    // Store tokens in memory
-    setTokens(data.accessToken, data.refreshToken);
-    
-    return data;
+    return extractData(response.data);
   },
 
   /**

@@ -1,12 +1,22 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import Cookies from 'js-cookie';
 import { ApiResponse } from '@/types';
 
 // API Base URL from environment or default
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7820/api';
 
-// Token storage (in-memory only - never localStorage)
-let accessToken: string | null = null;
-let refreshToken: string | null = null;
+// Cookie names
+const ACCESS_TOKEN_COOKIE = 'dental_access_token';
+const REFRESH_TOKEN_COOKIE = 'dental_refresh_token';
+
+// Cookie options
+const COOKIE_OPTIONS: Cookies.CookieAttributes = {
+  secure: window.location.protocol === 'https:',
+  sameSite: 'strict',
+  path: '/',
+};
+
+// Token storage in cookies
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
@@ -17,6 +27,10 @@ let failedQueue: Array<{
 let onTokenRefreshed: ((newAccessToken: string, newRefreshToken: string) => void) | null = null;
 let onAuthError: (() => void) | null = null;
 let onActivityTracked: (() => void) | null = null;
+
+// Get tokens from cookies
+const getAccessToken = (): string | null => Cookies.get(ACCESS_TOKEN_COOKIE) || null;
+const getRefreshToken = (): string | null => Cookies.get(REFRESH_TOKEN_COOKIE) || null;
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -42,6 +56,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // Request interceptor - add Bearer token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const accessToken = getAccessToken();
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -81,6 +96,9 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const accessToken = getAccessToken();
+        const refreshToken = getRefreshToken();
+
         // Attempt token refresh
         if (!accessToken || !refreshToken) {
           throw new Error('No tokens available');
@@ -99,7 +117,7 @@ apiClient.interceptors.response.use(
           const newAccessToken = response.data.data.accessToken;
           const newRefreshToken = response.data.data.refreshToken;
 
-          // Update tokens
+          // Update tokens in cookies
           setTokens(newAccessToken, newRefreshToken);
           onTokenRefreshed?.(newAccessToken, newRefreshToken);
 
@@ -130,21 +148,34 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Token management functions
+// Token management functions - using cookies
 export const setTokens = (newAccessToken: string, newRefreshToken: string) => {
-  accessToken = newAccessToken;
-  refreshToken = newRefreshToken;
+  // Set access token (expires in 15 min typically, but we let the server handle expiration)
+  Cookies.set(ACCESS_TOKEN_COOKIE, newAccessToken, {
+    ...COOKIE_OPTIONS,
+    expires: 1, // 1 day
+  });
+  
+  // Set refresh token (longer lived)
+  Cookies.set(REFRESH_TOKEN_COOKIE, newRefreshToken, {
+    ...COOKIE_OPTIONS,
+    expires: 7, // 7 days
+  });
 };
 
 export const clearTokens = () => {
-  accessToken = null;
-  refreshToken = null;
+  Cookies.remove(ACCESS_TOKEN_COOKIE, { path: '/' });
+  Cookies.remove(REFRESH_TOKEN_COOKIE, { path: '/' });
 };
 
 export const getTokens = () => ({
-  accessToken,
-  refreshToken,
+  accessToken: getAccessToken(),
+  refreshToken: getRefreshToken(),
 });
+
+export const hasValidTokens = (): boolean => {
+  return !!getAccessToken() && !!getRefreshToken();
+};
 
 // Auth callback setters
 export const setOnTokenRefreshed = (callback: (accessToken: string, refreshToken: string) => void) => {

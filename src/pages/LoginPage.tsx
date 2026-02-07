@@ -108,8 +108,7 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
-            <p>Demo: admin@dentalclinic.com</p>
-            <p>Password: Admin@123!</p>
+            <p>{t('auth.forgotPassword')}</p>
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ export {
   setTokens, 
   clearTokens, 
   getTokens,
+  hasValidTokens,
   setOnTokenRefreshed,
   setOnAuthError,
   setOnActivityTracked,
