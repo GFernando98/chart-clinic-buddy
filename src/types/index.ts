@@ -150,6 +150,8 @@ export interface Treatment {
   name: string;
   description?: string;
   category: TreatmentCategory;
+  categoryId?: string;
+  categoryName?: string;
   defaultPrice: number;
   estimatedDurationMinutes: number;
   isActive: boolean;
@@ -159,7 +161,7 @@ export interface TreatmentFormData {
   code: string;
   name: string;
   description?: string;
-  category: TreatmentCategory;
+  categoryId: string;
   defaultPrice: number;
   estimatedDurationMinutes: number;
 }

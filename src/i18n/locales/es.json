@@ -323,6 +323,20 @@
     "last7Days": "Últimos 7 días",
     "thisMonth": "Este mes"
   },
+  "settings": {
+    "title": "Configuración",
+    "description": "Administra las configuraciones del sistema",
+    "treatmentCategories": "Categorías de Tratamientos",
+    "newCategory": "Nueva Categoría",
+    "editCategory": "Editar Categoría",
+    "noCategories": "No hay categorías registradas",
+    "noCategoriesDescription": "Crea una categoría para organizar los tratamientos",
+    "categoryNamePlaceholder": "Ej: Preventivo",
+    "categoryDescriptionPlaceholder": "Descripción de la categoría...",
+    "categoryCreated": "Categoría creada exitosamente",
+    "categoryUpdated": "Categoría actualizada exitosamente",
+    "categoryStatusUpdated": "Estado de la categoría actualizado"
+  },
   "validation": {
     "required": "Este campo es requerido",
     "invalidEmail": "Correo electrónico inválido",

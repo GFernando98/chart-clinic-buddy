@@ -11,6 +11,7 @@ import {
   UserCog,
   Scan,
   LogOut,
+  Settings,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -50,6 +51,7 @@ export function AppSidebar() {
     { title: t('nav.doctors'), icon: Stethoscope, path: '/doctors', roles: ['Admin'] },
     { title: t('nav.treatments'), icon: ClipboardList, path: '/treatments', roles: ['Admin'] },
     { title: t('nav.users'), icon: UserCog, path: '/users', roles: ['Admin'] },
+    { title: t('nav.settings'), icon: Settings, path: '/settings', roles: ['Admin'] },
   ];
 
   const filteredNavItems = navItems.filter(item => {

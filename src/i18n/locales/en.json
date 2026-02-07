@@ -323,6 +323,20 @@
     "last7Days": "Last 7 days",
     "thisMonth": "This month"
   },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage system settings",
+    "treatmentCategories": "Treatment Categories",
+    "newCategory": "New Category",
+    "editCategory": "Edit Category",
+    "noCategories": "No categories registered",
+    "noCategoriesDescription": "Create a category to organize treatments",
+    "categoryNamePlaceholder": "E.g: Preventive",
+    "categoryDescriptionPlaceholder": "Category description...",
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryStatusUpdated": "Category status updated"
+  },
   "validation": {
     "required": "This field is required",
     "invalidEmail": "Invalid email",
