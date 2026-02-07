@@ -11,6 +11,7 @@ import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OdontogramPage from "@/pages/OdontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
+import { AppointmentsPage } from "@/pages/appointments";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
@@ -51,7 +52,7 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/appointments" element={<div className="p-4">Appointments Page (Coming Soon)</div>} />
+                <Route path="/appointments" element={<AppointmentsPage />} />
                 <Route
                   path="/doctors"
                   element={
