@@ -7,8 +7,27 @@ import {
 } from '@/types';
 
 // Match API: POST /api/Odontogram/Create
+export interface InitialSurfaceData {
+  surface: 'Oclusal' | 'Mesial' | 'Distal' | 'Vestibular' | 'Lingual' | 'Palatal';
+  condition: string;
+  notes?: string;
+}
+
+export interface InitialToothData {
+  toothNumber: number;
+  condition: string;
+  isPresent: boolean;
+  notes?: string;
+  surfaces?: InitialSurfaceData[];
+}
+
 export interface CreateOdontogramData {
   patientId: string;
+  doctorId?: string;
+  examinationDate?: string;
+  isPediatric: boolean;
+  notes?: string;
+  initialTeethData?: InitialToothData[];
 }
 
 // Match API: PUT /api/Odontogram/UpdateTooth/{toothRecordId}
