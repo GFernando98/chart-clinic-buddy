@@ -119,28 +119,13 @@ export default function OdontogramPage() {
   const handleConditionChange = (toothNumber: number, condition: ToothCondition) => {
     const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
     
-    // Map enum to API string value
-    const conditionMap: Record<ToothCondition, string> = {
-      [ToothCondition.Healthy]: 'Healthy',
-      [ToothCondition.Decayed]: 'Caries',
-      [ToothCondition.Filled]: 'Filled',
-      [ToothCondition.Missing]: 'Missing',
-      [ToothCondition.Extracted]: 'Extracted',
-      [ToothCondition.Crown]: 'Crown',
-      [ToothCondition.Bridge]: 'Bridge',
-      [ToothCondition.Implant]: 'Implant',
-      [ToothCondition.RootCanal]: 'RootCanal',
-      [ToothCondition.Fracture]: 'Fracture',
-      [ToothCondition.Sealant]: 'Sealant',
-      [ToothCondition.Prosthesis]: 'Prosthesis',
-    };
-    
     if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
-      // Update existing record via API
+      // Update existing record via API - send numeric enum values
       updateToothMutation.mutate({
         toothRecordId: toothRecord.id,
         data: {
-          condition: conditionMap[condition],
+          condition: condition as number,
+          isPresent: condition !== ToothCondition.Extracted && condition !== ToothCondition.Missing,
           notes: toothRecord.notes,
         }
       });
@@ -175,37 +160,13 @@ export default function OdontogramPage() {
   const handleSurfaceConditionChange = (toothNumber: number, surface: ToothSurface, condition: ToothCondition) => {
     const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
     
-    // Map enums to API string values
-    const surfaceTypeMap: Record<ToothSurface, string> = {
-      [ToothSurface.Mesial]: 'Mesial',
-      [ToothSurface.Distal]: 'Distal',
-      [ToothSurface.Occlusal]: 'Oclusal',
-      [ToothSurface.Buccal]: 'Vestibular',
-      [ToothSurface.Lingual]: 'Lingual',
-      [ToothSurface.Incisal]: 'Incisal',
-    };
-    
-    const conditionMap: Record<ToothCondition, string> = {
-      [ToothCondition.Healthy]: 'Healthy',
-      [ToothCondition.Decayed]: 'Caries',
-      [ToothCondition.Filled]: 'Filled',
-      [ToothCondition.Missing]: 'Missing',
-      [ToothCondition.Extracted]: 'Extracted',
-      [ToothCondition.Crown]: 'Crown',
-      [ToothCondition.Bridge]: 'Bridge',
-      [ToothCondition.Implant]: 'Implant',
-      [ToothCondition.RootCanal]: 'RootCanal',
-      [ToothCondition.Fracture]: 'Fracture',
-      [ToothCondition.Sealant]: 'Sealant',
-      [ToothCondition.Prosthesis]: 'Prosthesis',
-    };
-    
     if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
+      // Send numeric enum values to API
       addSurfaceMutation.mutate({
         toothRecordId: toothRecord.id,
         data: {
-          surfaceType: surfaceTypeMap[surface],
-          condition: conditionMap[condition],
+          surface: surface as number,
+          condition: condition as number,
         }
       });
     }
