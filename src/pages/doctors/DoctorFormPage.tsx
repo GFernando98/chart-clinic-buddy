@@ -35,7 +35,7 @@ const doctorSchema = z.object({
   specialty: z.string().min(2, 'Especialidad requerida'),
   phone: z.string().min(8, 'Teléfono requerido'),
   email: z.string().email('Email inválido'),
-  userId: z.string().optional(),
+  userId: z.string().min(1, 'Usuario requerido'),
 });
 
 type DoctorFormValues = z.infer<typeof doctorSchema>;
@@ -51,10 +51,6 @@ const specialties = [
   'Estética Dental',
 ];
 
-const emptyToUndefined = (value?: string) => {
-  const v = (value ?? '').trim();
-  return v.length ? v : undefined;
-};
 
 const toApiPayload = (values: DoctorFormValues): DoctorFormData => ({
   firstName: values.firstName,
@@ -63,7 +59,7 @@ const toApiPayload = (values: DoctorFormValues): DoctorFormData => ({
   specialty: values.specialty,
   phone: values.phone,
   email: values.email,
-  userId: emptyToUndefined(values.userId),
+  userId: values.userId,
 });
 
 export default function DoctorFormPage() {
@@ -288,23 +284,14 @@ export default function DoctorFormPage() {
                 name="userId"
                 render={({ field }) => (
                   <FormItem className="max-w-md">
-                    <FormLabel>
-                      {t('doctors.linkedUser')}
-                      <span className="ml-2 text-xs text-muted-foreground font-normal">
-                        ({t('common.optional')})
-                      </span>
-                    </FormLabel>
-                    <Select 
-                      onValueChange={(val) => field.onChange(val === "none" ? "" : val)} 
-                      value={field.value || "none"}
-                    >
+                    <FormLabel>{t('doctors.linkedUser')} *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t('doctors.selectUser')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">({t('doctors.noLinkedUser')})</SelectItem>
                         {doctorUsers.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.fullName} ({user.email})
