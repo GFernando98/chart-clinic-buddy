@@ -294,14 +294,17 @@ export default function DoctorFormPage() {
                         ({t('common.optional')})
                       </span>
                     </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={(val) => field.onChange(val === "none" ? "" : val)} 
+                      value={field.value || "none"}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t('doctors.selectUser')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">({t('doctors.noLinkedUser')})</SelectItem>
+                        <SelectItem value="none">({t('doctors.noLinkedUser')})</SelectItem>
                         {doctorUsers.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.fullName} ({user.email})
