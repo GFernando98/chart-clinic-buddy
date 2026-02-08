@@ -32,14 +32,15 @@ export interface CreateOdontogramData {
 
 // Match API: PUT /api/Odontogram/UpdateTooth/{toothRecordId}
 export interface UpdateToothData {
-  condition: string;
+  condition: number; // ToothCondition enum value
+  isPresent?: boolean;
   notes?: string;
 }
 
 // Match API: POST /api/Odontogram/AddSurface/{toothRecordId}
 export interface AddSurfaceData {
-  surfaceType: string;
-  condition: string;
+  surface: number; // ToothSurface enum value
+  condition: number; // ToothCondition enum value
   notes?: string;
 }
 
