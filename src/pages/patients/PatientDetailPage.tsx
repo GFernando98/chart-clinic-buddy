@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -22,29 +21,20 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { mockPatients, mockOdontograms, mockAppointments } from '@/mocks/data';
-import { Patient, Gender, AppointmentStatus } from '@/types';
+import { mockOdontograms, mockAppointments } from '@/mocks/data';
+import { Gender, AppointmentStatus } from '@/types';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { usePatient } from '@/hooks/usePatients';
 
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  const { data: patient, isLoading: loading, error } = usePatient(id || '');
 
   const dateLocale = i18n.language === 'es' ? es : enUS;
-
-  useEffect(() => {
-    // Simulate API fetch
-    const timer = setTimeout(() => {
-      const found = mockPatients.find((p) => p.id === id);
-      setPatient(found || null);
-      setLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [id]);
 
   const getGenderLabel = (gender: Gender) => {
     switch (gender) {
