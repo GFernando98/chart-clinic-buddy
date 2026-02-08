@@ -342,8 +342,17 @@ export default function OdontogramPage() {
               <CardTitle className="text-lg">
                 {loadingOdontogram ? (
                   <Skeleton className="h-6 w-48" />
-                ) : patientOdontogram ? (
-                  format(new Date(patientOdontogram.examinationDate), 'dd MMMM yyyy', { locale })
+                ) : patientOdontogram?.examinationDate ? (
+                  (() => {
+                    try {
+                      const date = new Date(patientOdontogram.examinationDate);
+                      return isNaN(date.getTime()) 
+                        ? t('odontogram.title')
+                        : format(date, 'dd MMMM yyyy', { locale });
+                    } catch {
+                      return t('odontogram.title');
+                    }
+                  })()
                 ) : (
                   t('odontogram.newChart')
                 )}
