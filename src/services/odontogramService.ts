@@ -34,11 +34,11 @@ export interface AddToothTreatmentData {
 
 export const odontogramService = {
   /**
-   * Get odontogram for a patient
+   * Get all odontograms for a patient
    * GET /api/Odontogram/GetByPatient/{patientId}
    */
-  async getByPatient(patientId: string): Promise<Odontogram> {
-    const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/GetByPatient/${patientId}`);
+  async getByPatient(patientId: string): Promise<Odontogram[]> {
+    const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/Odontogram/GetByPatient/${patientId}`);
     return extractData(response.data);
   },
 

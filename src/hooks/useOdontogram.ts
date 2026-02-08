@@ -9,7 +9,7 @@ export const odontogramKeys = {
   toothTreatments: (toothRecordId: string) => [...odontogramKeys.all, 'treatments', toothRecordId] as const,
 };
 
-export function usePatientOdontogram(patientId: string) {
+export function usePatientOdontograms(patientId: string) {
   return useQuery({
     queryKey: odontogramKeys.byPatient(patientId),
     queryFn: () => odontogramService.getByPatient(patientId),

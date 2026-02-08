@@ -18,7 +18,7 @@ import { es, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { usePatients } from '@/hooks/usePatients';
 import { 
-  usePatientOdontogram, 
+  usePatientOdontograms, 
   useToothTreatments,
   useUpdateTooth,
   useAddSurface,
@@ -39,14 +39,19 @@ export default function OdontogramPage() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     searchParams.get('patientId') || null
   );
+  const [selectedOdontogramId, setSelectedOdontogramId] = useState<string | null>(null);
   const [isPediatric, setIsPediatric] = useState(false);
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [teethRecords, setTeethRecords] = useState<ToothRecord[]>([]);
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
   
-  // Fetch patient odontogram (single odontogram per patient based on API)
-  const { data: patientOdontogram, isLoading: loadingOdontogram } = usePatientOdontogram(selectedPatientId || '');
+  // Fetch all odontograms for the patient
+  const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
+  
+  // Get the selected odontogram
+  const selectedOdontogram = patientOdontograms.find(o => o.id === selectedOdontogramId) || patientOdontograms[0] || null;
+  
   
   // Get selected tooth record
   const selectedToothRecord = selectedTooth
@@ -73,12 +78,19 @@ export default function OdontogramPage() {
   
   // Load teeth records when odontogram is loaded
   useEffect(() => {
-    if (patientOdontogram?.teethRecords) {
-      setTeethRecords(patientOdontogram.teethRecords);
+    if (selectedOdontogram?.teethRecords) {
+      setTeethRecords(selectedOdontogram.teethRecords);
     } else {
       setTeethRecords([]);
     }
-  }, [patientOdontogram]);
+  }, [selectedOdontogram]);
+  
+  // Auto-select first odontogram when list changes
+  useEffect(() => {
+    if (patientOdontograms.length > 0 && !selectedOdontogramId) {
+      setSelectedOdontogramId(patientOdontograms[0].id);
+    }
+  }, [patientOdontograms, selectedOdontogramId]);
   
   const handleToothClick = (toothNumber: number) => {
     setSelectedTooth(toothNumber === selectedTooth ? null : toothNumber);
@@ -285,6 +297,7 @@ export default function OdontogramPage() {
             value={selectedPatientId || ''}
             onValueChange={(value) => {
               setSelectedPatientId(value);
+              setSelectedOdontogramId(null);
               setSelectedTooth(null);
               setTeethRecords([]);
             }}
@@ -302,6 +315,38 @@ export default function OdontogramPage() {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Odontogram Selector */}
+          {selectedPatientId && patientOdontograms.length > 0 && (
+            <Select
+              value={selectedOdontogramId || ''}
+              onValueChange={(value) => {
+                setSelectedOdontogramId(value);
+                setSelectedTooth(null);
+              }}
+              disabled={loadingOdontograms}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={loadingOdontograms ? 'Cargando...' : 'Seleccionar fecha'} />
+              </SelectTrigger>
+              <SelectContent>
+                {patientOdontograms.map((odontogram) => (
+                  <SelectItem key={odontogram.id} value={odontogram.id}>
+                    {odontogram.examinationDate ? (() => {
+                      try {
+                        const date = new Date(odontogram.examinationDate);
+                        return isNaN(date.getTime()) 
+                          ? `Odontograma ${odontogram.id.slice(0, 8)}`
+                          : format(date, 'dd/MM/yyyy', { locale });
+                      } catch {
+                        return `Odontograma ${odontogram.id.slice(0, 8)}`;
+                      }
+                    })() : `Odontograma ${odontogram.id.slice(0, 8)}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           
           {/* Adult/Pediatric Toggle */}
           <div className="flex items-center space-x-2 px-3 py-2 bg-muted rounded-lg">
@@ -340,12 +385,12 @@ export default function OdontogramPage() {
           <Card className="flex-1 border-0 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">
-                {loadingOdontogram ? (
+                {loadingOdontograms ? (
                   <Skeleton className="h-6 w-48" />
-                ) : patientOdontogram?.examinationDate ? (
+                ) : selectedOdontogram?.examinationDate ? (
                   (() => {
                     try {
-                      const date = new Date(patientOdontogram.examinationDate);
+                      const date = new Date(selectedOdontogram.examinationDate);
                       return isNaN(date.getTime()) 
                         ? t('odontogram.title')
                         : format(date, 'dd MMMM yyyy', { locale });
@@ -357,12 +402,12 @@ export default function OdontogramPage() {
                   t('odontogram.newChart')
                 )}
               </CardTitle>
-              {patientOdontogram && (
+              {selectedOdontogram && (
                 <CardDescription>Odontograma del paciente</CardDescription>
               )}
             </CardHeader>
             <CardContent>
-              {loadingOdontogram ? (
+              {loadingOdontograms ? (
                 <div className="flex items-center justify-center py-16">
                   <Skeleton className="h-64 w-full" />
                 </div>
