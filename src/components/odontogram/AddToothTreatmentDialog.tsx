@@ -25,22 +25,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useTreatments } from '@/hooks/useTreatments';
-import { useDoctors } from '@/hooks/useDoctors';
 import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   treatmentId: z.string().min(1, 'Seleccione un tratamiento'),
-  doctorId: z.string().min(1, 'Seleccione un doctor'),
-  performedDate: z.string().min(1, 'Ingrese la fecha'),
-  price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
-  surfacesAffected: z.string().optional(),
+  status: z.enum(['Planned', 'InProgress', 'Completed']),
+  performedDate: z.string().optional(),
   notes: z.string().optional(),
-  isCompleted: z.boolean().default(true),
 });
 
 export type ToothTreatmentFormData = z.infer<typeof formSchema>;
@@ -62,32 +57,16 @@ export function AddToothTreatmentDialog({
 }: AddToothTreatmentDialogProps) {
   const { t } = useTranslation();
   const { data: treatments = [], isLoading: loadingTreatments } = useTreatments();
-  const { data: doctors = [], isLoading: loadingDoctors } = useDoctors();
 
   const form = useForm<ToothTreatmentFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       treatmentId: '',
-      doctorId: '',
+      status: 'Planned',
       performedDate: format(new Date(), 'yyyy-MM-dd'),
-      price: 0,
-      surfacesAffected: '',
       notes: '',
-      isCompleted: true,
     },
   });
-
-  const selectedTreatmentId = form.watch('treatmentId');
-  
-  // Auto-fill price when treatment is selected
-  React.useEffect(() => {
-    if (selectedTreatmentId) {
-      const treatment = treatments.find(t => t.id === selectedTreatmentId);
-      if (treatment) {
-        form.setValue('price', treatment.defaultPrice);
-      }
-    }
-  }, [selectedTreatmentId, treatments, form]);
 
   const handleSubmit = (data: ToothTreatmentFormData) => {
     onSubmit(data);
@@ -102,7 +81,7 @@ export function AddToothTreatmentDialog({
             {t('odontogram.addTreatment')} - {t('odontogram.tooth')} #{toothNumber}
           </DialogTitle>
           <DialogDescription>
-            Registre un tratamiento realizado en este diente
+            Registre un tratamiento realizado o planificado en este diente
           </DialogDescription>
         </DialogHeader>
 
@@ -143,29 +122,26 @@ export function AddToothTreatmentDialog({
               )}
             />
 
-            {/* Doctor Selection */}
+            {/* Status Selection */}
             <FormField
               control={form.control}
-              name="doctorId"
+              name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('doctors.title')}</FormLabel>
+                  <FormLabel>Estado</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     value={field.value}
-                    disabled={loadingDoctors}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un doctor" />
+                        <SelectValue placeholder="Seleccione el estado" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {doctors.map((doctor) => (
-                        <SelectItem key={doctor.id} value={doctor.id}>
-                          Dr. {doctor.firstName} {doctor.lastName}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="Planned">Planificado</SelectItem>
+                      <SelectItem value="InProgress">En progreso</SelectItem>
+                      <SelectItem value="Completed">Completado</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -173,60 +149,15 @@ export function AddToothTreatmentDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Date */}
-              <FormField
-                control={form.control}
-                name="performedDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.date')}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Price */}
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('treatments.price')}</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                          L
-                        </span>
-                        <Input 
-                          type="number" 
-                          step="0.01"
-                          className="pl-8"
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Surfaces Affected */}
+            {/* Performed Date */}
             <FormField
               control={form.control}
-              name="surfacesAffected"
+              name="performedDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Superficies afectadas (opcional)</FormLabel>
+                  <FormLabel>{t('common.date')} (opcional)</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Ej: Mesial, Oclusal" 
-                      {...field} 
-                    />
+                    <Input type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -242,34 +173,13 @@ export function AddToothTreatmentDialog({
                   <FormLabel>{t('common.notes')} (opcional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Observaciones adicionales..."
+                      placeholder="Ej: Resina compuesta, observaciones..."
                       className="resize-none"
                       rows={2}
                       {...field} 
                     />
                   </FormControl>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Completed Checkbox */}
-            <FormField
-              control={form.control}
-              name="isCompleted"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Tratamiento completado
-                    </FormLabel>
-                  </div>
                 </FormItem>
               )}
             />

@@ -3,53 +3,48 @@ import {
   ApiResponse, 
   Odontogram, 
   ToothRecord, 
-  ToothCondition, 
-  ToothSurface,
   ToothTreatmentRecord 
 } from '@/types';
 
+// Match API: POST /api/Odontogram/Create
 export interface CreateOdontogramData {
   patientId: string;
-  doctorId: string;
-  examinationDate: string;
-  notes?: string;
-  isPediatric: boolean;
 }
 
+// Match API: PUT /api/Odontogram/UpdateTooth/{toothRecordId}
 export interface UpdateToothData {
-  condition: ToothCondition;
-  isPresent: boolean;
+  condition: string;
   notes?: string;
 }
 
+// Match API: POST /api/Odontogram/AddSurface/{toothRecordId}
 export interface AddSurfaceData {
-  surface: ToothSurface;
-  condition: ToothCondition;
+  surfaceType: string;
+  condition: string;
   notes?: string;
 }
 
+// Match API: POST /api/Odontogram/AddTreatment/{toothRecordId}
 export interface AddToothTreatmentData {
   treatmentId: string;
-  doctorId: string;
-  appointmentId?: string;
-  performedDate: string;
-  price: number;
+  status: 'Planned' | 'InProgress' | 'Completed';
+  performedDate?: string;
   notes?: string;
-  surfacesAffected?: string;
-  isCompleted: boolean;
 }
 
 export const odontogramService = {
   /**
-   * Get all odontograms for a patient
+   * Get odontogram for a patient
+   * GET /api/Odontogram/GetByPatient/{patientId}
    */
-  async getByPatient(patientId: string): Promise<Odontogram[]> {
-    const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/Odontogram/GetByPatient/${patientId}`);
+  async getByPatient(patientId: string): Promise<Odontogram> {
+    const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/GetByPatient/${patientId}`);
     return extractData(response.data);
   },
 
   /**
-   * Get full odontogram by ID with all teeth records
+   * Get odontogram by ID
+   * GET /api/Odontogram/GetById/{id}
    */
   async getById(id: string): Promise<Odontogram> {
     const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/GetById/${id}`);
@@ -58,6 +53,7 @@ export const odontogramService = {
 
   /**
    * Create a new odontogram for a patient
+   * POST /api/Odontogram/Create
    */
   async create(data: CreateOdontogramData): Promise<Odontogram> {
     const response = await apiClient.post<ApiResponse<Odontogram>>('/Odontogram/Create', data);
@@ -66,6 +62,7 @@ export const odontogramService = {
 
   /**
    * Update a tooth record's condition
+   * PUT /api/Odontogram/UpdateTooth/{toothRecordId}
    */
   async updateTooth(toothRecordId: string, data: UpdateToothData): Promise<ToothRecord> {
     const response = await apiClient.put<ApiResponse<ToothRecord>>(`/Odontogram/UpdateTooth/${toothRecordId}`, data);
@@ -73,26 +70,29 @@ export const odontogramService = {
   },
 
   /**
-   * Add or update a surface condition on a tooth
+   * Add a surface condition to a tooth
+   * POST /api/Odontogram/AddSurface/{toothRecordId}
    */
   async addSurface(toothRecordId: string, data: AddSurfaceData): Promise<ToothRecord> {
-    const response = await apiClient.post<ApiResponse<ToothRecord>>(`/Odontogram/AddSurface/${toothRecordId}/surface`, data);
+    const response = await apiClient.post<ApiResponse<ToothRecord>>(`/Odontogram/AddSurface/${toothRecordId}`, data);
     return extractData(response.data);
   },
 
   /**
-   * Record a treatment on a tooth
+   * Add a treatment to a tooth
+   * POST /api/Odontogram/AddTreatment/{toothRecordId}
    */
   async addTreatment(toothRecordId: string, data: AddToothTreatmentData): Promise<ToothTreatmentRecord> {
-    const response = await apiClient.post<ApiResponse<ToothTreatmentRecord>>(`/Odontogram/AddTreatment/${toothRecordId}/treatment`, data);
+    const response = await apiClient.post<ApiResponse<ToothTreatmentRecord>>(`/Odontogram/AddTreatment/${toothRecordId}`, data);
     return extractData(response.data);
   },
 
   /**
    * Get treatment history for a specific tooth
+   * GET /api/Odontogram/GetToothTreatments/{toothRecordId}
    */
   async getToothTreatments(toothRecordId: string): Promise<ToothTreatmentRecord[]> {
-    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetToothTreatments/${toothRecordId}/treatments`);
+    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetToothTreatments/${toothRecordId}`);
     return extractData(response.data);
   },
 };

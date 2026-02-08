@@ -12,14 +12,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Printer, History, User } from 'lucide-react';
+import { Plus, Printer, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { usePatients } from '@/hooks/usePatients';
 import { 
-  usePatientOdontograms, 
-  useOdontogram, 
+  usePatientOdontogram, 
   useToothTreatments,
   useUpdateTooth,
   useAddSurface,
@@ -40,18 +39,14 @@ export default function OdontogramPage() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     searchParams.get('patientId') || null
   );
-  const [selectedOdontogramId, setSelectedOdontogramId] = useState<string | null>(null);
   const [isPediatric, setIsPediatric] = useState(false);
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [teethRecords, setTeethRecords] = useState<ToothRecord[]>([]);
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
   
-  // Fetch patient odontograms
-  const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
-  
-  // Fetch selected odontogram details
-  const { data: currentOdontogram, isLoading: loadingCurrentOdontogram } = useOdontogram(selectedOdontogramId || '');
+  // Fetch patient odontogram (single odontogram per patient based on API)
+  const { data: patientOdontogram, isLoading: loadingOdontogram } = usePatientOdontogram(selectedPatientId || '');
   
   // Get selected tooth record
   const selectedToothRecord = selectedTooth
@@ -76,22 +71,14 @@ export default function OdontogramPage() {
   
   const selectedPatient = patients.find(p => p.id === selectedPatientId);
   
-  // Auto-select most recent odontogram when patient changes
-  useEffect(() => {
-    if (patientOdontograms.length > 0 && !selectedOdontogramId) {
-      const mostRecent = [...patientOdontograms].sort(
-        (a, b) => new Date(b.examinationDate).getTime() - new Date(a.examinationDate).getTime()
-      )[0];
-      setSelectedOdontogramId(mostRecent.id);
-    }
-  }, [patientOdontograms, selectedOdontogramId]);
-  
   // Load teeth records when odontogram is loaded
   useEffect(() => {
-    if (currentOdontogram?.teethRecords) {
-      setTeethRecords(currentOdontogram.teethRecords);
+    if (patientOdontogram?.teethRecords) {
+      setTeethRecords(patientOdontogram.teethRecords);
+    } else {
+      setTeethRecords([]);
     }
-  }, [currentOdontogram]);
+  }, [patientOdontogram]);
   
   const handleToothClick = (toothNumber: number) => {
     setSelectedTooth(toothNumber === selectedTooth ? null : toothNumber);
@@ -106,13 +93,28 @@ export default function OdontogramPage() {
   const handleConditionChange = (toothNumber: number, condition: ToothCondition) => {
     const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
     
+    // Map enum to API string value
+    const conditionMap: Record<ToothCondition, string> = {
+      [ToothCondition.Healthy]: 'Healthy',
+      [ToothCondition.Decayed]: 'Caries',
+      [ToothCondition.Filled]: 'Filled',
+      [ToothCondition.Missing]: 'Missing',
+      [ToothCondition.Extracted]: 'Extracted',
+      [ToothCondition.Crown]: 'Crown',
+      [ToothCondition.Bridge]: 'Bridge',
+      [ToothCondition.Implant]: 'Implant',
+      [ToothCondition.RootCanal]: 'RootCanal',
+      [ToothCondition.Fracture]: 'Fracture',
+      [ToothCondition.Sealant]: 'Sealant',
+      [ToothCondition.Prosthesis]: 'Prosthesis',
+    };
+    
     if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
       // Update existing record via API
       updateToothMutation.mutate({
         toothRecordId: toothRecord.id,
         data: {
-          condition,
-          isPresent: condition !== ToothCondition.Extracted && condition !== ToothCondition.Missing,
+          condition: conditionMap[condition],
           notes: toothRecord.notes,
         }
       });
@@ -147,13 +149,37 @@ export default function OdontogramPage() {
   const handleSurfaceConditionChange = (toothNumber: number, surface: ToothSurface, condition: ToothCondition) => {
     const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
     
+    // Map enums to API string values
+    const surfaceTypeMap: Record<ToothSurface, string> = {
+      [ToothSurface.Mesial]: 'Mesial',
+      [ToothSurface.Distal]: 'Distal',
+      [ToothSurface.Occlusal]: 'Oclusal',
+      [ToothSurface.Buccal]: 'Vestibular',
+      [ToothSurface.Lingual]: 'Lingual',
+      [ToothSurface.Incisal]: 'Incisal',
+    };
+    
+    const conditionMap: Record<ToothCondition, string> = {
+      [ToothCondition.Healthy]: 'Healthy',
+      [ToothCondition.Decayed]: 'Caries',
+      [ToothCondition.Filled]: 'Filled',
+      [ToothCondition.Missing]: 'Missing',
+      [ToothCondition.Extracted]: 'Extracted',
+      [ToothCondition.Crown]: 'Crown',
+      [ToothCondition.Bridge]: 'Bridge',
+      [ToothCondition.Implant]: 'Implant',
+      [ToothCondition.RootCanal]: 'RootCanal',
+      [ToothCondition.Fracture]: 'Fracture',
+      [ToothCondition.Sealant]: 'Sealant',
+      [ToothCondition.Prosthesis]: 'Prosthesis',
+    };
+    
     if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
-      // Update via API
       addSurfaceMutation.mutate({
         toothRecordId: toothRecord.id,
         data: {
-          surface,
-          condition,
+          surfaceType: surfaceTypeMap[surface],
+          condition: conditionMap[condition],
         }
       });
     }
@@ -208,12 +234,9 @@ export default function OdontogramPage() {
         toothRecordId: toothRecord.id,
         data: {
           treatmentId: data.treatmentId,
-          doctorId: data.doctorId,
+          status: data.status,
           performedDate: data.performedDate,
-          price: data.price,
           notes: data.notes,
-          surfacesAffected: data.surfacesAffected,
-          isCompleted: data.isCompleted,
         }
       }, {
         onSuccess: () => {
@@ -233,10 +256,8 @@ export default function OdontogramPage() {
   const handleNewOdontogram = () => {
     if (!selectedPatientId) return;
     
-    // For now, we'd need a doctor selection - using first available doctor would be a placeholder
-    toast({
-      title: t('odontogram.newChart'),
-      description: 'Para crear un nuevo odontograma, seleccione el doctor que realiza el examen',
+    createOdontogramMutation.mutate({
+      patientId: selectedPatientId,
     });
   };
   
@@ -264,7 +285,6 @@ export default function OdontogramPage() {
             value={selectedPatientId || ''}
             onValueChange={(value) => {
               setSelectedPatientId(value);
-              setSelectedOdontogramId(null);
               setSelectedTooth(null);
               setTeethRecords([]);
             }}
@@ -282,33 +302,6 @@ export default function OdontogramPage() {
               ))}
             </SelectContent>
           </Select>
-          
-          {/* Odontogram History Selector */}
-          {selectedPatientId && (
-            <Select
-              value={selectedOdontogramId || ''}
-              onValueChange={setSelectedOdontogramId}
-              disabled={loadingOdontograms}
-            >
-              <SelectTrigger className="w-[180px]">
-                <History className="w-4 h-4 mr-2" />
-                <SelectValue placeholder={loadingOdontograms ? 'Cargando...' : t('odontogram.selectOdontogram')} />
-              </SelectTrigger>
-              <SelectContent>
-                {patientOdontograms.length === 0 ? (
-                  <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                    Sin odontogramas
-                  </div>
-                ) : (
-                  patientOdontograms.map((odontogram) => (
-                    <SelectItem key={odontogram.id} value={odontogram.id}>
-                      {format(new Date(odontogram.examinationDate), 'dd/MM/yyyy', { locale })}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
           
           {/* Adult/Pediatric Toggle */}
           <div className="flex items-center space-x-2 px-3 py-2 bg-muted rounded-lg">
@@ -330,7 +323,10 @@ export default function OdontogramPage() {
             <Printer className="w-4 h-4" />
           </Button>
           
-          <Button onClick={handleNewOdontogram} disabled={!selectedPatientId}>
+          <Button 
+            onClick={handleNewOdontogram} 
+            disabled={!selectedPatientId || createOdontogramMutation.isPending}
+          >
             <Plus className="w-4 h-4 mr-2" />
             {t('odontogram.newChart')}
           </Button>
@@ -344,20 +340,20 @@ export default function OdontogramPage() {
           <Card className="flex-1 border-0 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">
-                {loadingCurrentOdontogram ? (
+                {loadingOdontogram ? (
                   <Skeleton className="h-6 w-48" />
-                ) : currentOdontogram ? (
-                  format(new Date(currentOdontogram.examinationDate), 'dd MMMM yyyy', { locale })
+                ) : patientOdontogram ? (
+                  format(new Date(patientOdontogram.examinationDate), 'dd MMMM yyyy', { locale })
                 ) : (
                   t('odontogram.newChart')
                 )}
               </CardTitle>
-              {currentOdontogram?.notes && (
-                <CardDescription>{currentOdontogram.notes}</CardDescription>
+              {patientOdontogram && (
+                <CardDescription>Odontograma del paciente</CardDescription>
               )}
             </CardHeader>
             <CardContent>
-              {loadingCurrentOdontogram ? (
+              {loadingOdontogram ? (
                 <div className="flex items-center justify-center py-16">
                   <Skeleton className="h-64 w-full" />
                 </div>
