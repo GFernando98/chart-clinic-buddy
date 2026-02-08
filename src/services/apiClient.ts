@@ -143,7 +143,24 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Handle other errors
+    // Handle other errors - extract meaningful message from API response
+    if (error.response?.data) {
+      const apiError = error.response.data;
+      let errorMessage = 'An error occurred';
+      
+      if (apiError.message) {
+        errorMessage = apiError.message;
+      }
+      if (apiError.errors?.length) {
+        errorMessage = apiError.errors.join(', ');
+      }
+      
+      const enhancedError = new Error(errorMessage);
+      (enhancedError as any).originalError = error;
+      (enhancedError as any).statusCode = error.response.status;
+      return Promise.reject(enhancedError);
+    }
+
     return Promise.reject(error);
   }
 );
