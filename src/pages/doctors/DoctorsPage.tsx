@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Plus,
@@ -38,15 +39,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Doctor } from '@/types';
-import { DoctorFormDialog } from './components/DoctorFormDialog';
 import { DoctorDetailDialog } from './components/DoctorDetailDialog';
-import { useDoctors, useCreateDoctor, useUpdateDoctor } from '@/hooks/useDoctors';
-import { useToast } from '@/hooks/use-toast';
+import { useDoctors, useUpdateDoctor } from '@/hooks/useDoctors';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const DoctorsPage = () => {
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   // State
@@ -54,13 +53,10 @@ export const DoctorsPage = () => {
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
 
   // Fetch doctors from API
   const { data: doctors = [], isLoading, error } = useDoctors();
-  const createDoctor = useCreateDoctor();
   const updateDoctor = useUpdateDoctor();
 
   // Get unique specialties
@@ -101,28 +97,12 @@ export const DoctorsPage = () => {
   };
 
   const handleEditDoctor = (doctor: Doctor) => {
-    setEditingDoctor(doctor);
     setIsDetailOpen(false);
-    setIsFormOpen(true);
+    navigate(`/doctors/${doctor.id}/edit`);
   };
 
   const handleNewDoctor = () => {
-    setEditingDoctor(null);
-    setIsFormOpen(true);
-  };
-
-  const handleSaveDoctor = async (doctorData: Partial<Doctor>) => {
-    try {
-      if (editingDoctor) {
-        await updateDoctor.mutateAsync({ id: editingDoctor.id, data: doctorData as any });
-      } else {
-        await createDoctor.mutateAsync(doctorData as any);
-      }
-      setEditingDoctor(null);
-      setIsFormOpen(false);
-    } catch {
-      // Error is handled by the mutation's onError callback
-    }
+    navigate('/doctors/new');
   };
 
   const handleToggleActive = (doctor: Doctor) => {
@@ -394,14 +374,7 @@ export const DoctorsPage = () => {
         </div>
       )}
 
-      {/* Dialogs */}
-      <DoctorFormDialog
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        doctor={editingDoctor}
-        onSave={handleSaveDoctor}
-        isSaving={createDoctor.isPending || updateDoctor.isPending}
-      />
+      {/* Detail Dialog */}
 
       <DoctorDetailDialog
         open={isDetailOpen}
