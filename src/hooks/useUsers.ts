@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { userService } from '@/services';
+import { userService, CreateUserData } from '@/services/userService';
 import { User, UserRole } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -12,6 +12,29 @@ export function useUsers() {
   return useQuery({
     queryKey: userKeys.lists(),
     queryFn: () => userService.getAll(),
+  });
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (data: CreateUserData) => userService.create(data),
+    onSuccess: (createdUser) => {
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+      toast({
+        title: 'Usuario creado',
+        description: `${createdUser.fullName} ha sido creado exitosamente`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error al crear usuario',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
   });
 }
 

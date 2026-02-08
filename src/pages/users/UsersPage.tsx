@@ -31,7 +31,8 @@ import { User, UserRole } from '@/types';
 import { UserRoleBadge } from './components/UserRoleBadge';
 import { UserFormDialog } from './components/UserFormDialog';
 import { UserDetailDialog } from './components/UserDetailDialog';
-import { useUsers, useToggleUserActive } from '@/hooks/useUsers';
+import { useUsers, useToggleUserActive, useCreateUser } from '@/hooks/useUsers';
+import type { CreateUserData } from '@/services/userService';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -52,6 +53,7 @@ export const UsersPage = () => {
   // Fetch users from API
   const { data: users = [], isLoading, error } = useUsers();
   const toggleActive = useToggleUserActive();
+  const createUser = useCreateUser();
 
   // Filtered users
   const filteredUsers = useMemo(() => {
@@ -94,18 +96,25 @@ export const UsersPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveUser = async (userData: Partial<User>) => {
-    try {
-      // Note: User creation/update would need a dedicated API endpoint
-      toast({
-        title: editingUser ? t('success.updated') : t('success.created'),
-        description: `${userData.fullName}`,
-      });
+  const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
+    if (editingUser) {
+      // TODO: Implement update user API when available
       setEditingUser(null);
       setIsFormOpen(false);
-    } catch {
-      // Error is handled by the mutation's onError callback
+      return;
     }
+
+    // Create new user
+    const createData: CreateUserData = {
+      email: userData.email!,
+      firstName: userData.firstName!,
+      lastName: userData.lastName!,
+      password: userData.password!,
+      roles: userData.roles!,
+    };
+
+    await createUser.mutateAsync(createData);
+    setIsFormOpen(false);
   };
 
   const handleToggleActive = (user: User) => {
@@ -338,7 +347,7 @@ export const UsersPage = () => {
         onOpenChange={setIsFormOpen}
         user={editingUser}
         onSave={handleSaveUser}
-        isSaving={false}
+        isSaving={createUser.isPending}
       />
 
       <UserDetailDialog
