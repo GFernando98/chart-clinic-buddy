@@ -441,6 +441,38 @@ export default function OdontogramPage() {
                 <div className="flex items-center justify-center py-16">
                   <Skeleton className="h-64 w-full" />
                 </div>
+              ) : !selectedOdontogram ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="text-muted-foreground mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="64"
+                      height="64"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mx-auto opacity-50"
+                    >
+                      <path d="M12 2c2 0 3.5 1.5 3.5 3.5 0 1-.5 2-1.5 3L12 12l-2-3.5c-1-1-1.5-2-1.5-3C8.5 3.5 10 2 12 2z" />
+                      <path d="M12 12v10" />
+                      <path d="M8 22h8" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">No hay odontograma</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Este paciente no tiene un odontograma registrado. Crea uno nuevo para comenzar.
+                  </p>
+                  <Button 
+                    onClick={handleNewOdontogramClick}
+                    disabled={createOdontogramMutation.isPending}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Crear Odontograma
+                  </Button>
+                </div>
               ) : (
                 <>
                   <DentalChart
