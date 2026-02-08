@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,10 +30,8 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { mockPatients } from '@/mocks/data';
-import { Patient, Gender } from '@/types';
-import { ChevronDown } from 'lucide-react';
+import { useCreatePatient, usePatient, useUpdatePatient } from '@/hooks/usePatients';
+import { Gender, type PatientFormData as ApiPatientFormData } from '@/types';
 
 const patientSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -55,23 +53,56 @@ const patientSchema = z.object({
   notes: z.string().optional(),
 });
 
-type PatientFormData = z.infer<typeof patientSchema>;
+type PatientFormValues = z.infer<typeof patientSchema>;
+
+const emptyToUndefined = (value?: string) => {
+  const v = (value ?? '').trim();
+  return v.length ? v : undefined;
+};
+
+const toApiPayload = (values: PatientFormValues): ApiPatientFormData => ({
+  firstName: values.firstName,
+  lastName: values.lastName,
+  identityNumber: values.identityNumber,
+  dateOfBirth: values.dateOfBirth,
+  gender: values.gender,
+  phone: values.phone,
+  whatsAppNumber: emptyToUndefined(values.whatsAppNumber),
+  email: emptyToUndefined(values.email),
+  address: emptyToUndefined(values.address),
+  city: emptyToUndefined(values.city),
+  occupation: emptyToUndefined(values.occupation),
+  emergencyContactName: emptyToUndefined(values.emergencyContactName),
+  emergencyContactPhone: emptyToUndefined(values.emergencyContactPhone),
+  allergies: emptyToUndefined(values.allergies),
+  medicalConditions: emptyToUndefined(values.medicalConditions),
+  currentMedications: emptyToUndefined(values.currentMedications),
+  notes: emptyToUndefined(values.notes),
+});
 
 export default function PatientFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { toast } = useToast();
   const isEditing = !!id && id !== 'new';
 
-  const [loading, setLoading] = useState(isEditing);
-  const [saving, setSaving] = useState(false);
+  const createPatient = useCreatePatient();
+  const updatePatient = useUpdatePatient();
+  const {
+    data: existingPatient,
+    isLoading: isPatientLoading,
+    error: patientError,
+  } = usePatient(id ?? '');
+
   const [personalOpen, setPersonalOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [medicalOpen, setMedicalOpen] = useState(false);
 
-  const form = useForm<PatientFormData>({
+  const saving = createPatient.isPending || updatePatient.isPending;
+  const loading = isEditing ? isPatientLoading : false;
+
+  const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
       firstName: '',
@@ -95,51 +126,58 @@ export default function PatientFormPage() {
   });
 
   useEffect(() => {
-    if (isEditing) {
-      const timer = setTimeout(() => {
-        const patient = mockPatients.find((p) => p.id === id);
-        if (patient) {
-          form.reset({
-            firstName: patient.firstName,
-            lastName: patient.lastName,
-            identityNumber: patient.identityNumber,
-            dateOfBirth: patient.dateOfBirth,
-            gender: patient.gender,
-            phone: patient.phone,
-            whatsAppNumber: patient.whatsAppNumber || '',
-            email: patient.email || '',
-            address: patient.address || '',
-            city: patient.city || '',
-            occupation: patient.occupation || '',
-            emergencyContactName: patient.emergencyContactName || '',
-            emergencyContactPhone: patient.emergencyContactPhone || '',
-            allergies: patient.allergies || '',
-            medicalConditions: patient.medicalConditions || '',
-            currentMedications: patient.currentMedications || '',
-            notes: patient.notes || '',
-          });
-        }
-        setLoading(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [id, isEditing, form]);
+    if (!isEditing || !existingPatient) return;
 
-  const onSubmit = async (data: PatientFormData) => {
-    setSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast({
-      title: isEditing ? t('patients.updateSuccess') : t('patients.createSuccess'),
-      description: isEditing
-        ? t('patients.updateSuccessMessage', { name: `${data.firstName} ${data.lastName}` })
-        : t('patients.createSuccessMessage', { name: `${data.firstName} ${data.lastName}` }),
+    form.reset({
+      firstName: existingPatient.firstName,
+      lastName: existingPatient.lastName,
+      identityNumber: existingPatient.identityNumber,
+      dateOfBirth: existingPatient.dateOfBirth,
+      gender: existingPatient.gender,
+      phone: existingPatient.phone,
+      whatsAppNumber: existingPatient.whatsAppNumber || '',
+      email: existingPatient.email || '',
+      address: existingPatient.address || '',
+      city: existingPatient.city || '',
+      occupation: existingPatient.occupation || '',
+      emergencyContactName: existingPatient.emergencyContactName || '',
+      emergencyContactPhone: existingPatient.emergencyContactPhone || '',
+      allergies: existingPatient.allergies || '',
+      medicalConditions: existingPatient.medicalConditions || '',
+      currentMedications: existingPatient.currentMedications || '',
+      notes: existingPatient.notes || '',
     });
-    
-    setSaving(false);
-    navigate('/patients');
+  }, [isEditing, existingPatient, form]);
+
+  const onSubmit = async (values: PatientFormValues) => {
+    const payload = toApiPayload(values);
+
+    try {
+      if (isEditing && id) {
+        await updatePatient.mutateAsync({ id, data: payload });
+      } else {
+        await createPatient.mutateAsync(payload);
+      }
+
+      // Solo salir de la pantalla si el backend respondió OK
+      navigate('/patients');
+    } catch {
+      // El hook ya muestra el toast de error; mantenemos la pantalla abierta
+    }
   };
+
+  if (patientError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] text-center">
+        <h2 className="text-lg font-semibold">{t('common.error')}</h2>
+        <p className="text-muted-foreground">{(patientError as Error).message}</p>
+        <Button variant="outline" className="mt-4" onClick={() => navigate('/patients')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t('patients.backToList')}
+        </Button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
