@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,8 @@ interface TreatmentCategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category?: TreatmentCategoryDto | null;
-  onSave: (data: TreatmentCategoryFormData) => void;
+  onSave: (data: TreatmentCategoryFormData) => Promise<void>;
+  isSaving?: boolean;
 }
 
 export const TreatmentCategoryFormDialog = ({
@@ -42,6 +44,7 @@ export const TreatmentCategoryFormDialog = ({
   onOpenChange,
   category,
   onSave,
+  isSaving = false,
 }: TreatmentCategoryFormDialogProps) => {
   const { t } = useTranslation();
   const isEditing = !!category;
@@ -70,8 +73,8 @@ export const TreatmentCategoryFormDialog = ({
     }
   }, [open, category, form]);
 
-  const onSubmit = (values: CategoryFormValues) => {
-    onSave({
+  const onSubmit = async (values: CategoryFormValues) => {
+    await onSave({
       name: values.name,
       description: values.description || undefined,
     });
@@ -127,10 +130,13 @@ export const TreatmentCategoryFormDialog = ({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit">{t('common.save')}</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t('common.save')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

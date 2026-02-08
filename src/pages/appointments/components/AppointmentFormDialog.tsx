@@ -59,7 +59,8 @@ interface AppointmentFormDialogProps {
   appointment?: Appointment | null;
   defaultDate?: Date;
   defaultTime?: string;
-  onSave: (data: Partial<Appointment>) => void;
+  onSave: (data: Partial<Appointment>) => Promise<void>;
+  isSaving?: boolean;
 }
 
 const timeSlots = Array.from({ length: 21 }, (_, i) => {
@@ -75,6 +76,7 @@ export function AppointmentFormDialog({
   defaultDate,
   defaultTime,
   onSave,
+  isSaving = false,
 }: AppointmentFormDialogProps) {
   const { t, i18n } = useTranslation();
   const isEditing = !!appointment;
@@ -131,7 +133,7 @@ export function AppointmentFormDialog({
     return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
   }
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const patient = patients.find(p => p.id === data.patientId);
     const doctor = doctors.find(d => d.id === data.doctorId);
 
@@ -144,7 +146,7 @@ export function AppointmentFormDialog({
     const scheduledEndDate = new Date(data.date);
     scheduledEndDate.setHours(endHour, endMinute, 0, 0);
 
-    onSave({
+    await onSave({
       id: appointment?.id,
       patientId: data.patientId,
       patientName: patient?.fullName || '',
@@ -155,8 +157,6 @@ export function AppointmentFormDialog({
       reason: data.reason,
       notes: data.notes,
     });
-
-    onOpenChange(false);
   };
 
   const isLoadingData = patientsLoading || doctorsLoading;
@@ -360,12 +360,12 @@ export function AppointmentFormDialog({
                 )}
               />
 
-              {/* Actions */}
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {t('common.save')}
                 </Button>
               </div>

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -46,7 +47,8 @@ interface DoctorFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   doctor?: Doctor | null;
-  onSave: (doctor: Partial<Doctor>) => void;
+  onSave: (doctor: Partial<Doctor>) => Promise<void>;
+  isSaving?: boolean;
 }
 
 export const DoctorFormDialog = ({
@@ -54,6 +56,7 @@ export const DoctorFormDialog = ({
   onOpenChange,
   doctor,
   onSave,
+  isSaving = false,
 }: DoctorFormDialogProps) => {
   const { t } = useTranslation();
   const isEditing = !!doctor;
@@ -102,7 +105,7 @@ export const DoctorFormDialog = ({
     }
   }, [open, doctor, form]);
 
-  const onSubmit = (values: DoctorFormValues) => {
+  const onSubmit = async (values: DoctorFormValues) => {
     const doctorData: Partial<Doctor> = {
       firstName: values.firstName,
       lastName: values.lastName,
@@ -122,8 +125,7 @@ export const DoctorFormDialog = ({
       doctorData.isActive = true;
     }
 
-    onSave(doctorData);
-    onOpenChange(false);
+    await onSave(doctorData);
   };
 
   const specialties = [
@@ -277,10 +279,13 @@ export const DoctorFormDialog = ({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit">{t('common.save')}</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t('common.save')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

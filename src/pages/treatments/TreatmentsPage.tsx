@@ -115,14 +115,18 @@ export const TreatmentsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveTreatment = (treatmentData: Partial<Treatment>) => {
-    if (editingTreatment) {
-      updateTreatment.mutate({ id: editingTreatment.id, data: treatmentData as any });
-    } else {
-      createTreatment.mutate(treatmentData as any);
+  const handleSaveTreatment = async (treatmentData: Partial<Treatment>) => {
+    try {
+      if (editingTreatment) {
+        await updateTreatment.mutateAsync({ id: editingTreatment.id, data: treatmentData as any });
+      } else {
+        await createTreatment.mutateAsync(treatmentData as any);
+      }
+      setEditingTreatment(null);
+      setIsFormOpen(false);
+    } catch {
+      // Error is handled by the mutation's onError callback
     }
-    setEditingTreatment(null);
-    setIsFormOpen(false);
   };
 
   const handleToggleActive = (treatment: Treatment) => {
@@ -415,6 +419,7 @@ export const TreatmentsPage = () => {
         onOpenChange={setIsFormOpen}
         treatment={editingTreatment}
         onSave={handleSaveTreatment}
+        isSaving={createTreatment.isPending || updateTreatment.isPending}
       />
 
       <TreatmentDetailDialog

@@ -94,14 +94,18 @@ export const UsersPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveUser = (userData: Partial<User>) => {
-    // Note: User creation/update would need a dedicated API endpoint
-    toast({
-      title: editingUser ? t('success.updated') : t('success.created'),
-      description: `${userData.fullName}`,
-    });
-    setEditingUser(null);
-    setIsFormOpen(false);
+  const handleSaveUser = async (userData: Partial<User>) => {
+    try {
+      // Note: User creation/update would need a dedicated API endpoint
+      toast({
+        title: editingUser ? t('success.updated') : t('success.created'),
+        description: `${userData.fullName}`,
+      });
+      setEditingUser(null);
+      setIsFormOpen(false);
+    } catch {
+      // Error is handled by the mutation's onError callback
+    }
   };
 
   const handleToggleActive = (user: User) => {
@@ -334,6 +338,7 @@ export const UsersPage = () => {
         onOpenChange={setIsFormOpen}
         user={editingUser}
         onSave={handleSaveUser}
+        isSaving={false}
       />
 
       <UserDetailDialog

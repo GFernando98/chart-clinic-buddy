@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -47,7 +47,8 @@ interface TreatmentFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   treatment?: Treatment | null;
-  onSave: (treatment: Partial<Treatment> & { categoryId?: string }) => void;
+  onSave: (treatment: Partial<Treatment> & { categoryId?: string }) => Promise<void>;
+  isSaving?: boolean;
 }
 
 export const TreatmentFormDialog = ({
@@ -55,6 +56,7 @@ export const TreatmentFormDialog = ({
   onOpenChange,
   treatment,
   onSave,
+  isSaving = false,
 }: TreatmentFormDialogProps) => {
   const { t } = useTranslation();
   const isEditing = !!treatment;
@@ -98,7 +100,7 @@ export const TreatmentFormDialog = ({
     }
   }, [open, treatment, form, categories]);
 
-  const onSubmit = (values: TreatmentFormValues) => {
+  const onSubmit = async (values: TreatmentFormValues) => {
     const treatmentData: Partial<Treatment> & { categoryId?: string } = {
       code: values.code,
       name: values.name,
@@ -113,8 +115,7 @@ export const TreatmentFormDialog = ({
       treatmentData.isActive = treatment.isActive;
     }
 
-    onSave(treatmentData);
-    onOpenChange(false);
+    await onSave(treatmentData);
   };
 
   return (
@@ -243,10 +244,13 @@ export const TreatmentFormDialog = ({
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit">{t('common.save')}</Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {t('common.save')}
+                </Button>
               </DialogFooter>
             </form>
           </Form>

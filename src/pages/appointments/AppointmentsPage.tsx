@@ -80,13 +80,17 @@ export default function AppointmentsPage() {
     setFormDialogOpen(true);
   };
 
-  const handleSaveAppointment = (data: Partial<Appointment>) => {
-    if (data.id) {
-      updateAppointment.mutate({ id: data.id, data: data as any });
-    } else {
-      createAppointment.mutate(data as any);
+  const handleSaveAppointment = async (data: Partial<Appointment>) => {
+    try {
+      if (data.id) {
+        await updateAppointment.mutateAsync({ id: data.id, data: data as any });
+      } else {
+        await createAppointment.mutateAsync(data as any);
+      }
+      setFormDialogOpen(false);
+    } catch {
+      // Error is handled by the mutation's onError callback
     }
-    setFormDialogOpen(false);
   };
 
   const handleStatusChange = (
@@ -219,6 +223,7 @@ export default function AppointmentsPage() {
         defaultDate={defaultDate}
         defaultTime={defaultTime}
         onSave={handleSaveAppointment}
+        isSaving={createAppointment.isPending || updateAppointment.isPending}
       />
 
       {/* Detail Dialog */}
