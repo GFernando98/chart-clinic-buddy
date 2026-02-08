@@ -13,7 +13,7 @@ import OdontogramPage from "@/pages/OdontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
 import { AppointmentsPage } from "@/pages/appointments";
 import { UsersPage } from "@/pages/users";
-import { DoctorsPage } from "@/pages/doctors";
+import { DoctorsPage, DoctorFormPage } from "@/pages/doctors";
 import { TreatmentsPage } from "@/pages/treatments";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
@@ -62,6 +62,22 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                       <DoctorsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/doctors/new"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <DoctorFormPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/doctors/:id/edit"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <DoctorFormPage />
                     </ProtectedRoute>
                   }
                 />
