@@ -82,6 +82,17 @@ export default function DoctorFormPage() {
     (u) => u.roles.includes('Doctor') && u.isActive !== false
   );
 
+  // Auto-fill fields when user is selected
+  const handleUserChange = (userId: string) => {
+    form.setValue('userId', userId);
+    const selectedUser = doctorUsers.find((u) => u.id === userId);
+    if (selectedUser) {
+      form.setValue('firstName', selectedUser.firstName);
+      form.setValue('lastName', selectedUser.lastName);
+      form.setValue('email', selectedUser.email);
+    }
+  };
+
   const saving = createDoctor.isPending || updateDoctor.isPending;
   const loading = isEditing ? isDoctorLoading : false;
 
@@ -285,7 +296,7 @@ export default function DoctorFormPage() {
                 render={({ field }) => (
                   <FormItem className="max-w-md">
                     <FormLabel>{t('doctors.linkedUser')} *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={handleUserChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t('doctors.selectUser')} />
