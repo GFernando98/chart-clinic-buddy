@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { ToothRecord, ToothCondition, ToothSurface, Odontogram, ToothTreatmentRecord } from '@/types';
@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Printer, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -45,12 +46,22 @@ export default function OdontogramPage() {
   const [teethRecords, setTeethRecords] = useState<ToothRecord[]>([]);
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
+  const [confirmNewOdontogramOpen, setConfirmNewOdontogramOpen] = useState(false);
   
   // Fetch all odontograms for the patient
   const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
   
-  // Get the selected odontogram
-  const selectedOdontogram = patientOdontograms.find(o => o.id === selectedOdontogramId) || patientOdontograms[0] || null;
+  // Sort odontograms by date (most recent first)
+  const sortedOdontograms = useMemo(() => {
+    return [...patientOdontograms].sort((a, b) => {
+      const dateA = a.examinationDate ? new Date(a.examinationDate).getTime() : 0;
+      const dateB = b.examinationDate ? new Date(b.examinationDate).getTime() : 0;
+      return dateB - dateA; // Most recent first
+    });
+  }, [patientOdontograms]);
+  
+  // Get the selected odontogram (default to most recent)
+  const selectedOdontogram = sortedOdontograms.find(o => o.id === selectedOdontogramId) || sortedOdontograms[0] || null;
   
   
   // Get selected tooth record
@@ -85,12 +96,12 @@ export default function OdontogramPage() {
     }
   }, [selectedOdontogram]);
   
-  // Auto-select first odontogram when list changes
+  // Auto-select most recent odontogram when list changes
   useEffect(() => {
-    if (patientOdontograms.length > 0 && !selectedOdontogramId) {
-      setSelectedOdontogramId(patientOdontograms[0].id);
+    if (sortedOdontograms.length > 0 && !selectedOdontogramId) {
+      setSelectedOdontogramId(sortedOdontograms[0].id);
     }
-  }, [patientOdontograms, selectedOdontogramId]);
+  }, [sortedOdontograms, selectedOdontogramId]);
   
   const handleToothClick = (toothNumber: number) => {
     setSelectedTooth(toothNumber === selectedTooth ? null : toothNumber);
@@ -265,12 +276,26 @@ export default function OdontogramPage() {
     }
   };
   
-  const handleNewOdontogram = () => {
+  const handleNewOdontogramClick = () => {
     if (!selectedPatientId) return;
     
+    // Si ya existen odontogramas, pedir confirmación
+    if (patientOdontograms.length > 0) {
+      setConfirmNewOdontogramOpen(true);
+    } else {
+      // Si no hay odontogramas, crear directamente
+      createOdontogramMutation.mutate({
+        patientId: selectedPatientId,
+      });
+    }
+  };
+  
+  const handleConfirmNewOdontogram = () => {
+    if (!selectedPatientId) return;
     createOdontogramMutation.mutate({
       patientId: selectedPatientId,
     });
+    setConfirmNewOdontogramOpen(false);
   };
   
   const handlePrint = () => {
@@ -369,7 +394,7 @@ export default function OdontogramPage() {
           </Button>
           
           <Button 
-            onClick={handleNewOdontogram} 
+            onClick={handleNewOdontogramClick} 
             disabled={!selectedPatientId || createOdontogramMutation.isPending}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -463,6 +488,25 @@ export default function OdontogramPage() {
         onSubmit={handleTreatmentSubmit}
         isLoading={addTreatmentMutation.isPending}
       />
+      
+      {/* Confirm New Odontogram Dialog */}
+      <AlertDialog open={confirmNewOdontogramOpen} onOpenChange={setConfirmNewOdontogramOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Crear nuevo odontograma?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Este paciente ya tiene {patientOdontograms.length} odontograma(s) registrado(s). 
+              ¿Está seguro que desea crear un nuevo odontograma? El odontograma actual se mantendrá en el historial.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmNewOdontogram}>
+              Crear nuevo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
