@@ -282,23 +282,25 @@ export default function OdontogramPage() {
   const handleNewOdontogramClick = () => {
     if (!selectedPatientId) return;
     
-    // Si ya existen odontogramas, pedir confirmación
-    if (patientOdontograms.length > 0) {
-      setConfirmNewOdontogramOpen(true);
-    } else {
-      // Si no hay odontogramas, crear directamente
-      createOdontogramMutation.mutate({
-        patientId: selectedPatientId,
-      });
-    }
+    // Siempre pedir confirmación
+    setConfirmNewOdontogramOpen(true);
   };
   
   const handleConfirmNewOdontogram = () => {
     if (!selectedPatientId) return;
+    
     createOdontogramMutation.mutate({
       patientId: selectedPatientId,
+      isPediatric: isPediatric,
+      examinationDate: new Date().toISOString(),
+      notes: '',
+    }, {
+      onSuccess: (newOdontogram) => {
+        // Seleccionar el nuevo odontograma automáticamente
+        setSelectedOdontogramId(newOdontogram.id);
+        setConfirmNewOdontogramOpen(false);
+      }
     });
-    setConfirmNewOdontogramOpen(false);
   };
   
   const handlePrint = () => {
