@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { odontogramService, CreateOdontogramData, UpdateToothData, AddSurfaceData, AddToothTreatmentData } from '@/services';
-import { Odontogram, ToothRecord, ToothTreatmentRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const odontogramKeys = {
@@ -10,7 +9,7 @@ export const odontogramKeys = {
   toothTreatments: (toothRecordId: string) => [...odontogramKeys.all, 'treatments', toothRecordId] as const,
 };
 
-export function usePatientOdontograms(patientId: string) {
+export function usePatientOdontogram(patientId: string) {
   return useQuery({
     queryKey: odontogramKeys.byPatient(patientId),
     queryFn: () => odontogramService.getByPatient(patientId),
@@ -30,7 +29,7 @@ export function useToothTreatments(toothRecordId: string) {
   return useQuery({
     queryKey: odontogramKeys.toothTreatments(toothRecordId),
     queryFn: () => odontogramService.getToothTreatments(toothRecordId),
-    enabled: !!toothRecordId,
+    enabled: !!toothRecordId && !toothRecordId.startsWith('tooth-'),
   });
 }
 
