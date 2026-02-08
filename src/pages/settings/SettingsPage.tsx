@@ -79,14 +79,18 @@ export const SettingsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveCategory = (data: TreatmentCategoryFormData) => {
-    if (editingCategory) {
-      updateCategory.mutate({ id: editingCategory.id, data });
-    } else {
-      createCategory.mutate(data);
+  const handleSaveCategory = async (data: TreatmentCategoryFormData) => {
+    try {
+      if (editingCategory) {
+        await updateCategory.mutateAsync({ id: editingCategory.id, data });
+      } else {
+        await createCategory.mutateAsync(data);
+      }
+      setIsFormOpen(false);
+      setEditingCategory(null);
+    } catch {
+      // Error is handled by the mutation's onError callback
     }
-    setIsFormOpen(false);
-    setEditingCategory(null);
   };
 
   const handleToggleActive = (category: TreatmentCategoryDto) => {
@@ -299,6 +303,7 @@ export const SettingsPage = () => {
         onOpenChange={setIsFormOpen}
         category={editingCategory}
         onSave={handleSaveCategory}
+        isSaving={createCategory.isPending || updateCategory.isPending}
       />
     </div>
   );

@@ -111,14 +111,18 @@ export const DoctorsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveDoctor = (doctorData: Partial<Doctor>) => {
-    if (editingDoctor) {
-      updateDoctor.mutate({ id: editingDoctor.id, data: doctorData as any });
-    } else {
-      createDoctor.mutate(doctorData as any);
+  const handleSaveDoctor = async (doctorData: Partial<Doctor>) => {
+    try {
+      if (editingDoctor) {
+        await updateDoctor.mutateAsync({ id: editingDoctor.id, data: doctorData as any });
+      } else {
+        await createDoctor.mutateAsync(doctorData as any);
+      }
+      setEditingDoctor(null);
+      setIsFormOpen(false);
+    } catch {
+      // Error is handled by the mutation's onError callback
     }
-    setEditingDoctor(null);
-    setIsFormOpen(false);
   };
 
   const handleToggleActive = (doctor: Doctor) => {
@@ -396,6 +400,7 @@ export const DoctorsPage = () => {
         onOpenChange={setIsFormOpen}
         doctor={editingDoctor}
         onSave={handleSaveDoctor}
+        isSaving={createDoctor.isPending || updateDoctor.isPending}
       />
 
       <DoctorDetailDialog

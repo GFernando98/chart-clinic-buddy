@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,8 @@ interface UserFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user?: User | null;
-  onSave: (user: Partial<User> & { password?: string }) => void;
+  onSave: (user: Partial<User> & { password?: string }) => Promise<void>;
+  isSaving?: boolean;
 }
 
 const availableRoles: UserRole[] = ['Admin', 'Doctor', 'Receptionist', 'Assistant'];
@@ -47,6 +49,7 @@ export const UserFormDialog = ({
   onOpenChange,
   user,
   onSave,
+  isSaving = false,
 }: UserFormDialogProps) => {
   const { t } = useTranslation();
   const isEditing = !!user;
@@ -90,7 +93,7 @@ export const UserFormDialog = ({
     }
   }, [open, user, form]);
 
-  const onSubmit = (values: UserFormValues) => {
+  const onSubmit = async (values: UserFormValues) => {
     const userData: Partial<User> & { password?: string } = {
       firstName: values.firstName,
       lastName: values.lastName,
@@ -111,8 +114,7 @@ export const UserFormDialog = ({
       userData.isActive = true;
     }
 
-    onSave(userData);
-    onOpenChange(false);
+    await onSave(userData);
   };
 
   const roleLabels: Record<UserRole, string> = {
@@ -241,10 +243,13 @@ export const UserFormDialog = ({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit">{t('common.save')}</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t('common.save')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
