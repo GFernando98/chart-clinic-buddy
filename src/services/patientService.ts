@@ -6,7 +6,7 @@ export const patientService = {
    * Get all patients
    */
   async getAll(): Promise<Patient[]> {
-    const response = await apiClient.get<ApiResponse<Patient[]>>('/Patients');
+    const response = await apiClient.get<ApiResponse<Patient[]>>('/Patients/GetAll');
     return extractData(response.data);
   },
 
@@ -14,7 +14,7 @@ export const patientService = {
    * Get patient by ID
    */
   async getById(id: string): Promise<Patient> {
-    const response = await apiClient.get<ApiResponse<Patient>>(`/Patients/${id}`);
+    const response = await apiClient.get<ApiResponse<Patient>>(`/Patients/GetById/${id}`);
     return extractData(response.data);
   },
 
