@@ -2,26 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { ToothRecord, ToothCondition, ToothSurface, Odontogram, ToothTreatmentRecord } from '@/types';
-import { mockOdontograms, mockPatients, mockToothTreatments } from '@/mocks/data';
 import { DentalChart } from '@/components/odontogram/DentalChart';
 import { ToothDetailPanel } from '@/components/odontogram/ToothDetailPanel';
 import { ConditionLegend } from '@/components/odontogram/ConditionLegend';
+import { AddToothTreatmentDialog, ToothTreatmentFormData } from '@/components/odontogram/AddToothTreatmentDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Printer, History, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { usePatients } from '@/hooks/usePatients';
+import { 
+  usePatientOdontograms, 
+  useOdontogram, 
+  useToothTreatments,
+  useUpdateTooth,
+  useAddSurface,
+  useAddToothTreatment,
+  useCreateOdontogram
+} from '@/hooks/useOdontogram';
 
 export default function OdontogramPage() {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const locale = i18n.language === 'es' ? es : enUS;
+  
+  // Fetch patients from API
+  const { data: patients = [], isLoading: loadingPatients } = usePatients();
   
   // State
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
@@ -31,36 +44,14 @@ export default function OdontogramPage() {
   const [isPediatric, setIsPediatric] = useState(false);
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [teethRecords, setTeethRecords] = useState<ToothRecord[]>([]);
-  const [currentOdontogram, setCurrentOdontogram] = useState<Odontogram | null>(null);
+  const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
+  const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
   
-  // Get patient odontograms
-  const patientOdontograms = selectedPatientId 
-    ? mockOdontograms.filter(o => o.patientId === selectedPatientId)
-    : [];
+  // Fetch patient odontograms
+  const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
   
-  const selectedPatient = mockPatients.find(p => p.id === selectedPatientId);
-  
-  // Load odontogram when selection changes
-  useEffect(() => {
-    if (selectedOdontogramId) {
-      const odontogram = mockOdontograms.find(o => o.id === selectedOdontogramId);
-      if (odontogram) {
-        setCurrentOdontogram(odontogram);
-        setTeethRecords(odontogram.teethRecords || []);
-      }
-    } else if (patientOdontograms.length > 0) {
-      // Auto-select the most recent odontogram
-      const mostRecent = patientOdontograms.sort(
-        (a, b) => new Date(b.examinationDate).getTime() - new Date(a.examinationDate).getTime()
-      )[0];
-      setSelectedOdontogramId(mostRecent.id);
-    }
-  }, [selectedOdontogramId, selectedPatientId]);
-  
-  // Get treatments for selected tooth
-  const selectedToothTreatments: ToothTreatmentRecord[] = selectedTooth
-    ? mockToothTreatments.filter(t => t.toothNumber === selectedTooth)
-    : [];
+  // Fetch selected odontogram details
+  const { data: currentOdontogram, isLoading: loadingCurrentOdontogram } = useOdontogram(selectedOdontogramId || '');
   
   // Get selected tooth record
   const selectedToothRecord = selectedTooth
@@ -74,18 +65,60 @@ export default function OdontogramPage() {
       }
     : null;
   
+  // Fetch treatments for selected tooth
+  const { data: selectedToothTreatments = [] } = useToothTreatments(selectedToothRecord?.id || '');
+  
+  // Mutations
+  const updateToothMutation = useUpdateTooth();
+  const addSurfaceMutation = useAddSurface();
+  const addTreatmentMutation = useAddToothTreatment();
+  const createOdontogramMutation = useCreateOdontogram();
+  
+  const selectedPatient = patients.find(p => p.id === selectedPatientId);
+  
+  // Auto-select most recent odontogram when patient changes
+  useEffect(() => {
+    if (patientOdontograms.length > 0 && !selectedOdontogramId) {
+      const mostRecent = [...patientOdontograms].sort(
+        (a, b) => new Date(b.examinationDate).getTime() - new Date(a.examinationDate).getTime()
+      )[0];
+      setSelectedOdontogramId(mostRecent.id);
+    }
+  }, [patientOdontograms, selectedOdontogramId]);
+  
+  // Load teeth records when odontogram is loaded
+  useEffect(() => {
+    if (currentOdontogram?.teethRecords) {
+      setTeethRecords(currentOdontogram.teethRecords);
+    }
+  }, [currentOdontogram]);
+  
   const handleToothClick = (toothNumber: number) => {
     setSelectedTooth(toothNumber === selectedTooth ? null : toothNumber);
   };
   
   const handleSurfaceClick = (toothNumber: number, surface: ToothSurface) => {
-    // Open tooth detail if not already selected
     if (selectedTooth !== toothNumber) {
       setSelectedTooth(toothNumber);
     }
   };
   
   const handleConditionChange = (toothNumber: number, condition: ToothCondition) => {
+    const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
+    
+    if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
+      // Update existing record via API
+      updateToothMutation.mutate({
+        toothRecordId: toothRecord.id,
+        data: {
+          condition,
+          isPresent: condition !== ToothCondition.Extracted && condition !== ToothCondition.Missing,
+          notes: toothRecord.notes,
+        }
+      });
+    }
+    
+    // Update local state for immediate feedback
     setTeethRecords(prev => {
       const existing = prev.find(t => t.toothNumber === toothNumber);
       if (existing) {
@@ -112,6 +145,20 @@ export default function OdontogramPage() {
   };
   
   const handleSurfaceConditionChange = (toothNumber: number, surface: ToothSurface, condition: ToothCondition) => {
+    const toothRecord = teethRecords.find(t => t.toothNumber === toothNumber);
+    
+    if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
+      // Update via API
+      addSurfaceMutation.mutate({
+        toothRecordId: toothRecord.id,
+        data: {
+          surface,
+          condition,
+        }
+      });
+    }
+    
+    // Update local state
     setTeethRecords(prev => {
       const existing = prev.find(t => t.toothNumber === toothNumber);
       if (existing) {
@@ -149,16 +196,47 @@ export default function OdontogramPage() {
   };
   
   const handleAddTreatment = (toothNumber: number) => {
-    toast({
-      title: 'Agregar tratamiento',
-      description: `Función disponible próximamente para diente #${toothNumber}`,
-    });
+    setTreatmentToothNumber(toothNumber);
+    setTreatmentDialogOpen(true);
+  };
+  
+  const handleTreatmentSubmit = (data: ToothTreatmentFormData) => {
+    const toothRecord = teethRecords.find(t => t.toothNumber === treatmentToothNumber);
+    
+    if (toothRecord?.id && !toothRecord.id.startsWith('tooth-')) {
+      addTreatmentMutation.mutate({
+        toothRecordId: toothRecord.id,
+        data: {
+          treatmentId: data.treatmentId,
+          doctorId: data.doctorId,
+          performedDate: data.performedDate,
+          price: data.price,
+          notes: data.notes,
+          surfacesAffected: data.surfacesAffected,
+          isCompleted: data.isCompleted,
+        }
+      }, {
+        onSuccess: () => {
+          setTreatmentDialogOpen(false);
+          setTreatmentToothNumber(null);
+        }
+      });
+    } else {
+      toast({
+        title: 'Error',
+        description: 'El diente debe tener un registro guardado para agregar tratamientos',
+        variant: 'destructive',
+      });
+    }
   };
   
   const handleNewOdontogram = () => {
+    if (!selectedPatientId) return;
+    
+    // For now, we'd need a doctor selection - using first available doctor would be a placeholder
     toast({
       title: t('odontogram.newChart'),
-      description: 'Función disponible próximamente',
+      description: 'Para crear un nuevo odontograma, seleccione el doctor que realiza el examen',
     });
   };
   
@@ -188,14 +266,16 @@ export default function OdontogramPage() {
               setSelectedPatientId(value);
               setSelectedOdontogramId(null);
               setSelectedTooth(null);
+              setTeethRecords([]);
             }}
+            disabled={loadingPatients}
           >
             <SelectTrigger className="w-[200px]">
               <User className="w-4 h-4 mr-2" />
-              <SelectValue placeholder={t('appointments.selectPatient')} />
+              <SelectValue placeholder={loadingPatients ? 'Cargando...' : t('appointments.selectPatient')} />
             </SelectTrigger>
             <SelectContent>
-              {mockPatients.map((patient) => (
+              {patients.map((patient) => (
                 <SelectItem key={patient.id} value={patient.id}>
                   {patient.fullName}
                 </SelectItem>
@@ -204,21 +284,28 @@ export default function OdontogramPage() {
           </Select>
           
           {/* Odontogram History Selector */}
-          {selectedPatientId && patientOdontograms.length > 0 && (
+          {selectedPatientId && (
             <Select
               value={selectedOdontogramId || ''}
               onValueChange={setSelectedOdontogramId}
+              disabled={loadingOdontograms}
             >
               <SelectTrigger className="w-[180px]">
                 <History className="w-4 h-4 mr-2" />
-                <SelectValue placeholder={t('odontogram.selectOdontogram')} />
+                <SelectValue placeholder={loadingOdontograms ? 'Cargando...' : t('odontogram.selectOdontogram')} />
               </SelectTrigger>
               <SelectContent>
-                {patientOdontograms.map((odontogram) => (
-                  <SelectItem key={odontogram.id} value={odontogram.id}>
-                    {format(new Date(odontogram.examinationDate), 'dd/MM/yyyy', { locale })}
-                  </SelectItem>
-                ))}
+                {patientOdontograms.length === 0 ? (
+                  <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                    Sin odontogramas
+                  </div>
+                ) : (
+                  patientOdontograms.map((odontogram) => (
+                    <SelectItem key={odontogram.id} value={odontogram.id}>
+                      {format(new Date(odontogram.examinationDate), 'dd/MM/yyyy', { locale })}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           )}
@@ -257,27 +344,38 @@ export default function OdontogramPage() {
           <Card className="flex-1 border-0 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">
-                {currentOdontogram 
-                  ? format(new Date(currentOdontogram.examinationDate), 'dd MMMM yyyy', { locale })
-                  : t('odontogram.newChart')
-                }
+                {loadingCurrentOdontogram ? (
+                  <Skeleton className="h-6 w-48" />
+                ) : currentOdontogram ? (
+                  format(new Date(currentOdontogram.examinationDate), 'dd MMMM yyyy', { locale })
+                ) : (
+                  t('odontogram.newChart')
+                )}
               </CardTitle>
               {currentOdontogram?.notes && (
                 <CardDescription>{currentOdontogram.notes}</CardDescription>
               )}
             </CardHeader>
             <CardContent>
-              <DentalChart
-                teethRecords={teethRecords}
-                selectedTooth={selectedTooth}
-                isPediatric={isPediatric}
-                onToothClick={handleToothClick}
-                onSurfaceClick={handleSurfaceClick}
-              />
-              
-              <div className="mt-6 pt-4 border-t">
-                <ConditionLegend />
-              </div>
+              {loadingCurrentOdontogram ? (
+                <div className="flex items-center justify-center py-16">
+                  <Skeleton className="h-64 w-full" />
+                </div>
+              ) : (
+                <>
+                  <DentalChart
+                    teethRecords={teethRecords}
+                    selectedTooth={selectedTooth}
+                    isPediatric={isPediatric}
+                    onToothClick={handleToothClick}
+                    onSurfaceClick={handleSurfaceClick}
+                  />
+                  
+                  <div className="mt-6 pt-4 border-t">
+                    <ConditionLegend />
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
           
@@ -306,6 +404,15 @@ export default function OdontogramPage() {
           </CardContent>
         </Card>
       )}
+      
+      {/* Add Treatment Dialog */}
+      <AddToothTreatmentDialog
+        open={treatmentDialogOpen}
+        onOpenChange={setTreatmentDialogOpen}
+        toothNumber={treatmentToothNumber || 0}
+        onSubmit={handleTreatmentSubmit}
+        isLoading={addTreatmentMutation.isPending}
+      />
     </div>
   );
 }
