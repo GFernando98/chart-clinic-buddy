@@ -28,8 +28,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Doctor, User } from '@/types';
-import { mockUsers } from '@/mocks/data';
+import { Doctor } from '@/types';
+import { useUsers } from '@/hooks/useUsers';
 
 const doctorFormSchema = z.object({
   firstName: z.string().min(2, 'Mínimo 2 caracteres'),
@@ -61,8 +61,9 @@ export const DoctorFormDialog = ({
   const { t } = useTranslation();
   const isEditing = !!doctor;
 
-  // Filter users with Doctor role for linking
-  const doctorUsers = mockUsers.filter(
+  // Fetch users with Doctor role for linking
+  const { data: users = [] } = useUsers();
+  const doctorUsers = users.filter(
     (u) => u.roles.includes('Doctor') && u.isActive !== false
   );
 
