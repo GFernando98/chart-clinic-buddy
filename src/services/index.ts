@@ -22,6 +22,7 @@ export type { TreatmentCategoryDto, TreatmentCategoryFormData } from './treatmen
 export { appointmentService } from './appointmentService';
 export type { AppointmentFilters } from './appointmentService';
 export { userService } from './userService';
+export type { CreateUserData } from './userService';
 export { odontogramService } from './odontogramService';
 export { dashboardService } from './dashboardService';
 export type { 
