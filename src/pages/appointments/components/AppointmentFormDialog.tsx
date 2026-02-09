@@ -133,18 +133,32 @@ export function AppointmentFormDialog({
     return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
   }
 
+  // Helper to format date without timezone conversion
+  const formatLocalDateTime = (date: Date, time: string): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T${time}:00`;
+  };
+
+  // Auto-update end time when start time changes
+  const handleStartTimeChange = (newStartTime: string) => {
+    form.setValue('startTime', newStartTime);
+    
+    // Calculate end time = start time + 1 hour
+    const [hour, minute] = newStartTime.split(':').map(Number);
+    const endHour = hour + 1;
+    const endTime = `${endHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    
+    // Only update if the new end time is valid (within our time slots)
+    if (endHour <= 18) {
+      form.setValue('endTime', endTime);
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     const patient = patients.find(p => p.id === data.patientId);
     const doctor = doctors.find(d => d.id === data.doctorId);
-
-    const [startHour, startMinute] = data.startTime.split(':').map(Number);
-    const [endHour, endMinute] = data.endTime.split(':').map(Number);
-
-    const scheduledDate = new Date(data.date);
-    scheduledDate.setHours(startHour, startMinute, 0, 0);
-
-    const scheduledEndDate = new Date(data.date);
-    scheduledEndDate.setHours(endHour, endMinute, 0, 0);
 
     await onSave({
       id: appointment?.id,
@@ -152,8 +166,8 @@ export function AppointmentFormDialog({
       patientName: patient?.fullName || '',
       doctorId: data.doctorId,
       doctorName: doctor?.fullName || '',
-      scheduledDate: scheduledDate.toISOString(),
-      scheduledEndDate: scheduledEndDate.toISOString(),
+      scheduledDate: formatLocalDateTime(data.date, data.startTime),
+      scheduledEndDate: formatLocalDateTime(data.date, data.endTime),
       reason: data.reason,
       notes: data.notes,
     });
@@ -279,7 +293,7 @@ export function AppointmentFormDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('appointments.startTime')}</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={handleStartTimeChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue />
