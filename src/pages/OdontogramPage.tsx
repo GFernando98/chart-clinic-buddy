@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { usePatients } from '@/hooks/usePatients';
+import { useDoctors } from '@/hooks/useDoctors';
 import { 
   usePatientOdontograms, 
   useToothTreatments,
@@ -33,8 +34,9 @@ export default function OdontogramPage() {
   const { toast } = useToast();
   const locale = i18n.language === 'es' ? es : enUS;
   
-  // Fetch patients from API
+  // Fetch patients and doctors from API
   const { data: patients = [], isLoading: loadingPatients } = usePatients();
+  const { data: doctors = [], isLoading: loadingDoctors } = useDoctors();
   
   // State
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
@@ -47,6 +49,7 @@ export default function OdontogramPage() {
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
   const [confirmNewOdontogramOpen, setConfirmNewOdontogramOpen] = useState(false);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
   
   // Fetch all odontograms for the patient
   const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
@@ -248,10 +251,11 @@ export default function OdontogramPage() {
   };
   
   const handleConfirmNewOdontogram = () => {
-    if (!selectedPatientId) return;
+    if (!selectedPatientId || !selectedDoctorId) return;
     
     createOdontogramMutation.mutate({
       patientId: selectedPatientId,
+      doctorId: selectedDoctorId,
       isPediatric: isPediatric,
       examinationDate: new Date().toISOString(),
       notes: '',
@@ -260,6 +264,7 @@ export default function OdontogramPage() {
         // Seleccionar el nuevo odontograma automáticamente
         setSelectedOdontogramId(newOdontogram.id);
         setConfirmNewOdontogramOpen(false);
+        setSelectedDoctorId('');
       }
     });
   };
@@ -488,19 +493,50 @@ export default function OdontogramPage() {
       />
       
       {/* Confirm New Odontogram Dialog */}
-      <AlertDialog open={confirmNewOdontogramOpen} onOpenChange={setConfirmNewOdontogramOpen}>
+      <AlertDialog open={confirmNewOdontogramOpen} onOpenChange={(open) => {
+        setConfirmNewOdontogramOpen(open);
+        if (!open) setSelectedDoctorId('');
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Crear nuevo odontograma?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Este paciente ya tiene {patientOdontograms.length} odontograma(s) registrado(s). 
-              ¿Está seguro que desea crear un nuevo odontograma? El odontograma actual se mantendrá en el historial.
+            <AlertDialogTitle>Crear nuevo odontograma</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                {patientOdontograms.length > 0 && (
+                  <p>
+                    Este paciente ya tiene {patientOdontograms.length} odontograma(s) registrado(s). 
+                    El odontograma actual se mantendrá en el historial.
+                  </p>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="doctor-select">Doctor responsable *</Label>
+                  <Select
+                    value={selectedDoctorId}
+                    onValueChange={setSelectedDoctorId}
+                    disabled={loadingDoctors}
+                  >
+                    <SelectTrigger id="doctor-select">
+                      <SelectValue placeholder={loadingDoctors ? 'Cargando...' : 'Seleccionar doctor'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {doctors.filter(d => d.isActive).map((doctor) => (
+                        <SelectItem key={doctor.id} value={doctor.id}>
+                          {doctor.fullName} - {doctor.specialty}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmNewOdontogram}>
-              Crear nuevo
+            <AlertDialogAction 
+              onClick={handleConfirmNewOdontogram}
+              disabled={!selectedDoctorId || createOdontogramMutation.isPending}
+            >
+              {createOdontogramMutation.isPending ? 'Creando...' : 'Crear odontograma'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
