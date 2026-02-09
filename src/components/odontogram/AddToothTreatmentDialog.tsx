@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,11 +28,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useTreatments } from '@/hooks/useTreatments';
+import { useDoctors } from '@/hooks/useDoctors';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   treatmentId: z.string().min(1, 'Seleccione un tratamiento'),
+  doctorId: z.string().min(1, 'Seleccione un doctor'),
   status: z.enum(['Planned', 'InProgress', 'Completed']),
   performedDate: z.string().optional(),
   notes: z.string().optional(),
@@ -44,6 +46,7 @@ interface AddToothTreatmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   toothNumber: number;
+  defaultDoctorId?: string;
   onSubmit: (data: ToothTreatmentFormData) => void;
   isLoading?: boolean;
 }
@@ -52,21 +55,31 @@ export function AddToothTreatmentDialog({
   open,
   onOpenChange,
   toothNumber,
+  defaultDoctorId,
   onSubmit,
   isLoading = false,
 }: AddToothTreatmentDialogProps) {
   const { t } = useTranslation();
   const { data: treatments = [], isLoading: loadingTreatments } = useTreatments();
+  const { data: doctors = [], isLoading: loadingDoctors } = useDoctors();
 
   const form = useForm<ToothTreatmentFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       treatmentId: '',
+      doctorId: defaultDoctorId || '',
       status: 'Planned',
       performedDate: format(new Date(), 'yyyy-MM-dd'),
       notes: '',
     },
   });
+
+  // Update doctorId when defaultDoctorId changes
+  useEffect(() => {
+    if (defaultDoctorId) {
+      form.setValue('doctorId', defaultDoctorId);
+    }
+  }, [defaultDoctorId, form]);
 
   const handleSubmit = (data: ToothTreatmentFormData) => {
     onSubmit(data);
@@ -87,6 +100,36 @@ export function AddToothTreatmentDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {/* Doctor Selection */}
+            <FormField
+              control={form.control}
+              name="doctorId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('doctors.title')}</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={loadingDoctors}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un doctor" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {doctors.filter(d => d.isActive !== false).map((doctor) => (
+                        <SelectItem key={doctor.id} value={doctor.id}>
+                          {doctor.fullName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Treatment Selection */}
             <FormField
               control={form.control}

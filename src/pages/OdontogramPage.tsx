@@ -219,6 +219,7 @@ export default function OdontogramPage() {
         toothRecordId: toothRecord.id,
         data: {
           treatmentId: data.treatmentId,
+          doctorId: data.doctorId,
           status: data.status,
           performedDate: data.performedDate,
           notes: data.notes,
@@ -483,6 +484,7 @@ export default function OdontogramPage() {
         open={treatmentDialogOpen}
         onOpenChange={setTreatmentDialogOpen}
         toothNumber={treatmentToothNumber || 0}
+        defaultDoctorId={selectedOdontogram?.doctorId}
         onSubmit={handleTreatmentSubmit}
         isLoading={addTreatmentMutation.isPending}
       />

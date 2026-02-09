@@ -47,6 +47,7 @@ export interface AddSurfaceData {
 // Match API: POST /api/Odontogram/AddTreatment/{toothRecordId}
 export interface AddToothTreatmentData {
   treatmentId: string;
+  doctorId: string;
   status: 'Planned' | 'InProgress' | 'Completed';
   performedDate?: string;
   notes?: string;
