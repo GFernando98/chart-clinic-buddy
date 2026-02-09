@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,7 +18,6 @@ import { AppointmentStatusBadge } from './AppointmentStatusBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination, MobilePagination } from '@/components/ui/table-pagination';
-import { useMemo } from 'react';
 
 interface AppointmentListViewProps {
   appointments: Appointment[];
@@ -44,13 +44,10 @@ export function AppointmentListView({
     currentPage,
     totalPages,
     totalItems,
-    startIndex,
-    endIndex,
-    nextPage,
-    prevPage,
-    isFirstPage,
-    isLastPage,
-  } = usePagination({ items: sortedAppointments, itemsPerPage: 10 });
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage,
+  } = usePagination({ items: sortedAppointments });
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -73,44 +70,48 @@ export function AppointmentListView({
   // Mobile Card View
   if (isMobile) {
     return (
-      <div className="space-y-4">
-        {paginatedItems.map((appointment) => (
-          <Card
-            key={appointment.id}
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => onSelectAppointment(appointment)}
-          >
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-medium">{appointment.patientName}</p>
-                  <p className="text-sm text-muted-foreground">{appointment.doctorName}</p>
-                </div>
-                <AppointmentStatusBadge status={appointment.status} />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p>{formatDate(appointment.scheduledDate)} • {formatTime(appointment.scheduledDate)}</p>
-                <p className="mt-1">{appointment.reason}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <MobilePagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPrevPage={prevPage}
-          onNextPage={nextPage}
-          isFirstPage={isFirstPage}
-          isLastPage={isLastPage}
-        />
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <div className="space-y-4 p-4">
+            {paginatedItems.map((appointment) => (
+              <Card
+                key={appointment.id}
+                className="cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => onSelectAppointment(appointment)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium">{appointment.patientName}</p>
+                      <p className="text-sm text-muted-foreground">{appointment.doctorName}</p>
+                    </div>
+                    <AppointmentStatusBadge status={appointment.status} />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <p>{formatDate(appointment.scheduledDate)} • {formatTime(appointment.scheduledDate)}</p>
+                    <p className="mt-1">{appointment.reason}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <MobilePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
+        </CardContent>
+      </Card>
     );
   }
 
   // Desktop Table View
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
+    <Card>
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -150,18 +151,15 @@ export function AppointmentListView({
             ))}
           </TableBody>
         </Table>
-      </div>
-      <TablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        onPrevPage={prevPage}
-        onNextPage={nextPage}
-        isFirstPage={isFirstPage}
-        isLastPage={isLastPage}
-      />
-    </div>
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
+      </CardContent>
+    </Card>
   );
 }

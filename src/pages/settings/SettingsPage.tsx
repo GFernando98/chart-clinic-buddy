@@ -76,13 +76,10 @@ export const SettingsPage = () => {
     currentPage,
     totalPages,
     totalItems,
-    startIndex,
-    endIndex,
-    nextPage,
-    prevPage,
-    isFirstPage,
-    isLastPage,
-  } = usePagination({ items: filteredCategories, itemsPerPage: 10 });
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage,
+  } = usePagination({ items: filteredCategories });
 
   // Handlers
   const handleNewCategory = () => {
@@ -167,10 +164,10 @@ export const SettingsPage = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {/* Search */}
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative px-6 pb-4">
+                <Search className="absolute left-9 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder={t('common.search')}
                   value={searchQuery}
@@ -188,7 +185,7 @@ export const SettingsPage = () => {
                 </div>
               ) : isMobile ? (
                 // Mobile: Card layout
-                <div className="space-y-3">
+                <div className="space-y-3 px-6 pb-4">
                   {paginatedItems.map((category) => (
                     <div
                       key={category.id}
@@ -240,94 +237,94 @@ export const SettingsPage = () => {
                       </DropdownMenu>
                     </div>
                   ))}
-                  <MobilePagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPrevPage={prevPage}
-                    onNextPage={nextPage}
-                    isFirstPage={isFirstPage}
-                    isLastPage={isLastPage}
-                  />
                 </div>
               ) : (
                 // Desktop: Table layout
-                <div className="space-y-4">
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('common.name')}</TableHead>
-                          <TableHead>{t('common.description')}</TableHead>
-                          <TableHead>{t('common.status')}</TableHead>
-                          <TableHead className="text-right">{t('common.actions')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedItems.map((category) => (
-                          <TableRow key={category.id}>
-                            <TableCell className="font-medium">{category.name}</TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {category.description || '-'}
-                            </TableCell>
-                            <TableCell>
-                              {category.isActive ? (
-                                <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
-                                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                                  {t('common.active')}
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
-                                  <XCircle className="h-3 w-3 mr-1" />
-                                  {t('common.inactive')}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleEditCategory(category)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    {t('common.edit')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => handleToggleActive(category)}>
-                                    {category.isActive ? (
-                                      <>
-                                        <XCircle className="h-4 w-4 mr-2" />
-                                        {t('users.deactivate')}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                                        {t('users.activate')}
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('common.name')}</TableHead>
+                      <TableHead>{t('common.description')}</TableHead>
+                      <TableHead>{t('common.status')}</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedItems.map((category) => (
+                      <TableRow key={category.id}>
+                        <TableCell className="font-medium">{category.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {category.description || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {category.isActive ? (
+                            <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              {t('common.active')}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              {t('common.inactive')}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditCategory(category)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                {t('common.edit')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleToggleActive(category)}>
+                                {category.isActive ? (
+                                  <>
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    {t('users.deactivate')}
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    {t('users.activate')}
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+              
+              {/* Pagination */}
+              {filteredCategories.length > 0 && (
+                isMobile ? (
+                  <MobilePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
+                ) : (
                   <TablePagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     totalItems={totalItems}
-                    startIndex={startIndex}
-                    endIndex={endIndex}
-                    onPrevPage={prevPage}
-                    onNextPage={nextPage}
-                    isFirstPage={isFirstPage}
-                    isLastPage={isLastPage}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
                   />
-                </div>
+                )
               )}
             </CardContent>
           </Card>

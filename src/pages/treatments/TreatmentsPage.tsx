@@ -98,13 +98,10 @@ export const TreatmentsPage = () => {
     currentPage,
     totalPages,
     totalItems,
-    startIndex,
-    endIndex,
-    nextPage,
-    prevPage,
-    isFirstPage,
-    isLastPage,
-  } = usePagination({ items: filteredTreatments, itemsPerPage: 10 });
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage,
+  } = usePagination({ items: filteredTreatments });
 
   // Format price
   const formatPrice = (price: number) => {
@@ -231,223 +228,227 @@ export const TreatmentsPage = () => {
           <h3 className="mt-4 text-lg font-medium">{t('treatments.noTreatments')}</h3>
           <p className="text-muted-foreground mt-2">{t('patients.noSearchResults')}</p>
         </div>
-      ) : isMobile ? (
-        // Mobile: Card layout
-        <div className="space-y-4">
-          {paginatedItems.map((treatment) => (
-            <Card
-              key={treatment.id}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => handleViewTreatment(treatment)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{treatment.name}</span>
-                      {treatment.isActive !== false ? (
-                        <Badge
-                          variant="outline"
-                          className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs"
-                        >
-                          <CheckCircle2 className="h-3 w-3" />
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 text-xs"
-                        >
-                          <XCircle className="h-3 w-3" />
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono text-muted-foreground">
-                        {treatment.code}
-                      </span>
-                      <Badge variant="outline">
-                        {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
-                      </Badge>
-                    </div>
-                    <p className="text-sm font-medium">{formatPrice(treatment.defaultPrice)}</p>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewTreatment(treatment);
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        {t('common.view')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditTreatment(treatment);
-                        }}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t('common.edit')}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleActive(treatment);
-                        }}
-                      >
-                        {treatment.isActive !== false ? (
-                          <>
-                            <XCircle className="h-4 w-4 mr-2" />
-                            {t('users.deactivate')}
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            {t('users.activate')}
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          <MobilePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrevPage={prevPage}
-            onNextPage={nextPage}
-            isFirstPage={isFirstPage}
-            isLastPage={isLastPage}
-          />
-        </div>
       ) : (
-        // Desktop: Table layout
-        <div className="space-y-4">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('treatments.code')}</TableHead>
-                  <TableHead>{t('common.name')}</TableHead>
-                  <TableHead>{t('treatments.category')}</TableHead>
-                  <TableHead className="text-right">{t('treatments.defaultPrice')}</TableHead>
-                  <TableHead className="text-center">{t('treatments.estimatedDuration')}</TableHead>
-                  <TableHead>{t('common.status')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+        <Card>
+          <CardContent className="p-0">
+            {isMobile ? (
+              // Mobile: Card layout
+              <div className="space-y-4 p-4">
                 {paginatedItems.map((treatment) => (
-                  <TableRow
+                  <Card
                     key={treatment.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleViewTreatment(treatment)}
                   >
-                    <TableCell className="font-mono">{treatment.code}</TableCell>
-                    <TableCell className="font-medium">{treatment.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{formatPrice(treatment.defaultPrice)}</TableCell>
-                    <TableCell className="text-center">
-                      {treatment.estimatedDurationMinutes} min
-                    </TableCell>
-                    <TableCell>
-                      {treatment.isActive !== false ? (
-                        <Badge
-                          variant="outline"
-                          className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
-                        >
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {t('common.active')}
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
-                        >
-                          <XCircle className="h-3 w-3 mr-1" />
-                          {t('common.inactive')}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewTreatment(treatment);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            {t('common.view')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditTreatment(treatment);
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            {t('common.edit')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleActive(treatment);
-                            }}
-                          >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{treatment.name}</span>
                             {treatment.isActive !== false ? (
-                              <>
-                                <XCircle className="h-4 w-4 mr-2" />
-                                {t('users.deactivate')}
-                              </>
+                              <Badge
+                                variant="outline"
+                                className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs"
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                              </Badge>
                             ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                {t('users.activate')}
-                              </>
+                              <Badge
+                                variant="outline"
+                                className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 text-xs"
+                              >
+                                <XCircle className="h-3 w-3" />
+                              </Badge>
                             )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-mono text-muted-foreground">
+                              {treatment.code}
+                            </span>
+                            <Badge variant="outline">
+                              {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium">{formatPrice(treatment.defaultPrice)}</p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewTreatment(treatment);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t('common.view')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditTreatment(treatment);
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleActive(treatment);
+                              }}
+                            >
+                              {treatment.isActive !== false ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  {t('users.deactivate')}
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  {t('users.activate')}
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            onPrevPage={prevPage}
-            onNextPage={nextPage}
-            isFirstPage={isFirstPage}
-            isLastPage={isLastPage}
-          />
-        </div>
+              </div>
+            ) : (
+              // Desktop: Table layout
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('treatments.code')}</TableHead>
+                    <TableHead>{t('common.name')}</TableHead>
+                    <TableHead>{t('treatments.category')}</TableHead>
+                    <TableHead className="text-right">{t('treatments.defaultPrice')}</TableHead>
+                    <TableHead className="text-center">{t('treatments.estimatedDuration')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((treatment) => (
+                    <TableRow
+                      key={treatment.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleViewTreatment(treatment)}
+                    >
+                      <TableCell className="font-mono">{treatment.code}</TableCell>
+                      <TableCell className="font-medium">{treatment.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">{formatPrice(treatment.defaultPrice)}</TableCell>
+                      <TableCell className="text-center">
+                        {treatment.estimatedDurationMinutes} min
+                      </TableCell>
+                      <TableCell>
+                        {treatment.isActive !== false ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
+                          >
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {t('common.active')}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
+                          >
+                            <XCircle className="h-3 w-3 mr-1" />
+                            {t('common.inactive')}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewTreatment(treatment);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t('common.view')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditTreatment(treatment);
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleActive(treatment);
+                              }}
+                            >
+                              {treatment.isActive !== false ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  {t('users.deactivate')}
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  {t('users.activate')}
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            
+            {/* Pagination */}
+            {isMobile ? (
+              <MobilePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            ) : (
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Dialogs */}
