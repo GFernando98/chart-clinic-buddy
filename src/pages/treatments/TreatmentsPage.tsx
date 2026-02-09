@@ -10,6 +10,8 @@ import {
   XCircle,
   FileText,
   Loader2,
+  Globe,
+  Crosshair,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -261,13 +263,24 @@ export const TreatmentsPage = () => {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-mono text-muted-foreground">
                               {treatment.code}
                             </span>
                             <Badge variant="outline">
                               {treatment.categoryName || categories.find(c => c.id === treatment.categoryId)?.name || '-'}
                             </Badge>
+                            {treatment.isGlobalTreatment ? (
+                              <Badge variant="secondary" className="text-xs">
+                                <Globe className="h-3 w-3 mr-1" />
+                                {t('treatments.globalBadge')}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                                <Crosshair className="h-3 w-3 mr-1" />
+                                {t('treatments.perToothBadge')}
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm font-medium">{formatPrice(treatment.defaultPrice)}</p>
                         </div>
@@ -332,6 +345,7 @@ export const TreatmentsPage = () => {
                     <TableHead>{t('treatments.category')}</TableHead>
                     <TableHead className="text-right">{t('treatments.defaultPrice')}</TableHead>
                     <TableHead className="text-center">{t('treatments.estimatedDuration')}</TableHead>
+                    <TableHead>{t('treatments.selectTreatmentType')}</TableHead>
                     <TableHead>{t('common.status')}</TableHead>
                     <TableHead className="text-right">{t('common.actions')}</TableHead>
                   </TableRow>
@@ -353,6 +367,19 @@ export const TreatmentsPage = () => {
                       <TableCell className="text-right">{formatPrice(treatment.defaultPrice)}</TableCell>
                       <TableCell className="text-center">
                         {treatment.estimatedDurationMinutes} min
+                      </TableCell>
+                      <TableCell>
+                        {treatment.isGlobalTreatment ? (
+                          <Badge variant="secondary" className="text-xs">
+                            <Globe className="h-3 w-3 mr-1" />
+                            {t('treatments.globalBadge')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            <Crosshair className="h-3 w-3 mr-1" />
+                            {t('treatments.perToothBadge')}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {treatment.isActive !== false ? (

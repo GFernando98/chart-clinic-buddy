@@ -155,6 +155,7 @@ export interface Treatment {
   defaultPrice: number;
   estimatedDurationMinutes: number;
   isActive: boolean;
+  isGlobalTreatment: boolean;
 }
 
 export interface TreatmentFormData {
@@ -164,6 +165,7 @@ export interface TreatmentFormData {
   categoryId: string;
   defaultPrice: number;
   estimatedDurationMinutes: number;
+  isGlobalTreatment: boolean;
 }
 
 // ============= Appointment Types =============
@@ -262,8 +264,9 @@ export interface Odontogram {
 
 export interface ToothTreatmentRecord {
   id: string;
-  toothRecordId: string;
-  toothNumber: number;
+  toothRecordId?: string; // nullable for global treatments
+  toothNumber?: number;
+  odontogramId: string;
   treatmentId: string;
   treatmentName: string;
   treatmentCode: string;
@@ -274,7 +277,35 @@ export interface ToothTreatmentRecord {
   notes?: string;
   surfacesAffected?: string;
   isCompleted: boolean;
+  isPaid: boolean;
+  isGlobalTreatment: boolean;
   appointmentId?: string;
+}
+
+// ============= Invoice Types =============
+
+export interface InvoiceTreatmentLine {
+  treatmentRecordId?: string;
+  treatmentRecordIds?: string[];
+  treatmentName: string;
+  treatmentCode: string;
+  isGlobal: boolean;
+  toothNumbers: number[] | null;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface InvoicePreview {
+  odontogramId: string;
+  patientId: string;
+  patientName: string;
+  globalTreatments: InvoiceTreatmentLine[];
+  toothTreatments: InvoiceTreatmentLine[];
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
 }
 
 // ============= User Management Types =============

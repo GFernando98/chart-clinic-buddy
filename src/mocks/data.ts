@@ -235,6 +235,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 500,
     estimatedDurationMinutes: 45,
     isActive: true,
+    isGlobalTreatment: true,
   },
   {
     id: 'treatment-2',
@@ -245,6 +246,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 800,
     estimatedDurationMinutes: 45,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-3',
@@ -255,6 +257,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 600,
     estimatedDurationMinutes: 40,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-4',
@@ -265,6 +268,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 3500,
     estimatedDurationMinutes: 90,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-5',
@@ -275,6 +279,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 4500,
     estimatedDurationMinutes: 120,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-6',
@@ -285,6 +290,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 1200,
     estimatedDurationMinutes: 60,
     isActive: true,
+    isGlobalTreatment: true,
   },
   {
     id: 'treatment-7',
@@ -295,6 +301,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 25000,
     estimatedDurationMinutes: 120,
     isActive: true,
+    isGlobalTreatment: true,
   },
   {
     id: 'treatment-8',
@@ -305,6 +312,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 5000,
     estimatedDurationMinutes: 90,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-9',
@@ -315,6 +323,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 800,
     estimatedDurationMinutes: 30,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-10',
@@ -325,6 +334,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 2500,
     estimatedDurationMinutes: 60,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-11',
@@ -335,6 +345,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 350,
     estimatedDurationMinutes: 20,
     isActive: true,
+    isGlobalTreatment: false,
   },
   {
     id: 'treatment-12',
@@ -345,6 +356,7 @@ export const mockTreatments: Treatment[] = [
     defaultPrice: 3000,
     estimatedDurationMinutes: 90,
     isActive: true,
+    isGlobalTreatment: true,
   },
 ];
 
@@ -548,6 +560,7 @@ export const mockToothTreatments: ToothTreatmentRecord[] = [
     id: 'tt-1',
     toothRecordId: 'tooth-16',
     toothNumber: 16,
+    odontogramId: 'odontogram-1',
     treatmentId: 'treatment-2',
     treatmentName: 'Restauración con Resina',
     treatmentCode: 'REST-001',
@@ -558,11 +571,14 @@ export const mockToothTreatments: ToothTreatmentRecord[] = [
     notes: 'Cara oclusal',
     surfacesAffected: 'O',
     isCompleted: true,
+    isPaid: false,
+    isGlobalTreatment: false,
   },
   {
     id: 'tt-2',
     toothRecordId: 'tooth-36',
     toothNumber: 36,
+    odontogramId: 'odontogram-1',
     treatmentId: 'treatment-4',
     treatmentName: 'Tratamiento de Conducto',
     treatmentCode: 'ENDO-001',
@@ -572,6 +588,8 @@ export const mockToothTreatments: ToothTreatmentRecord[] = [
     price: 3500,
     notes: 'Endodoncia completada sin complicaciones',
     isCompleted: true,
+    isPaid: false,
+    isGlobalTreatment: false,
   },
 ];
 

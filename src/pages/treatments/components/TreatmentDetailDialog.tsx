@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   XCircle,
   Hash,
+  Globe,
+  Crosshair,
 } from 'lucide-react';
 
 interface TreatmentDetailDialogProps {
@@ -64,20 +66,36 @@ export const TreatmentDetailDialog = ({
             </div>
           </div>
 
-          {/* Status */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t('common.status')}:</span>
-            {treatment.isActive !== false ? (
-              <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                {t('common.active')}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
-                <XCircle className="h-3 w-3 mr-1" />
-                {t('common.inactive')}
-              </Badge>
-            )}
+          {/* Status and Type */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{t('common.status')}:</span>
+              {treatment.isActive !== false ? (
+                <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  {t('common.active')}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
+                  <XCircle className="h-3 w-3 mr-1" />
+                  {t('common.inactive')}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{t('treatments.selectTreatmentType')}:</span>
+              {treatment.isGlobalTreatment ? (
+                <Badge variant="secondary">
+                  <Globe className="h-3 w-3 mr-1" />
+                  {t('treatments.globalBadge')}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">
+                  <Crosshair className="h-3 w-3 mr-1" />
+                  {t('treatments.perToothBadge')}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Details */}

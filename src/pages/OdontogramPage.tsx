@@ -6,6 +6,8 @@ import { DentalChart } from '@/components/odontogram/DentalChart';
 import { ToothDetailPanel } from '@/components/odontogram/ToothDetailPanel';
 import { ConditionLegend } from '@/components/odontogram/ConditionLegend';
 import { AddToothTreatmentDialog, ToothTreatmentFormData } from '@/components/odontogram/AddToothTreatmentDialog';
+import { AddGlobalTreatmentDialog, GlobalTreatmentFormData } from '@/components/odontogram/AddGlobalTreatmentDialog';
+import { GlobalTreatmentsSection } from '@/components/odontogram/GlobalTreatmentsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -22,9 +24,11 @@ import { useDoctors } from '@/hooks/useDoctors';
 import { 
   usePatientOdontograms, 
   useToothTreatments,
+  useAllOdontogramTreatments,
   useUpdateTooth,
   useAddSurface,
   useAddToothTreatment,
+  useAddGlobalTreatment,
   useCreateOdontogram
 } from '@/hooks/useOdontogram';
 
@@ -50,6 +54,7 @@ export default function OdontogramPage() {
   const [treatmentToothNumber, setTreatmentToothNumber] = useState<number | null>(null);
   const [confirmNewOdontogramOpen, setConfirmNewOdontogramOpen] = useState(false);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
+  const [globalTreatmentDialogOpen, setGlobalTreatmentDialogOpen] = useState(false);
   
   // Fetch all odontograms for the patient
   const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
@@ -82,10 +87,14 @@ export default function OdontogramPage() {
   // Fetch treatments for selected tooth
   const { data: selectedToothTreatments = [] } = useToothTreatments(selectedToothRecord?.id || '');
   
+  // Fetch all treatments for the odontogram (including global treatments)
+  const { data: allOdontogramTreatments = [] } = useAllOdontogramTreatments(selectedOdontogram?.id || '');
+  
   // Mutations
   const updateToothMutation = useUpdateTooth();
   const addSurfaceMutation = useAddSurface();
   const addTreatmentMutation = useAddToothTreatment();
+  const addGlobalTreatmentMutation = useAddGlobalTreatment();
   const createOdontogramMutation = useCreateOdontogram();
   
   const selectedPatient = patients.find(p => p.id === selectedPatientId);
@@ -237,6 +246,36 @@ export default function OdontogramPage() {
         variant: 'destructive',
       });
     }
+  };
+  
+  const handleAddGlobalTreatment = () => {
+    setGlobalTreatmentDialogOpen(true);
+  };
+  
+  const handleGlobalTreatmentSubmit = (data: GlobalTreatmentFormData) => {
+    if (!selectedOdontogram?.id) {
+      toast({
+        title: 'Error',
+        description: 'Debe seleccionar un odontograma primero',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    addGlobalTreatmentMutation.mutate({
+      odontogramId: selectedOdontogram.id,
+      data: {
+        treatmentId: data.treatmentId,
+        doctorId: data.doctorId,
+        status: data.status,
+        performedDate: data.performedDate,
+        notes: data.notes,
+      }
+    }, {
+      onSuccess: () => {
+        setGlobalTreatmentDialogOpen(false);
+      }
+    });
   };
   
   const handleNewOdontogramClick = () => {
@@ -448,6 +487,15 @@ export default function OdontogramPage() {
                   <div className="mt-6 pt-4 border-t">
                     <ConditionLegend />
                   </div>
+                  
+                  {/* Global Treatments Section */}
+                  <div className="mt-6">
+                    <GlobalTreatmentsSection
+                      treatments={allOdontogramTreatments}
+                      onAddTreatment={handleAddGlobalTreatment}
+                      isLoading={addGlobalTreatmentMutation.isPending}
+                    />
+                  </div>
                 </>
               )}
             </CardContent>
@@ -479,7 +527,7 @@ export default function OdontogramPage() {
         </Card>
       )}
       
-      {/* Add Treatment Dialog */}
+      {/* Add Tooth Treatment Dialog */}
       <AddToothTreatmentDialog
         open={treatmentDialogOpen}
         onOpenChange={setTreatmentDialogOpen}
@@ -487,6 +535,15 @@ export default function OdontogramPage() {
         defaultDoctorId={selectedOdontogram?.doctorId}
         onSubmit={handleTreatmentSubmit}
         isLoading={addTreatmentMutation.isPending}
+      />
+      
+      {/* Add Global Treatment Dialog */}
+      <AddGlobalTreatmentDialog
+        open={globalTreatmentDialogOpen}
+        onOpenChange={setGlobalTreatmentDialogOpen}
+        defaultDoctorId={selectedOdontogram?.doctorId}
+        onSubmit={handleGlobalTreatmentSubmit}
+        isLoading={addGlobalTreatmentMutation.isPending}
       />
       
       {/* Confirm New Odontogram Dialog */}

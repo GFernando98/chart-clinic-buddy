@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Crosshair } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -42,40 +42,38 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-export type ToothTreatmentFormData = z.infer<typeof formSchema>;
+export type GlobalTreatmentFormData = z.infer<typeof formSchema>;
 
-interface AddToothTreatmentDialogProps {
+interface AddGlobalTreatmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  toothNumber: number;
   defaultDoctorId?: string;
-  onSubmit: (data: ToothTreatmentFormData) => void;
+  onSubmit: (data: GlobalTreatmentFormData) => void;
   isLoading?: boolean;
 }
 
-export function AddToothTreatmentDialog({
+export function AddGlobalTreatmentDialog({
   open,
   onOpenChange,
-  toothNumber,
   defaultDoctorId,
   onSubmit,
   isLoading = false,
-}: AddToothTreatmentDialogProps) {
+}: AddGlobalTreatmentDialogProps) {
   const { t } = useTranslation();
   const { data: treatments = [], isLoading: loadingTreatments } = useTreatments();
   const { data: doctors = [], isLoading: loadingDoctors } = useDoctors();
 
-  // Filter only per-tooth treatments (not global)
-  const toothTreatments = useMemo(() => {
-    return treatments.filter(t => t.isActive !== false && !t.isGlobalTreatment);
+  // Filter only global treatments
+  const globalTreatments = useMemo(() => {
+    return treatments.filter(t => t.isActive !== false && t.isGlobalTreatment);
   }, [treatments]);
 
-  const form = useForm<ToothTreatmentFormData>({
+  const form = useForm<GlobalTreatmentFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       treatmentId: '',
       doctorId: defaultDoctorId || '',
-      status: 'Planned',
+      status: 'Completed',
       performedDate: format(new Date(), 'yyyy-MM-dd'),
       notes: '',
     },
@@ -88,7 +86,20 @@ export function AddToothTreatmentDialog({
     }
   }, [defaultDoctorId, form]);
 
-  const handleSubmit = (data: ToothTreatmentFormData) => {
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        treatmentId: '',
+        doctorId: defaultDoctorId || '',
+        status: 'Completed',
+        performedDate: format(new Date(), 'yyyy-MM-dd'),
+        notes: '',
+      });
+    }
+  }, [open, defaultDoctorId, form]);
+
+  const handleSubmit = (data: GlobalTreatmentFormData) => {
     onSubmit(data);
     form.reset();
   };
@@ -98,11 +109,11 @@ export function AddToothTreatmentDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Crosshair className="h-5 w-5 text-primary" />
-            {t('odontogram.addTreatment')} - {t('odontogram.tooth')} #{toothNumber}
+            <Globe className="h-5 w-5 text-primary" />
+            {t('treatments.addGlobalTreatment')}
           </DialogTitle>
           <DialogDescription>
-            Registre un tratamiento realizado o planificado en este diente
+            Registre un tratamiento global aplicado a toda la boca (ej: limpieza, rayos X)
           </DialogDescription>
         </DialogHeader>
 
@@ -138,7 +149,7 @@ export function AddToothTreatmentDialog({
               )}
             />
 
-            {/* Treatment Selection - Only per-tooth treatments */}
+            {/* Treatment Selection - Only global treatments */}
             <FormField
               control={form.control}
               name="treatmentId"
@@ -146,9 +157,9 @@ export function AddToothTreatmentDialog({
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     {t('treatments.title')}
-                    <Badge variant="outline" className="text-xs text-muted-foreground">
-                      <Crosshair className="h-3 w-3 mr-1" />
-                      {t('treatments.perToothBadge')}
+                    <Badge variant="secondary" className="text-xs">
+                      <Globe className="h-3 w-3 mr-1" />
+                      {t('treatments.globalBadge')}
                     </Badge>
                   </FormLabel>
                   <Select 
@@ -158,20 +169,26 @@ export function AddToothTreatmentDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un tratamiento" />
+                        <SelectValue placeholder="Seleccione un tratamiento global" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {toothTreatments.map((treatment) => (
-                        <SelectItem key={treatment.id} value={treatment.id}>
-                          <div className="flex justify-between items-center w-full">
-                            <span>{treatment.name}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              L {treatment.defaultPrice.toFixed(2)}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {globalTreatments.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          No hay tratamientos globales registrados
+                        </div>
+                      ) : (
+                        globalTreatments.map((treatment) => (
+                          <SelectItem key={treatment.id} value={treatment.id}>
+                            <div className="flex justify-between items-center w-full">
+                              <span>{treatment.name}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                L {treatment.defaultPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -230,7 +247,7 @@ export function AddToothTreatmentDialog({
                   <FormLabel>{t('common.notes')} (opcional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Ej: Resina compuesta, observaciones..."
+                      placeholder="Observaciones adicionales..."
                       className="resize-none"
                       rows={2}
                       {...field} 
@@ -249,7 +266,7 @@ export function AddToothTreatmentDialog({
               >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || globalTreatments.length === 0}>
                 {isLoading ? t('common.saving') : t('common.save')}
               </Button>
             </div>
