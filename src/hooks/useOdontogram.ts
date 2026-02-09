@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { odontogramService, CreateOdontogramData, UpdateToothData, AddSurfaceData, AddToothTreatmentData } from '@/services';
+import { odontogramService, CreateOdontogramData, UpdateToothData, AddSurfaceData, AddToothTreatmentData, AddGlobalTreatmentData } from '@/services';
 import { useToast } from '@/hooks/use-toast';
 
 export const odontogramKeys = {
@@ -7,6 +7,7 @@ export const odontogramKeys = {
   byPatient: (patientId: string) => [...odontogramKeys.all, 'patient', patientId] as const,
   detail: (id: string) => [...odontogramKeys.all, 'detail', id] as const,
   toothTreatments: (toothRecordId: string) => [...odontogramKeys.all, 'treatments', toothRecordId] as const,
+  allTreatments: (odontogramId: string) => [...odontogramKeys.all, 'allTreatments', odontogramId] as const,
 };
 
 export function usePatientOdontograms(patientId: string) {
@@ -110,6 +111,40 @@ export function useAddToothTreatment() {
       toast({
         title: 'Tratamiento registrado',
         description: 'El tratamiento ha sido registrado exitosamente',
+        variant: 'success',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error al registrar tratamiento',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+export function useAllOdontogramTreatments(odontogramId: string) {
+  return useQuery({
+    queryKey: odontogramKeys.allTreatments(odontogramId),
+    queryFn: () => odontogramService.getAllTreatments(odontogramId),
+    enabled: !!odontogramId,
+  });
+}
+
+export function useAddGlobalTreatment() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ odontogramId, data }: { odontogramId: string; data: AddGlobalTreatmentData }) =>
+      odontogramService.addGlobalTreatment(odontogramId, data),
+    onSuccess: (newTreatment, variables) => {
+      queryClient.invalidateQueries({ queryKey: odontogramKeys.allTreatments(variables.odontogramId) });
+      queryClient.invalidateQueries({ queryKey: odontogramKeys.all });
+      toast({
+        title: 'Tratamiento global registrado',
+        description: 'El tratamiento ha sido aplicado exitosamente',
         variant: 'success',
       });
     },

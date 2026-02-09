@@ -53,6 +53,15 @@ export interface AddToothTreatmentData {
   notes?: string;
 }
 
+// Match API: POST /api/Odontogram/AddGlobalTreatment/{odontogramId}
+export interface AddGlobalTreatmentData {
+  treatmentId: string;
+  doctorId: string;
+  status: 'Planned' | 'InProgress' | 'Completed';
+  performedDate?: string;
+  notes?: string;
+}
+
 export const odontogramService = {
   /**
    * Get all odontograms for a patient
@@ -109,11 +118,29 @@ export const odontogramService = {
   },
 
   /**
+   * Add a global treatment to the odontogram
+   * POST /api/Odontogram/AddGlobalTreatment/{odontogramId}
+   */
+  async addGlobalTreatment(odontogramId: string, data: AddGlobalTreatmentData): Promise<ToothTreatmentRecord> {
+    const response = await apiClient.post<ApiResponse<ToothTreatmentRecord>>(`/Odontogram/AddGlobalTreatment/${odontogramId}`, data);
+    return extractData(response.data);
+  },
+
+  /**
    * Get treatment history for a specific tooth
    * GET /api/Odontogram/GetToothTreatments/{toothRecordId}
    */
   async getToothTreatments(toothRecordId: string): Promise<ToothTreatmentRecord[]> {
     const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetToothTreatments/${toothRecordId}`);
+    return extractData(response.data);
+  },
+
+  /**
+   * Get all treatments for an odontogram (including global treatments)
+   * GET /api/Odontogram/GetAllTreatments/{odontogramId}
+   */
+  async getAllTreatments(odontogramId: string): Promise<ToothTreatmentRecord[]> {
+    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetAllTreatments/${odontogramId}`);
     return extractData(response.data);
   },
 };

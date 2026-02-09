@@ -35,5 +35,7 @@ export type {
   CreateOdontogramData, 
   UpdateToothData, 
   AddSurfaceData, 
-  AddToothTreatmentData 
+  AddToothTreatmentData,
+  AddGlobalTreatmentData 
 } from './odontogramService';
+export { invoiceService } from './invoiceService';

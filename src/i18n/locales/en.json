@@ -295,7 +295,15 @@
     "cosmetic": "Cosmetic",
     "diagnostic": "Diagnostic",
     "noTreatments": "No treatments registered",
-    "deleteConfirm": "Are you sure you want to delete this treatment?"
+    "deleteConfirm": "Are you sure you want to delete this treatment?",
+    "isGlobalTreatment": "Global Treatment",
+    "isGlobalTreatmentDescription": "Apply once per visit (e.g: cleaning, X-rays)",
+    "globalBadge": "Global",
+    "perToothBadge": "Per Tooth",
+    "globalTreatments": "Global Treatments",
+    "toothTreatments": "Tooth Treatments",
+    "addGlobalTreatment": "Add Global Treatment",
+    "selectTreatmentType": "Treatment type"
   },
   "users": {
     "title": "Users",
