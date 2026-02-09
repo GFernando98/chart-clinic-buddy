@@ -87,13 +87,10 @@ export const UsersPage = () => {
     currentPage,
     totalPages,
     totalItems,
-    startIndex,
-    endIndex,
-    nextPage,
-    prevPage,
-    isFirstPage,
-    isLastPage,
-  } = usePagination({ items: filteredUsers, itemsPerPage: 10 });
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage,
+  } = usePagination({ items: filteredUsers });
 
   // Handlers
   const handleViewUser = (user: User) => {
@@ -216,166 +213,170 @@ export const UsersPage = () => {
           <h3 className="mt-4 text-lg font-medium">{t('users.noUsers')}</h3>
           <p className="text-muted-foreground mt-2">{t('patients.noSearchResults')}</p>
         </div>
-      ) : isMobile ? (
-        // Mobile: Card layout
-        <div className="space-y-4">
-          {paginatedItems.map((user) => (
-            <Card key={user.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleViewUser(user)}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{user.fullName}</span>
-                      {user.isActive !== false ? (
-                        <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs">
-                          <CheckCircle2 className="h-3 w-3" />
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 text-xs">
-                          <XCircle className="h-3 w-3" />
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.map((role) => (
-                        <UserRoleBadge key={role} role={role} />
-                      ))}
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewUser(user); }}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        {t('common.view')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t('common.edit')}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleToggleActive(user); }}>
-                        {user.isActive !== false ? (
-                          <>
-                            <XCircle className="h-4 w-4 mr-2" />
-                            {t('users.deactivate')}
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            {t('users.activate')}
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          <MobilePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrevPage={prevPage}
-            onNextPage={nextPage}
-            isFirstPage={isFirstPage}
-            isLastPage={isLastPage}
-          />
-        </div>
       ) : (
-        // Desktop: Table layout
-        <div className="space-y-4">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('common.name')}</TableHead>
-                  <TableHead>{t('common.email')}</TableHead>
-                  <TableHead>{t('users.roles')}</TableHead>
-                  <TableHead>{t('common.status')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+        <Card>
+          <CardContent className="p-0">
+            {isMobile ? (
+              // Mobile: Card layout
+              <div className="space-y-4 p-4">
                 {paginatedItems.map((user) => (
-                  <TableRow key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUser(user)}>
-                    <TableCell className="font-medium">{user.fullName}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles.map((role) => (
-                          <UserRoleBadge key={role} role={role} />
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {user.isActive !== false ? (
-                        <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {t('common.active')}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          {t('common.inactive')}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewUser(user); }}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            {t('common.view')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            {t('common.edit')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleToggleActive(user); }}>
+                  <Card key={user.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleViewUser(user)}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{user.fullName}</span>
                             {user.isActive !== false ? (
-                              <>
-                                <XCircle className="h-4 w-4 mr-2" />
-                                {t('users.deactivate')}
-                              </>
+                              <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs">
+                                <CheckCircle2 className="h-3 w-3" />
+                              </Badge>
                             ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                {t('users.activate')}
-                              </>
+                              <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30 text-xs">
+                                <XCircle className="h-3 w-3" />
+                              </Badge>
                             )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {user.roles.map((role) => (
+                              <UserRoleBadge key={role} role={role} />
+                            ))}
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewUser(user); }}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t('common.view')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleToggleActive(user); }}>
+                              {user.isActive !== false ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  {t('users.deactivate')}
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  {t('users.activate')}
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            onPrevPage={prevPage}
-            onNextPage={nextPage}
-            isFirstPage={isFirstPage}
-            isLastPage={isLastPage}
-          />
-        </div>
+              </div>
+            ) : (
+              // Desktop: Table layout
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('common.name')}</TableHead>
+                    <TableHead>{t('common.email')}</TableHead>
+                    <TableHead>{t('users.roles')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((user) => (
+                    <TableRow key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUser(user)}>
+                      <TableCell className="font-medium">{user.fullName}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles.map((role) => (
+                            <UserRoleBadge key={role} role={role} />
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {user.isActive !== false ? (
+                          <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {t('common.active')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            {t('common.inactive')}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewUser(user); }}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t('common.view')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleToggleActive(user); }}>
+                              {user.isActive !== false ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  {t('users.deactivate')}
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  {t('users.activate')}
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            
+            {/* Pagination */}
+            {isMobile ? (
+              <MobilePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            ) : (
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Dialogs */}

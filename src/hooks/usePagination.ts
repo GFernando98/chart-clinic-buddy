@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 
 interface UsePaginationProps<T> {
   items: T[];
-  itemsPerPage?: number;
+  initialItemsPerPage?: number;
 }
 
 interface UsePaginationReturn<T> {
@@ -10,20 +10,17 @@ interface UsePaginationReturn<T> {
   currentPage: number;
   totalPages: number;
   totalItems: number;
-  startIndex: number;
-  endIndex: number;
-  goToPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-  isFirstPage: boolean;
-  isLastPage: boolean;
+  itemsPerPage: number;
+  setCurrentPage: (page: number) => void;
+  setItemsPerPage: (count: number) => void;
 }
 
 export function usePagination<T>({
   items,
-  itemsPerPage = 10,
+  initialItemsPerPage = 10,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPageState] = useState(initialItemsPerPage);
 
   const totalItems = items.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -31,6 +28,9 @@ export function usePagination<T>({
   // Reset to page 1 if items change and current page is out of range
   const validPage = useMemo(() => {
     if (currentPage > totalPages && totalPages > 0) {
+      return 1;
+    }
+    if (currentPage < 1) {
       return 1;
     }
     return currentPage;
@@ -41,28 +41,14 @@ export function usePagination<T>({
     setCurrentPage(validPage);
   }
 
-  const startIndex = (validPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-
   const paginatedItems = useMemo(() => {
-    return items.slice(startIndex, endIndex);
-  }, [items, startIndex, endIndex]);
+    const start = (validPage - 1) * itemsPerPage;
+    return items.slice(start, start + itemsPerPage);
+  }, [items, validPage, itemsPerPage]);
 
-  const goToPage = (page: number) => {
-    const validatedPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(validatedPage);
-  };
-
-  const nextPage = () => {
-    if (validPage < totalPages) {
-      setCurrentPage(validPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (validPage > 1) {
-      setCurrentPage(validPage - 1);
-    }
+  const handleSetItemsPerPage = (count: number) => {
+    setItemsPerPageState(count);
+    setCurrentPage(1); // Reset to first page when changing items per page
   };
 
   return {
@@ -70,12 +56,8 @@ export function usePagination<T>({
     currentPage: validPage,
     totalPages,
     totalItems,
-    startIndex,
-    endIndex,
-    goToPage,
-    nextPage,
-    prevPage,
-    isFirstPage: validPage === 1,
-    isLastPage: validPage === totalPages || totalPages === 0,
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage: handleSetItemsPerPage,
   };
 }
