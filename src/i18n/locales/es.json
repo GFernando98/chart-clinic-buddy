@@ -360,5 +360,11 @@
     "deleted": "Eliminado exitosamente",
     "updated": "Actualizado exitosamente",
     "created": "Creado exitosamente"
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página",
+    "of": "de"
   }
 }

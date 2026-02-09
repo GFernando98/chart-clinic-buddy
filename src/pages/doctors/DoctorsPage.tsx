@@ -42,6 +42,8 @@ import { Doctor } from '@/types';
 import { DoctorDetailDialog } from './components/DoctorDetailDialog';
 import { useDoctors, useUpdateDoctor } from '@/hooks/useDoctors';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePagination } from '@/hooks/usePagination';
+import { TablePagination, MobilePagination } from '@/components/ui/table-pagination';
 
 export const DoctorsPage = () => {
   const { t } = useTranslation();
@@ -89,6 +91,20 @@ export const DoctorsPage = () => {
       return matchesSearch && matchesSpecialty && matchesStatus;
     });
   }, [doctors, searchQuery, specialtyFilter, statusFilter]);
+
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    totalPages,
+    totalItems,
+    startIndex,
+    endIndex,
+    nextPage,
+    prevPage,
+    isFirstPage,
+    isLastPage,
+  } = usePagination({ items: filteredDoctors, itemsPerPage: 10 });
 
   // Handlers
   const handleViewDoctor = (doctor: Doctor) => {
@@ -194,7 +210,7 @@ export const DoctorsPage = () => {
       ) : isMobile ? (
         // Mobile: Card layout
         <div className="space-y-4">
-          {filteredDoctors.map((doctor) => (
+          {paginatedItems.map((doctor) => (
             <Card
               key={doctor.id}
               className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -274,108 +290,128 @@ export const DoctorsPage = () => {
               </CardContent>
             </Card>
           ))}
+          <MobilePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPrevPage={prevPage}
+            onNextPage={nextPage}
+            isFirstPage={isFirstPage}
+            isLastPage={isLastPage}
+          />
         </div>
       ) : (
         // Desktop: Table layout
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('common.name')}</TableHead>
-                <TableHead>{t('doctors.specialty')}</TableHead>
-                <TableHead>{t('doctors.licenseNumber')}</TableHead>
-                <TableHead>{t('common.phone')}</TableHead>
-                <TableHead>{t('common.status')}</TableHead>
-                <TableHead className="text-right">{t('common.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDoctors.map((doctor) => (
-                <TableRow
-                  key={doctor.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleViewDoctor(doctor)}
-                >
-                  <TableCell className="font-medium">{doctor.fullName}</TableCell>
-                  <TableCell>{doctor.specialty}</TableCell>
-                  <TableCell>{doctor.licenseNumber}</TableCell>
-                  <TableCell>{doctor.phone}</TableCell>
-                  <TableCell>
-                    {doctor.isActive !== false ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
-                      >
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        {t('common.active')}
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
-                      >
-                        <XCircle className="h-3 w-3 mr-1" />
-                        {t('common.inactive')}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDoctor(doctor);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          {t('common.view')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditDoctor(doctor);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          {t('common.edit')}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleActive(doctor);
-                          }}
-                        >
-                          {doctor.isActive !== false ? (
-                            <>
-                              <XCircle className="h-4 w-4 mr-2" />
-                              {t('users.deactivate')}
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              {t('users.activate')}
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <div className="space-y-4">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('common.name')}</TableHead>
+                  <TableHead>{t('doctors.specialty')}</TableHead>
+                  <TableHead>{t('doctors.licenseNumber')}</TableHead>
+                  <TableHead>{t('common.phone')}</TableHead>
+                  <TableHead>{t('common.status')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedItems.map((doctor) => (
+                  <TableRow
+                    key={doctor.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleViewDoctor(doctor)}
+                  >
+                    <TableCell className="font-medium">{doctor.fullName}</TableCell>
+                    <TableCell>{doctor.specialty}</TableCell>
+                    <TableCell>{doctor.licenseNumber}</TableCell>
+                    <TableCell>{doctor.phone}</TableCell>
+                    <TableCell>
+                      {doctor.isActive !== false ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          {t('common.active')}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
+                        >
+                          <XCircle className="h-3 w-3 mr-1" />
+                          {t('common.inactive')}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDoctor(doctor);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            {t('common.view')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditDoctor(doctor);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            {t('common.edit')}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleActive(doctor);
+                            }}
+                          >
+                            {doctor.isActive !== false ? (
+                              <>
+                                <XCircle className="h-4 w-4 mr-2" />
+                                {t('users.deactivate')}
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                {t('users.activate')}
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            onPrevPage={prevPage}
+            onNextPage={nextPage}
+            isFirstPage={isFirstPage}
+            isLastPage={isLastPage}
+          />
         </div>
       )}
 
       {/* Detail Dialog */}
-
       <DoctorDetailDialog
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
