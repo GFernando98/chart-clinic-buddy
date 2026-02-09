@@ -36,6 +36,7 @@ export function useCreateDoctor() {
       toast({
         title: 'Doctor creado',
         description: `${newDoctor.fullName} ha sido registrado exitosamente`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -61,6 +62,7 @@ export function useUpdateDoctor() {
       toast({
         title: 'Doctor actualizado',
         description: `${updatedDoctor.fullName} ha sido actualizado`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {

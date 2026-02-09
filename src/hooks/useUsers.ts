@@ -26,6 +26,7 @@ export function useCreateUser() {
       toast({
         title: 'Usuario creado',
         description: `${createdUser.fullName} ha sido creado exitosamente`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -49,6 +50,7 @@ export function useToggleUserActive() {
       toast({
         title: 'Estado actualizado',
         description: 'El estado del usuario ha sido actualizado',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -73,6 +75,7 @@ export function useUpdateUserRoles() {
       toast({
         title: 'Roles actualizados',
         description: `Los roles de ${updatedUser.fullName} han sido actualizados`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
