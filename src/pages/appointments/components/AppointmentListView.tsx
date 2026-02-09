@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,13 +15,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Appointment } from '@/types';
 import { AppointmentStatusBadge } from './AppointmentStatusBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePagination } from '@/hooks/usePagination';
+import { TablePagination, MobilePagination } from '@/components/ui/table-pagination';
+import { useMemo } from 'react';
 
 interface AppointmentListViewProps {
   appointments: Appointment[];
   onSelectAppointment: (appointment: Appointment) => void;
 }
-
-const ITEMS_PER_PAGE = 10;
 
 export function AppointmentListView({
   appointments,
@@ -30,16 +30,27 @@ export function AppointmentListView({
 }: AppointmentListViewProps) {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Sort by date descending
-  const sortedAppointments = [...appointments].sort(
-    (a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()
-  );
+  const sortedAppointments = useMemo(() => {
+    return [...appointments].sort(
+      (a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()
+    );
+  }, [appointments]);
 
-  const totalPages = Math.ceil(sortedAppointments.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedAppointments = sortedAppointments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    totalPages,
+    totalItems,
+    startIndex,
+    endIndex,
+    nextPage,
+    prevPage,
+    isFirstPage,
+    isLastPage,
+  } = usePagination({ items: sortedAppointments, itemsPerPage: 10 });
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -63,7 +74,7 @@ export function AppointmentListView({
   if (isMobile) {
     return (
       <div className="space-y-4">
-        {paginatedAppointments.map((appointment) => (
+        {paginatedItems.map((appointment) => (
           <Card
             key={appointment.id}
             className="cursor-pointer hover:bg-accent/50 transition-colors"
@@ -84,31 +95,14 @@ export function AppointmentListView({
             </CardContent>
           </Card>
         ))}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        <MobilePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrevPage={prevPage}
+          onNextPage={nextPage}
+          isFirstPage={isFirstPage}
+          isLastPage={isLastPage}
+        />
       </div>
     );
   }
@@ -129,7 +123,7 @@ export function AppointmentListView({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedAppointments.map((appointment) => (
+            {paginatedItems.map((appointment) => (
               <TableRow key={appointment.id}>
                 <TableCell>
                   <div>
@@ -157,35 +151,17 @@ export function AppointmentListView({
           </TableBody>
         </Table>
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {t('common.showing')} {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, sortedAppointments.length)} {t('common.of')} {sortedAppointments.length} {t('common.results')}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              {t('appointments.previousWeek')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              {t('appointments.nextWeek')}
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <TablePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        onPrevPage={prevPage}
+        onNextPage={nextPage}
+        isFirstPage={isFirstPage}
+        isLastPage={isLastPage}
+      />
     </div>
   );
 }
