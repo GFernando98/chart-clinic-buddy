@@ -44,6 +44,7 @@ export function useCreateOdontogram() {
       toast({
         title: 'Odontograma creado',
         description: 'El odontograma ha sido creado exitosamente',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -68,6 +69,7 @@ export function useUpdateTooth() {
       toast({
         title: 'Diente actualizado',
         description: `Diente #${updatedTooth.toothNumber} actualizado`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -108,6 +110,7 @@ export function useAddToothTreatment() {
       toast({
         title: 'Tratamiento registrado',
         description: 'El tratamiento ha sido registrado exitosamente',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {

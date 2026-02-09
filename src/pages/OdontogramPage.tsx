@@ -153,11 +153,6 @@ export default function OdontogramPage() {
         surfaces: [],
       }];
     });
-    
-    toast({
-      title: t('success.updated'),
-      description: `${t('odontogram.tooth')} #${toothNumber}`,
-    });
   };
   
   const handleSurfaceConditionChange = (toothNumber: number, surface: ToothSurface, condition: ToothCondition) => {

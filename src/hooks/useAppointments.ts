@@ -54,6 +54,7 @@ export function useCreateAppointment() {
       toast({
         title: 'Cita creada',
         description: `Cita para ${newAppointment.patientName} ha sido programada`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -79,6 +80,7 @@ export function useUpdateAppointment() {
       toast({
         title: 'Cita actualizada',
         description: `La cita ha sido actualizada`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -103,6 +105,7 @@ export function useUpdateAppointmentStatus() {
       toast({
         title: 'Estado actualizado',
         description: 'El estado de la cita ha sido actualizado',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -127,6 +130,7 @@ export function useDeleteAppointment() {
       toast({
         title: 'Cita eliminada',
         description: 'La cita ha sido eliminada exitosamente',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {

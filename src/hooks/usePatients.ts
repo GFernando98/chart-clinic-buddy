@@ -45,6 +45,7 @@ export function useCreatePatient() {
       toast({
         title: 'Paciente creado',
         description: `${newPatient.fullName} ha sido registrado exitosamente`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -70,6 +71,7 @@ export function useUpdatePatient() {
       toast({
         title: 'Paciente actualizado',
         description: `${updatedPatient.fullName} ha sido actualizado`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -94,6 +96,7 @@ export function useDeletePatient() {
       toast({
         title: 'Paciente eliminado',
         description: 'El paciente ha sido eliminado exitosamente',
+        variant: 'success',
       });
     },
     onError: (error: Error) => {

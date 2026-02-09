@@ -36,6 +36,7 @@ export function useCreateTreatment() {
       toast({
         title: 'Tratamiento creado',
         description: `${newTreatment.name} ha sido creado exitosamente`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -61,6 +62,7 @@ export function useUpdateTreatment() {
       toast({
         title: 'Tratamiento actualizado',
         description: `${updatedTreatment.name} ha sido actualizado`,
+        variant: 'success',
       });
     },
     onError: (error: Error) => {
