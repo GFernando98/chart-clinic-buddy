@@ -8,6 +8,7 @@ import { ConditionLegend } from '@/components/odontogram/ConditionLegend';
 import { AddToothTreatmentDialog, ToothTreatmentFormData } from '@/components/odontogram/AddToothTreatmentDialog';
 import { AddGlobalTreatmentDialog, GlobalTreatmentFormData } from '@/components/odontogram/AddGlobalTreatmentDialog';
 import { GlobalTreatmentsSection } from '@/components/odontogram/GlobalTreatmentsSection';
+import { InvoicePreviewDialog } from '@/components/odontogram/InvoicePreviewDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -15,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, Printer, User } from 'lucide-react';
+import { Plus, Printer, User, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ export default function OdontogramPage() {
   const [confirmNewOdontogramOpen, setConfirmNewOdontogramOpen] = useState(false);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
   const [globalTreatmentDialogOpen, setGlobalTreatmentDialogOpen] = useState(false);
+  const [invoicePreviewOpen, setInvoicePreviewOpen] = useState(false);
   
   // Fetch all odontograms for the patient
   const { data: patientOdontograms = [], isLoading: loadingOdontograms } = usePatientOdontograms(selectedPatientId || '');
@@ -400,6 +402,15 @@ export default function OdontogramPage() {
           </Button>
           
           <Button 
+            variant="outline"
+            onClick={() => setInvoicePreviewOpen(true)}
+            disabled={!selectedOdontogram}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            {t('invoices.preview')}
+          </Button>
+          
+          <Button 
             onClick={handleNewOdontogramClick} 
             disabled={!selectedPatientId || createOdontogramMutation.isPending}
           >
@@ -595,6 +606,14 @@ export default function OdontogramPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Invoice Preview Dialog */}
+      <InvoicePreviewDialog
+        open={invoicePreviewOpen}
+        onOpenChange={setInvoicePreviewOpen}
+        odontogramId={selectedOdontogram?.id || ''}
+        patientName={selectedPatient?.fullName}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { AppointmentsPage } from "@/pages/appointments";
 import { UsersPage } from "@/pages/users";
 import { DoctorsPage, DoctorFormPage } from "@/pages/doctors";
 import { TreatmentsPage } from "@/pages/treatments";
+import { InvoicesPage } from "@/pages/invoices";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import NotFound from "./pages/NotFound";
@@ -86,6 +87,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                       <TreatmentsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/invoices"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
+                      <InvoicesPage />
                     </ProtectedRoute>
                   }
                 />
