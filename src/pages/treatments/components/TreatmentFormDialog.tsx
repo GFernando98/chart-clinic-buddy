@@ -87,7 +87,7 @@ export const TreatmentFormDialog = ({
           code: treatment.code,
           name: treatment.name,
           description: treatment.description || '',
-          categoryId: String(treatment.category),
+          categoryId: treatment.categoryId || '',
           defaultPrice: treatment.defaultPrice,
           estimatedDurationMinutes: treatment.estimatedDurationMinutes,
           isGlobalTreatment: treatment.isGlobalTreatment ?? false,
