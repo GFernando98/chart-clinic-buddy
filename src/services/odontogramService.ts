@@ -140,7 +140,7 @@ export const odontogramService = {
    * GET /api/Odontogram/GetAllTreatments/{odontogramId}
    */
   async getAllTreatments(odontogramId: string): Promise<ToothTreatmentRecord[]> {
-    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetAllTreatments/${odontogramId}`);
+    const response = await apiClient.get<ApiResponse<ToothTreatmentRecord[]>>(`/Odontogram/GetAllOdontogramTreatments/${odontogramId}`);
     return extractData(response.data);
   },
 };
