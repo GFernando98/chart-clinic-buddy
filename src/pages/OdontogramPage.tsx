@@ -104,11 +104,8 @@ export default function OdontogramPage() {
   // Load teeth records when odontogram is loaded
   useEffect(() => {
     if (selectedOdontogram?.teethRecords) {
-      console.log('📋 Odontogram loaded:', selectedOdontogram);
-      console.log('🦷 TeethRecords from API:', selectedOdontogram.teethRecords);
       setTeethRecords(selectedOdontogram.teethRecords);
     } else {
-      console.log('⚠️ No teethRecords in odontogram:', selectedOdontogram);
       setTeethRecords([]);
     }
   }, [selectedOdontogram]);
