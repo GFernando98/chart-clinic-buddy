@@ -67,6 +67,7 @@
     "appointments": "Appointments",
     "doctors": "Doctors",
     "treatments": "Treatments",
+    "invoices": "Invoices",
     "users": "Users",
     "settings": "Settings"
   },
@@ -368,6 +369,23 @@
     "deleted": "Deleted successfully",
     "updated": "Updated successfully",
     "created": "Created successfully"
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "View and generate treatment invoices",
+    "preview": "Invoice Preview",
+    "invoiceTitle": "Treatment Invoice",
+    "patient": "Patient",
+    "qty": "Qty",
+    "unitPrice": "Unit Price",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "discount": "Discount",
+    "noUnpaid": "No unpaid treatments found",
+    "unpaidTreatments": "Unpaid treatments",
+    "generatePreview": "Generate Preview",
+    "emptyTitle": "View Invoices",
+    "emptyDescription": "Select a patient and dental chart to view unpaid treatments"
   },
   "pagination": {
     "previous": "Previous",

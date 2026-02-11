@@ -67,6 +67,7 @@
     "appointments": "Citas",
     "doctors": "Doctores",
     "treatments": "Tratamientos",
+    "invoices": "Facturas",
     "users": "Usuarios",
     "settings": "Configuración"
   },
@@ -368,6 +369,23 @@
     "deleted": "Eliminado exitosamente",
     "updated": "Actualizado exitosamente",
     "created": "Creado exitosamente"
+  },
+  "invoices": {
+    "title": "Facturas",
+    "subtitle": "Consulta y genera facturas de tratamientos",
+    "preview": "Vista Previa Factura",
+    "invoiceTitle": "Factura de Tratamientos",
+    "patient": "Paciente",
+    "qty": "Cant.",
+    "unitPrice": "Precio Unit.",
+    "subtotal": "Subtotal",
+    "tax": "Impuesto",
+    "discount": "Descuento",
+    "noUnpaid": "No hay tratamientos pendientes de pago",
+    "unpaidTreatments": "Tratamientos pendientes de pago",
+    "generatePreview": "Generar Vista Previa",
+    "emptyTitle": "Consultar Facturas",
+    "emptyDescription": "Seleccione un paciente y odontograma para ver los tratamientos pendientes de pago"
   },
   "pagination": {
     "previous": "Anterior",

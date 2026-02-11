@@ -12,6 +12,7 @@ import {
   Scan,
   LogOut,
   Settings,
+  FileText,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -50,6 +51,7 @@ export function AppSidebar() {
     { title: t('nav.appointments'), icon: Calendar, path: '/appointments' },
     { title: t('nav.doctors'), icon: Stethoscope, path: '/doctors', roles: ['Admin'] },
     { title: t('nav.treatments'), icon: ClipboardList, path: '/treatments', roles: ['Admin'] },
+    { title: t('nav.invoices'), icon: FileText, path: '/invoices', roles: ['Admin', 'Doctor'] },
     { title: t('nav.users'), icon: UserCog, path: '/users', roles: ['Admin'] },
     { title: t('nav.settings'), icon: Settings, path: '/settings', roles: ['Admin'] },
   ];
