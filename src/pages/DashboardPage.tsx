@@ -49,8 +49,8 @@ export default function DashboardPage() {
 
   // Revenue
   const now = new Date();
-  const [revenueStart, setRevenueStart] = useState(format(subMonths(now, 1), 'yyyy-MM-dd'));
-  const [revenueEnd, setRevenueEnd] = useState(format(now, 'yyyy-MM-dd'));
+  const [revenueStart, setRevenueStart] = useState(format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd'));
+  const [revenueEnd, setRevenueEnd] = useState(format(new Date(now.getFullYear(), now.getMonth() + 1, 0), 'yyyy-MM-dd'));
   const { data: revenue, isLoading: loadingRevenue } = useRevenue(revenueStart, revenueEnd);
 
   const formatCurrency = (n: number) => `L ${n.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
@@ -232,7 +232,7 @@ export default function DashboardPage() {
                       <XAxis dataKey="dateLabel" />
                       <YAxis />
                       <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                      <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
