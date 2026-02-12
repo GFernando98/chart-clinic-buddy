@@ -47,7 +47,8 @@ export function TaxInformationTab() {
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [form, setForm] = useState<TaxInformationFormData>({
     cai: '', invoiceType: InvoiceType.Factura,
-    rangeStart: 1, rangeEnd: 10000,
+    rangeStart: '00000001', rangeEnd: '00010000',
+    branch: '001', pointEmission: '001',
     authorizationDate: '', expirationDate: '',
   });
 
@@ -61,7 +62,8 @@ export function TaxInformationTab() {
     setFormOpen(false);
     setForm({
       cai: '', invoiceType: InvoiceType.Factura,
-      rangeStart: 1, rangeEnd: 10000,
+      rangeStart: '00000001', rangeEnd: '00010000',
+      branch: '001', pointEmission: '001',
       authorizationDate: '', expirationDate: '',
     });
   };
@@ -203,19 +205,37 @@ export function TaxInformationTab() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label>{t('tax.branch')}</Label>
+                <Input
+                  value={form.branch}
+                  onChange={(e) => setForm((p) => ({ ...p, branch: e.target.value }))}
+                  placeholder="001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('tax.pointEmission')}</Label>
+                <Input
+                  value={form.pointEmission}
+                  onChange={(e) => setForm((p) => ({ ...p, pointEmission: e.target.value }))}
+                  placeholder="001"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label>{t('tax.rangeStart')}</Label>
                 <Input
-                  type="number"
                   value={form.rangeStart}
-                  onChange={(e) => setForm((p) => ({ ...p, rangeStart: parseInt(e.target.value) }))}
+                  onChange={(e) => setForm((p) => ({ ...p, rangeStart: e.target.value }))}
+                  placeholder="00000001"
                 />
               </div>
               <div className="space-y-2">
                 <Label>{t('tax.rangeEnd')}</Label>
                 <Input
-                  type="number"
                   value={form.rangeEnd}
-                  onChange={(e) => setForm((p) => ({ ...p, rangeEnd: parseInt(e.target.value) }))}
+                  onChange={(e) => setForm((p) => ({ ...p, rangeEnd: e.target.value }))}
+                  placeholder="00010000"
                 />
               </div>
             </div>
