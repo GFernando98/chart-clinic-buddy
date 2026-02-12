@@ -85,24 +85,26 @@ export function InvoiceDetailDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{invoice.invoiceNumber}</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 min-w-0">
+                <DialogTitle className="text-lg">{invoice.invoiceNumber}</DialogTitle>
+                <DialogDescription className="space-y-0.5">
+                  <span className="block">{t('invoices.patient')}: {invoice.patientName}</span>
+                  {invoice.cai && (
+                    <span className="block text-xs">CAI: {invoice.cai}</span>
+                  )}
+                  {!invoice.cai && (
+                    <span className="block text-xs text-muted-foreground">({t('invoices.noCai')})</span>
+                  )}
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
                 <InvoiceStatusBadge status={invoice.status} />
-                <Button variant="outline" size="sm" onClick={handlePrint}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
                   <Printer className="h-4 w-4" />
                 </Button>
               </div>
-            </DialogTitle>
-            <DialogDescription>
-              {t('invoices.patient')}: {invoice.patientName}
-              {invoice.cai && (
-                <span className="block text-xs mt-1">CAI: {invoice.cai}</span>
-              )}
-              {!invoice.cai && (
-                <span className="block text-xs mt-1 text-muted-foreground">({t('invoices.noCai')})</span>
-              )}
-            </DialogDescription>
+            </div>
           </DialogHeader>
 
           {/* Line Items */}
