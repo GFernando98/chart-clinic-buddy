@@ -13,9 +13,16 @@ export interface AppointmentsByDay {
   count: number;
 }
 
+export interface TreatmentsByCategoryApi {
+  category: string;
+  color: string;
+  count: number;
+}
+
 export interface TreatmentsByCategory {
   name: string;
   value: number;
+  color: string;
 }
 
 export interface UpcomingAppointment {
@@ -50,8 +57,13 @@ export const dashboardService = {
    * Get treatments grouped by category (current month)
    */
   async getTreatmentsByCategory(): Promise<TreatmentsByCategory[]> {
-    const response = await apiClient.get<ApiResponse<TreatmentsByCategory[]>>('/Dashboard/GetTreatmentsByCategory');
-    return extractData(response.data);
+    const response = await apiClient.get<ApiResponse<TreatmentsByCategoryApi[]>>('/Dashboard/GetTreatmentsByCategory');
+    const raw = extractData(response.data);
+    return raw.map((item) => ({
+      name: item.category,
+      value: item.count,
+      color: item.color,
+    }));
   },
 
   /**
