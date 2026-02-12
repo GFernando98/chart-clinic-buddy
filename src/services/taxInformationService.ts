@@ -12,8 +12,8 @@ export const taxInformationService = {
     return extractData(response.data);
   },
 
-  async deactivate(id: string): Promise<boolean> {
-    const response = await apiClient.put<ApiResponse<boolean>>(`/TaxInformation/Deactivate/${id}`);
+  async toggle(id: string, activate: boolean): Promise<TaxInformation> {
+    const response = await apiClient.put<ApiResponse<TaxInformation>>(`/TaxInformation/Toggle/${id}?activate=${activate}`);
     return extractData(response.data);
   },
 };

@@ -31,12 +31,13 @@ export function useCreateTaxInformation() {
   });
 }
 
-export function useDeactivateTaxInformation() {
+export function useToggleTaxInformation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: (id: string) => taxInformationService.deactivate(id),
+    mutationFn: ({ id, activate }: { id: string; activate: boolean }) =>
+      taxInformationService.toggle(id, activate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taxKeys.all });
       toast.success(t('success.updated'));
