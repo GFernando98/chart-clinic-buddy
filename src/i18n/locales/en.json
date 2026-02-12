@@ -390,6 +390,7 @@
     "invoiceCancelled": "Invoice cancelled successfully",
     "paymentRegistered": "Payment registered successfully",
     "createInvoice": "Create Invoice",
+    "generateInvoice": "Generate Invoice",
     "registerPayment": "Register Payment",
     "cancelInvoice": "Cancel Invoice",
     "viewInvoice": "View Invoice",
