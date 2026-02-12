@@ -335,6 +335,7 @@ export interface TaxInformation {
   authorizationDate: string;
   expirationDate: string;
   isActive: boolean;
+  hasBeenUsed: boolean;
   isExpired: boolean;
   isExhausted: boolean;
   canGenerateInvoice: boolean;

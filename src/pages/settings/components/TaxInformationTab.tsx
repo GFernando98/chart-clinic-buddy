@@ -20,12 +20,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  Plus, ShieldCheck, CheckCircle2, XCircle, AlertTriangle, Loader2,
+  Plus, ShieldCheck, CheckCircle2, XCircle, AlertTriangle, Loader2, Power,
 } from 'lucide-react';
 import {
-  useTaxInformation, useCreateTaxInformation, useDeactivateTaxInformation,
+  useTaxInformation, useCreateTaxInformation, useToggleTaxInformation,
 } from '@/hooks/useTaxInformation';
-import { InvoiceType, TaxInformationFormData } from '@/types';
+import { InvoiceType, TaxInformation, TaxInformationFormData } from '@/types';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
@@ -36,15 +36,35 @@ const invoiceTypeKeys: Record<InvoiceType, string> = {
   [InvoiceType.NotaDebito]: 'notaDebito',
 };
 
+function getCAIStatus(tax: TaxInformation) {
+  if (!tax.isActive) return { variant: 'secondary' as const, icon: XCircle, key: 'common.inactive' };
+  if (tax.isExpired) return { variant: 'destructive' as const, icon: AlertTriangle, key: 'tax.expired' };
+  if (tax.isExhausted) return { variant: 'destructive' as const, icon: XCircle, key: 'tax.exhausted' };
+  if (tax.remainingInvoices <= 10) return { variant: 'warning' as const, icon: AlertTriangle, key: 'tax.almostExhausted' };
+  return { variant: 'success' as const, icon: CheckCircle2, key: 'common.active' };
+}
+
+function canToggle(tax: TaxInformation, activate: boolean): boolean {
+  if (!activate) return true; // always can deactivate
+  return !tax.hasBeenUsed && !tax.isExpired && !tax.isExhausted;
+}
+
+const statusBadgeClasses: Record<string, string> = {
+  success: 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30',
+  destructive: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
+  warning: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30',
+  secondary: 'bg-muted text-muted-foreground',
+};
+
 export function TaxInformationTab() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'es' ? es : enUS;
   const { data: taxInfos = [], isLoading } = useTaxInformation();
   const createTax = useCreateTaxInformation();
-  const deactivate = useDeactivateTaxInformation();
+  const toggleTax = useToggleTaxInformation();
 
   const [formOpen, setFormOpen] = useState(false);
-  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<{ id: string; activate: boolean } | null>(null);
   const [form, setForm] = useState<TaxInformationFormData>({
     cai: '', invoiceType: InvoiceType.Factura,
     rangeStart: '00000001', rangeEnd: '00010000',
@@ -58,7 +78,14 @@ export function TaxInformationTab() {
   };
 
   const handleCreate = async () => {
-    await createTax.mutateAsync(form);
+    const formatted: TaxInformationFormData = {
+      ...form,
+      branch: form.branch.padStart(3, '0'),
+      pointEmission: form.pointEmission.padStart(3, '0'),
+      rangeStart: form.rangeStart.padStart(8, '0'),
+      rangeEnd: form.rangeEnd.padStart(8, '0'),
+    };
+    await createTax.mutateAsync(formatted);
     setFormOpen(false);
     setForm({
       cai: '', invoiceType: InvoiceType.Factura,
@@ -68,10 +95,10 @@ export function TaxInformationTab() {
     });
   };
 
-  const handleDeactivate = async () => {
-    if (deactivateId) {
-      await deactivate.mutateAsync(deactivateId);
-      setDeactivateId(null);
+  const handleToggle = async () => {
+    if (toggleTarget) {
+      await toggleTax.mutateAsync(toggleTarget);
+      setToggleTarget(null);
     }
   };
 
@@ -120,52 +147,52 @@ export function TaxInformationTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {taxInfos.map((tax) => (
-                  <TableRow key={tax.id}>
-                    <TableCell className="font-mono text-xs max-w-[200px] truncate">
-                      {tax.cai}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{t(`tax.${invoiceTypeKeys[tax.invoiceType]}`)}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center">{tax.currentNumber}/{tax.rangeEnd}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={tax.remainingInvoices < 100 ? 'destructive' : 'secondary'}>
-                        {tax.remainingInvoices}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(tax.expirationDate)}</TableCell>
-                    <TableCell>
-                      {tax.isExpired ? (
-                        <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {t('tax.expired')}
+                {taxInfos.map((tax) => {
+                  const status = getCAIStatus(tax);
+                  const StatusIcon = status.icon;
+                  const nextActivate = !tax.isActive;
+                  const toggleEnabled = canToggle(tax, nextActivate);
+                  // Don't show toggle for expired/exhausted inactive CAIs
+                  const showToggle = tax.isActive || toggleEnabled;
+
+                  return (
+                    <TableRow key={tax.id}>
+                      <TableCell className="font-mono text-xs max-w-[200px] truncate">
+                        {tax.cai}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{t(`tax.${invoiceTypeKeys[tax.invoiceType]}`)}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center font-mono text-xs">
+                        {tax.currentNumber}/{tax.rangeEnd}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={tax.remainingInvoices <= 10 ? 'destructive' : 'secondary'}>
+                          {tax.remainingInvoices}
                         </Badge>
-                      ) : tax.isActive ? (
-                        <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {t('common.active')}
+                      </TableCell>
+                      <TableCell>{formatDate(tax.expirationDate)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusBadgeClasses[status.variant]}>
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {t(status.key)}
                         </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          {t('common.inactive')}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {tax.isActive && !tax.isExpired && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeactivateId(tax.id)}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {showToggle && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setToggleTarget({ id: tax.id, activate: nextActivate })}
+                            title={nextActivate ? t('tax.activate') : t('tax.deactivate')}
+                          >
+                            <Power className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -210,6 +237,7 @@ export function TaxInformationTab() {
                   value={form.branch}
                   onChange={(e) => setForm((p) => ({ ...p, branch: e.target.value }))}
                   placeholder="001"
+                  maxLength={3}
                 />
               </div>
               <div className="space-y-2">
@@ -218,6 +246,7 @@ export function TaxInformationTab() {
                   value={form.pointEmission}
                   onChange={(e) => setForm((p) => ({ ...p, pointEmission: e.target.value }))}
                   placeholder="001"
+                  maxLength={3}
                 />
               </div>
             </div>
@@ -228,6 +257,7 @@ export function TaxInformationTab() {
                   value={form.rangeStart}
                   onChange={(e) => setForm((p) => ({ ...p, rangeStart: e.target.value }))}
                   placeholder="00000001"
+                  maxLength={8}
                 />
               </div>
               <div className="space-y-2">
@@ -236,6 +266,7 @@ export function TaxInformationTab() {
                   value={form.rangeEnd}
                   onChange={(e) => setForm((p) => ({ ...p, rangeEnd: e.target.value }))}
                   placeholder="00010000"
+                  maxLength={8}
                 />
               </div>
             </div>
@@ -268,16 +299,20 @@ export function TaxInformationTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Deactivate Confirm */}
-      <AlertDialog open={!!deactivateId} onOpenChange={(open) => !open && setDeactivateId(null)}>
+      {/* Toggle Confirm */}
+      <AlertDialog open={!!toggleTarget} onOpenChange={(open) => !open && setToggleTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('tax.deactivate')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('tax.deactivateConfirm')}</AlertDialogDescription>
+            <AlertDialogTitle>
+              {toggleTarget?.activate ? t('tax.activate') : t('tax.deactivate')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {toggleTarget?.activate ? t('tax.activateConfirm') : t('tax.deactivateConfirm')}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeactivate}>{t('common.confirm')}</AlertDialogAction>
+            <AlertDialogAction onClick={handleToggle}>{t('common.confirm')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
