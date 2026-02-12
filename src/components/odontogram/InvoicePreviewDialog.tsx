@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Printer, Globe, Hash, Receipt, MessageCircle, Mail, CheckCircle2 } from 'lucide-react';
 import { useInvoicePreview, useCreateInvoice } from '@/hooks/useInvoice';
+import { useClinicInformation } from '@/hooks/useClinicInformation';
 import { InvoiceTreatmentLine, Invoice } from '@/types';
+import { printInvoice } from '@/utils/printInvoice';
 
 interface InvoicePreviewDialogProps {
   open: boolean;
@@ -27,8 +29,8 @@ export function InvoicePreviewDialog({
   patientName,
 }: InvoicePreviewDialogProps) {
   const { t } = useTranslation();
-  const printRef = useRef<HTMLDivElement>(null);
   const { data: preview, isLoading, isError, error } = useInvoicePreview(odontogramId, open);
+  const { data: clinic } = useClinicInformation();
   const createInvoice = useCreateInvoice();
 
   // State for creation flow
@@ -92,29 +94,8 @@ export function InvoicePreviewDialog({
   };
 
   const handlePrint = () => {
-    if (!printRef.current) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Factura - ${createdInvoice?.invoiceNumber || ''}</title>
-          <style>
-            body { font-family: system-ui, sans-serif; padding: 2rem; color: #1a1a1a; }
-            table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-            th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #e5e5e5; }
-            th { font-weight: 600; font-size: 0.75rem; text-transform: uppercase; color: #666; }
-            .text-right { text-align: right; }
-            .total-row { font-weight: 700; font-size: 1.1rem; border-top: 2px solid #1a1a1a; }
-            h1 { margin: 0 0 0.25rem; }
-            .subtitle { color: #666; margin: 0 0 2rem; }
-          </style>
-        </head>
-        <body>${printRef.current.innerHTML}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    if (!createdInvoice) return;
+    printInvoice({ invoice: createdInvoice, clinic: clinic || null });
   };
 
   const handleWhatsApp = () => {
@@ -177,7 +158,7 @@ export function InvoicePreviewDialog({
 
         {/* ===== POST-CREATION: Invoice created successfully ===== */}
         {createdInvoice && (
-          <div ref={printRef}>
+          <div>
             <div className="space-y-4">
               <div className="rounded-lg border p-4 bg-muted/30">
                 <div className="flex justify-between items-start">
