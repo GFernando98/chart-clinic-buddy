@@ -12,6 +12,7 @@ export function useClinicInformation() {
   return useQuery({
     queryKey: clinicKeys.all,
     queryFn: () => clinicInformationService.get(),
+    retry: false,
   });
 }
 
