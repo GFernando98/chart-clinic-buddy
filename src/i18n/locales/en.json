@@ -456,6 +456,8 @@
     "invoiceType": "Invoice Type",
     "rangeStart": "Range Start",
     "rangeEnd": "Range End",
+    "branch": "Branch",
+    "pointEmission": "Point of Emission",
     "currentNumber": "Current Number",
     "authorizationDate": "Authorization Date",
     "expirationDate": "Expiration Date",

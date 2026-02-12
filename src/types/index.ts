@@ -327,9 +327,11 @@ export interface TaxInformation {
   id: string;
   cai: string;
   invoiceType: InvoiceType;
-  rangeStart: number;
-  rangeEnd: number;
-  currentNumber: number;
+  rangeStart: string;
+  rangeEnd: string;
+  branch: string;
+  pointEmission: string;
+  currentNumber: string;
   authorizationDate: string;
   expirationDate: string;
   isActive: boolean;
@@ -342,8 +344,10 @@ export interface TaxInformation {
 export interface TaxInformationFormData {
   cai: string;
   invoiceType: InvoiceType;
-  rangeStart: number;
-  rangeEnd: number;
+  rangeStart: string;
+  rangeEnd: string;
+  branch: string;
+  pointEmission: string;
   authorizationDate: string;
   expirationDate: string;
 }

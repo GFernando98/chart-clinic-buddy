@@ -456,6 +456,8 @@
     "invoiceType": "Tipo de Comprobante",
     "rangeStart": "Rango Inicial",
     "rangeEnd": "Rango Final",
+    "branch": "Sucursal",
+    "pointEmission": "Punto de Emisión",
     "currentNumber": "Número Actual",
     "authorizationDate": "Fecha de Autorización",
     "expirationDate": "Fecha de Vencimiento",
