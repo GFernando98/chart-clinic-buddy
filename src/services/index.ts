@@ -39,3 +39,5 @@ export type {
   AddGlobalTreatmentData 
 } from './odontogramService';
 export { invoiceService } from './invoiceService';
+export { clinicInformationService } from './clinicInformationService';
+export { taxInformationService } from './taxInformationService';

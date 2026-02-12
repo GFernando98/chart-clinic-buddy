@@ -10,6 +10,8 @@ import {
   Loader2,
   Settings,
   FolderOpen,
+  Building2,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +40,8 @@ import {
   useToggleTreatmentCategoryActive,
 } from '@/hooks/useTreatmentCategories';
 import { TreatmentCategoryFormDialog } from './components/TreatmentCategoryFormDialog';
+import { ClinicInformationTab } from './components/ClinicInformationTab';
+import { TaxInformationTab } from './components/TaxInformationTab';
 import { TreatmentCategoryDto, TreatmentCategoryFormData } from '@/services/treatmentCategoryService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePagination } from '@/hooks/usePagination';
@@ -144,6 +148,14 @@ export const SettingsPage = () => {
           <TabsTrigger value="categories" className="flex items-center gap-2">
             <FolderOpen className="h-4 w-4" />
             {t('settings.treatmentCategories')}
+          </TabsTrigger>
+          <TabsTrigger value="clinic" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            {t('clinic.title')}
+          </TabsTrigger>
+          <TabsTrigger value="tax" className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            {t('tax.title')}
           </TabsTrigger>
         </TabsList>
 
@@ -328,6 +340,14 @@ export const SettingsPage = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="clinic">
+          <ClinicInformationTab />
+        </TabsContent>
+
+        <TabsContent value="tax">
+          <TaxInformationTab />
         </TabsContent>
       </Tabs>
 

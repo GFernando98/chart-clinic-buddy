@@ -282,7 +282,90 @@ export interface ToothTreatmentRecord {
   appointmentId?: string;
 }
 
+// ============= Clinic Information Types =============
+
+export interface ClinicInformation {
+  id: string;
+  clinicName: string;
+  legalName: string;
+  rtn: string;
+  address: string;
+  city: string;
+  department: string;
+  country: string;
+  phone: string;
+  email: string;
+  website?: string;
+  logo?: string;
+  isActive: boolean;
+}
+
+export interface ClinicInformationFormData {
+  clinicName: string;
+  legalName: string;
+  rtn: string;
+  address: string;
+  city: string;
+  department: string;
+  country: string;
+  phone: string;
+  email: string;
+  website?: string;
+  logo?: string;
+}
+
+// ============= Tax Information (CAI) Types =============
+
+export enum InvoiceType {
+  Factura = 1,
+  Recibo = 2,
+  NotaCredito = 3,
+  NotaDebito = 4,
+}
+
+export interface TaxInformation {
+  id: string;
+  cai: string;
+  invoiceType: InvoiceType;
+  rangeStart: number;
+  rangeEnd: number;
+  currentNumber: number;
+  authorizationDate: string;
+  expirationDate: string;
+  isActive: boolean;
+  isExpired: boolean;
+  isExhausted: boolean;
+  canGenerateInvoice: boolean;
+  remainingInvoices: number;
+}
+
+export interface TaxInformationFormData {
+  cai: string;
+  invoiceType: InvoiceType;
+  rangeStart: number;
+  rangeEnd: number;
+  authorizationDate: string;
+  expirationDate: string;
+}
+
 // ============= Invoice Types =============
+
+export enum InvoiceStatus {
+  Pending = 1,
+  PartiallyPaid = 2,
+  Paid = 3,
+  Cancelled = 4,
+  Overdue = 5,
+}
+
+export enum PaymentMethod {
+  Cash = 1,
+  CreditCard = 2,
+  DebitCard = 3,
+  BankTransfer = 4,
+  Check = 5,
+  Other = 6,
+}
 
 export interface InvoiceTreatmentLine {
   treatmentRecordId?: string;
@@ -306,6 +389,89 @@ export interface InvoicePreview {
   tax: number;
   discount: number;
   total: number;
+}
+
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  toothNumbers: string | null;
+  isGlobalTreatment: boolean;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface InvoicePayment {
+  id: string;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  referenceNumber?: string;
+  notes?: string;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceType: InvoiceType;
+  patientId: string;
+  patientName: string;
+  odontogramId: string;
+  invoiceDate: string;
+  dueDate: string | null;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  amountPaid: number;
+  balance: number;
+  notes?: string;
+  status: InvoiceStatus;
+  cai?: string;
+  lineItems: InvoiceLineItem[];
+  payments: InvoicePayment[];
+}
+
+export interface CreateInvoiceData {
+  odontogramId: string;
+  treatmentRecordIds: string[];
+  discountPercentage?: number;
+  discountAmount?: number;
+  notes?: string;
+}
+
+export interface RegisterPaymentData {
+  invoiceId: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  referenceNumber?: string;
+  notes?: string;
+}
+
+// ============= Revenue Types =============
+
+export interface PaymentMethodBreakdown {
+  method: PaymentMethod;
+  amount: number;
+  count: number;
+}
+
+export interface DailyRevenue {
+  date: string;
+  amount: number;
+  invoiceCount: number;
+}
+
+export interface RevenueReport {
+  startDate: string;
+  endDate: string;
+  totalInvoices: number;
+  totalRevenue: number;
+  totalPaid: number;
+  totalPending: number;
+  totalCancelled: number;
+  paymentMethodBreakdown: PaymentMethodBreakdown[];
+  dailyRevenue: DailyRevenue[];
 }
 
 // ============= User Management Types =============
