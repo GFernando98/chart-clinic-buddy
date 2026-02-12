@@ -390,6 +390,7 @@
     "invoiceCancelled": "Factura cancelada exitosamente",
     "paymentRegistered": "Pago registrado exitosamente",
     "createInvoice": "Crear Factura",
+    "generateInvoice": "Generar Factura",
     "registerPayment": "Registrar Pago",
     "cancelInvoice": "Cancelar Factura",
     "viewInvoice": "Ver Factura",
