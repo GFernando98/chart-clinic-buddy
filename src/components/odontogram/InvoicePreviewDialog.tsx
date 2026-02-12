@@ -52,9 +52,9 @@ export function InvoicePreviewDialog({
     return ids;
   }, [preview]);
 
-  // Auto-select all when preview loads
+  // Auto-select all when preview loads (only when no invoice has been created)
   React.useEffect(() => {
-    if (preview && allTreatmentIds.length > 0 && selectedTreatmentIds.length === 0) {
+    if (preview && allTreatmentIds.length > 0 && selectedTreatmentIds.length === 0 && !createdInvoice) {
       setSelectedTreatmentIds([...allTreatmentIds]);
     }
   }, [preview, allTreatmentIds]);
@@ -79,7 +79,7 @@ export function InvoicePreviewDialog({
   };
 
   const handleGenerateInvoice = async () => {
-    if (!odontogramId || selectedTreatmentIds.length === 0) return;
+    if (!odontogramId || selectedTreatmentIds.length === 0 || createdInvoice) return;
     try {
       const invoice = await createInvoice.mutateAsync({
         odontogramId,
