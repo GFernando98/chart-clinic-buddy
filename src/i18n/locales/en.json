@@ -40,7 +40,9 @@
     "showing": "Showing",
     "of": "of",
     "results": "results",
-    "optional": "optional"
+    "optional": "optional",
+    "select": "Select",
+    "change": "Change"
   },
   "auth": {
     "login": "Sign In",
