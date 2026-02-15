@@ -40,7 +40,9 @@
     "showing": "Mostrando",
     "of": "de",
     "results": "resultados",
-    "optional": "opcional"
+    "optional": "opcional",
+    "select": "Seleccionar",
+    "change": "Cambiar"
   },
   "auth": {
     "login": "Iniciar Sesión",
