@@ -241,15 +241,15 @@ export function InvoicePreviewDialog({
 
             {/* Action buttons */}
             <div className="grid grid-cols-4 gap-2">
-              <Button variant="outline" onClick={handleDownloadPdf} className="flex flex-col items-center gap-1 h-auto py-3">
+              <Button variant="outline" onClick={handleDownloadPdf} disabled={createdInvoice.amountPaid <= 0} className="flex flex-col items-center gap-1 h-auto py-3">
                 <FileDown className="h-5 w-5" />
                 <span className="text-xs">PDF</span>
               </Button>
-              <Button variant="outline" onClick={handleWhatsApp} className="flex flex-col items-center gap-1 h-auto py-3">
+              <Button variant="outline" onClick={handleWhatsApp} disabled={createdInvoice.amountPaid <= 0} className="flex flex-col items-center gap-1 h-auto py-3">
                 <MessageCircle className="h-5 w-5" />
                 <span className="text-xs">WhatsApp</span>
               </Button>
-              <Button variant="outline" onClick={handleEmail} className="flex flex-col items-center gap-1 h-auto py-3">
+              <Button variant="outline" onClick={handleEmail} disabled={createdInvoice.amountPaid <= 0} className="flex flex-col items-center gap-1 h-auto py-3">
                 <Mail className="h-5 w-5" />
                 <span className="text-xs">{t('common.email')}</span>
               </Button>
