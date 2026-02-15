@@ -125,7 +125,7 @@ export default function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
@@ -212,11 +212,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="rounded-lg bg-muted/50 p-4">
                   <p className="text-xs text-muted-foreground">{t('invoices.totalPaid')}</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(revenue.totalPaid)}</p>
+                  <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(revenue.totalPaid)}</p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-4">
                   <p className="text-xs text-muted-foreground">{t('invoices.totalPending')}</p>
-                  <p className="text-xl font-bold text-orange-600">{formatCurrency(revenue.totalPending)}</p>
+                  <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{formatCurrency(revenue.totalPending)}</p>
                 </div>
               </div>
 
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="dateLabel" />
                       <YAxis />
-                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>

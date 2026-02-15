@@ -9,11 +9,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Printer, Globe, Hash, Receipt, MessageCircle, Mail, CheckCircle2 } from 'lucide-react';
-import { useInvoicePreview, useCreateInvoice } from '@/hooks/useInvoice';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { FileDown, Globe, Hash, Receipt, MessageCircle, Mail, CheckCircle2, CreditCard, Loader2 } from 'lucide-react';
+import { useInvoicePreview, useCreateInvoice, useRegisterPayment } from '@/hooks/useInvoice';
 import { useClinicInformation } from '@/hooks/useClinicInformation';
-import { InvoiceTreatmentLine, Invoice } from '@/types';
-import { printInvoice } from '@/utils/printInvoice';
+import { useTaxInformation } from '@/hooks/useTaxInformation';
+import { InvoiceTreatmentLine, Invoice, PaymentMethod } from '@/types';
+import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 
 interface InvoicePreviewDialogProps {
   open: boolean;
@@ -31,7 +39,9 @@ export function InvoicePreviewDialog({
   const { t } = useTranslation();
   const { data: preview, isLoading, isError, error } = useInvoicePreview(odontogramId, open);
   const { data: clinic } = useClinicInformation();
+  const { data: taxInfoList } = useTaxInformation();
   const createInvoice = useCreateInvoice();
+  const registerPayment = useRegisterPayment();
 
   // State for creation flow
   const [selectedTreatmentIds, setSelectedTreatmentIds] = useState<string[]>([]);
@@ -39,7 +49,16 @@ export function InvoicePreviewDialog({
   const [invoiceNotes, setInvoiceNotes] = useState('');
   const [createdInvoice, setCreatedInvoice] = useState<Invoice | null>(null);
 
+  // Payment state
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('1');
+  const [paymentRef, setPaymentRef] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+
   const formatCurrency = (amount: number) => `L ${amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+
+  const activeTaxInfo = taxInfoList?.find((ti) => ti.isActive) || null;
 
   // Collect all treatment IDs from preview
   const allTreatmentIds = React.useMemo(() => {
@@ -88,14 +107,45 @@ export function InvoicePreviewDialog({
         notes: invoiceNotes || undefined,
       });
       setCreatedInvoice(invoice);
+      setPaymentAmount(invoice.total.toString());
     } catch {
       // error handled by hook
     }
   };
 
-  const handlePrint = () => {
+  const handleDownloadPdf = () => {
     if (!createdInvoice) return;
-    printInvoice({ invoice: createdInvoice, clinic: clinic || null });
+    generateInvoicePdf({
+      invoice: createdInvoice,
+      clinic: clinic || null,
+      taxInfo: activeTaxInfo,
+    });
+  };
+
+  const handleRegisterPayment = async () => {
+    if (!createdInvoice || !paymentAmount) return;
+    try {
+      await registerPayment.mutateAsync({
+        invoiceId: createdInvoice.id,
+        amount: parseFloat(paymentAmount),
+        paymentMethod: parseInt(paymentMethod) as PaymentMethod,
+        referenceNumber: paymentRef || undefined,
+        notes: paymentNotes || undefined,
+      });
+      // Update local invoice state
+      const paidAmount = parseFloat(paymentAmount);
+      setCreatedInvoice((prev) => prev ? {
+        ...prev,
+        amountPaid: prev.amountPaid + paidAmount,
+        balance: prev.balance - paidAmount,
+      } : null);
+      setShowPaymentForm(false);
+      setPaymentAmount('');
+      setPaymentRef('');
+      setPaymentNotes('');
+    } catch {
+      // error handled by hook
+    }
   };
 
   const handleWhatsApp = () => {
@@ -121,6 +171,10 @@ export function InvoicePreviewDialog({
       setSelectedTreatmentIds([]);
       setDiscountPct('');
       setInvoiceNotes('');
+      setShowPaymentForm(false);
+      setPaymentAmount('');
+      setPaymentRef('');
+      setPaymentNotes('');
     }
     onOpenChange(open);
   };
@@ -158,44 +212,123 @@ export function InvoicePreviewDialog({
 
         {/* ===== POST-CREATION: Invoice created successfully ===== */}
         {createdInvoice && (
-          <div>
-            <div className="space-y-4">
-              <div className="rounded-lg border p-4 bg-muted/30">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('invoices.invoiceNumber')}</p>
-                    <p className="text-lg font-bold">{createdInvoice.invoiceNumber}</p>
-                  </div>
-                  <Badge variant="outline" className="text-green-600 border-green-600">{t('invoices.statusPending')}</Badge>
+          <div className="space-y-4">
+            <div className="rounded-lg border p-4 bg-muted/30">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('invoices.invoiceNumber')}</p>
+                  <p className="text-lg font-bold">{createdInvoice.invoiceNumber}</p>
                 </div>
-                {createdInvoice.cai && (
-                  <p className="text-xs text-muted-foreground mt-1">CAI: {createdInvoice.cai}</p>
-                )}
+                <Badge variant="outline" className="text-green-600 border-green-600">{t('invoices.statusPending')}</Badge>
               </div>
+              {createdInvoice.cai && (
+                <p className="text-xs text-muted-foreground mt-1">CAI: {createdInvoice.cai}</p>
+              )}
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t('common.total')}</span>
-                <span className="text-xl font-bold text-primary">{formatCurrency(createdInvoice.total)}</span>
+                <span className="text-lg font-bold text-primary">{formatCurrency(createdInvoice.total)}</span>
               </div>
-
-              <Separator />
-
-              {/* Action buttons */}
-              <div className="grid grid-cols-3 gap-3">
-                <Button variant="outline" onClick={handlePrint} className="flex flex-col items-center gap-1 h-auto py-3">
-                  <Printer className="h-5 w-5" />
-                  <span className="text-xs">{t('common.print')}</span>
-                </Button>
-                <Button variant="outline" onClick={handleWhatsApp} className="flex flex-col items-center gap-1 h-auto py-3">
-                  <MessageCircle className="h-5 w-5" />
-                  <span className="text-xs">WhatsApp</span>
-                </Button>
-                <Button variant="outline" onClick={handleEmail} className="flex flex-col items-center gap-1 h-auto py-3">
-                  <Mail className="h-5 w-5" />
-                  <span className="text-xs">{t('common.email')}</span>
-                </Button>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t('invoices.balance')}</span>
+                <span className="text-lg font-bold">{formatCurrency(createdInvoice.balance)}</span>
               </div>
             </div>
+
+            <Separator />
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-4 gap-2">
+              <Button variant="outline" onClick={handleDownloadPdf} className="flex flex-col items-center gap-1 h-auto py-3">
+                <FileDown className="h-5 w-5" />
+                <span className="text-xs">PDF</span>
+              </Button>
+              <Button variant="outline" onClick={handleWhatsApp} className="flex flex-col items-center gap-1 h-auto py-3">
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-xs">WhatsApp</span>
+              </Button>
+              <Button variant="outline" onClick={handleEmail} className="flex flex-col items-center gap-1 h-auto py-3">
+                <Mail className="h-5 w-5" />
+                <span className="text-xs">{t('common.email')}</span>
+              </Button>
+              <Button
+                variant={showPaymentForm ? 'secondary' : 'default'}
+                onClick={() => {
+                  setShowPaymentForm(!showPaymentForm);
+                  if (!showPaymentForm) setPaymentAmount(createdInvoice.balance.toString());
+                }}
+                className="flex flex-col items-center gap-1 h-auto py-3"
+              >
+                <CreditCard className="h-5 w-5" />
+                <span className="text-xs">{t('invoices.registerPayment')}</span>
+              </Button>
+            </div>
+
+            {/* Payment form */}
+            {showPaymentForm && createdInvoice.balance > 0 && (
+              <div className="rounded-lg border p-4 space-y-3 bg-muted/20">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  {t('invoices.registerPayment')}
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('invoices.amount')}</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={createdInvoice.balance}
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('invoices.paymentMethod')}</Label>
+                    <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">{t('invoices.paymentCash')}</SelectItem>
+                        <SelectItem value="2">{t('invoices.paymentCreditCard')}</SelectItem>
+                        <SelectItem value="3">{t('invoices.paymentDebitCard')}</SelectItem>
+                        <SelectItem value="4">{t('invoices.paymentBankTransfer')}</SelectItem>
+                        <SelectItem value="5">{t('invoices.paymentCheck')}</SelectItem>
+                        <SelectItem value="6">{t('invoices.paymentOther')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('invoices.referenceNumber')} ({t('common.optional')})</Label>
+                    <Input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t('common.notes')} ({t('common.optional')})</Label>
+                    <Input value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} />
+                  </div>
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={handleRegisterPayment}
+                  disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || registerPayment.isPending}
+                >
+                  {registerPayment.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {t('invoices.registerPayment')} - {paymentAmount ? formatCurrency(parseFloat(paymentAmount)) : ''}
+                </Button>
+              </div>
+            )}
+
+            {showPaymentForm && createdInvoice.balance <= 0 && (
+              <div className="rounded-lg border p-4 bg-green-500/10 text-center">
+                <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                <p className="font-semibold text-green-700 dark:text-green-400">{t('invoices.statusPaid')}</p>
+              </div>
+            )}
           </div>
         )}
 

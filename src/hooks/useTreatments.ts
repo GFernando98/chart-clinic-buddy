@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { treatmentService } from '@/services';
 import { Treatment, TreatmentFormData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export const treatmentKeys = {
   all: ['treatments'] as const,
@@ -68,6 +69,31 @@ export function useUpdateTreatment() {
     onError: (error: Error) => {
       toast({
         title: 'Error al actualizar tratamiento',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+export function useToggleTreatmentActive() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: (id: string) => treatmentService.toggleActive(id),
+    onSuccess: (treatment) => {
+      queryClient.invalidateQueries({ queryKey: treatmentKeys.lists() });
+      toast({
+        title: treatment.isActive ? t('users.activate') : t('users.deactivate'),
+        description: `${treatment.name} ha sido ${treatment.isActive ? 'activado' : 'desactivado'}`,
+        variant: 'success',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
         description: error.message,
         variant: 'destructive',
       });

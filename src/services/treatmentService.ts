@@ -33,6 +33,11 @@ export const treatmentService = {
     const response = await apiClient.put<ApiResponse<Treatment>>(`/Treatments/Update/${id}`, data);
     return extractData(response.data);
   },
+
+  async toggleActive(id: string): Promise<Treatment> {
+    const response = await apiClient.put<ApiResponse<Treatment>>(`/Treatments/ToggleActiveTreatment/${id}`);
+    return extractData(response.data);
+  },
 };
 
 export default treatmentService;

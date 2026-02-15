@@ -75,13 +75,13 @@ export function useToggleTreatmentCategoryActive() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: treatmentCategoryKeys.lists() });
       toast({
-        title: t('common.success'),
+        title: t('success.updated'),
         description: t('settings.categoryStatusUpdated'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: t('common.error'),
+        title: t('errors.generic'),
         description: error.message,
         variant: 'destructive',
       });

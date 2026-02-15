@@ -225,7 +225,7 @@ export const UsersPage = () => {
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">{user.fullName}</span>
+                            <span className={`font-semibold ${user.isActive === false ? 'text-destructive' : ''}`}>{user.fullName}</span>
                             {user.isActive !== false ? (
                               <Badge variant="outline" className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs">
                                 <CheckCircle2 className="h-3 w-3" />
@@ -294,7 +294,7 @@ export const UsersPage = () => {
                 <TableBody>
                   {paginatedItems.map((user) => (
                     <TableRow key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUser(user)}>
-                      <TableCell className="font-medium">{user.fullName}</TableCell>
+                      <TableCell className={`font-medium ${user.isActive === false ? 'text-destructive' : ''}`}>{user.fullName}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
