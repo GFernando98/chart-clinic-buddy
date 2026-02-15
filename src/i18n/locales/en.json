@@ -42,7 +42,8 @@
     "results": "results",
     "optional": "optional",
     "select": "Select",
-    "change": "Change"
+    "change": "Change",
+    "more": "more"
   },
   "auth": {
     "login": "Sign In",
@@ -200,6 +201,8 @@
     "minutes": "minutes",
     "viewCalendar": "Calendar",
     "viewList": "List",
+    "viewWeek": "Week",
+    "viewMonth": "Month",
     "thisWeek": "This Week",
     "previousWeek": "Previous Week",
     "nextWeek": "Next Week",

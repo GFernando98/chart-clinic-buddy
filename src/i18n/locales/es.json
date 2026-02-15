@@ -42,7 +42,8 @@
     "results": "resultados",
     "optional": "opcional",
     "select": "Seleccionar",
-    "change": "Cambiar"
+    "change": "Cambiar",
+    "more": "más"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -200,6 +201,8 @@
     "minutes": "minutos",
     "viewCalendar": "Calendario",
     "viewList": "Lista",
+    "viewWeek": "Semana",
+    "viewMonth": "Mes",
     "thisWeek": "Esta Semana",
     "previousWeek": "Semana Anterior",
     "nextWeek": "Semana Siguiente",
