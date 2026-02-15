@@ -17,6 +17,9 @@ export function useInvoicePreview(odontogramId: string, enabled = false) {
     queryKey: invoiceKeys.preview(odontogramId),
     queryFn: () => invoiceService.getPreview(odontogramId),
     enabled: !!odontogramId && enabled,
+    staleTime: 30_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
