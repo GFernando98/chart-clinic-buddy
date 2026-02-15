@@ -145,19 +145,27 @@ apiClient.interceptors.response.use(
 
     // Handle other errors - extract meaningful message from API response
     if (error.response?.data) {
-      const apiError = error.response.data;
+      const apiError = error.response.data as any;
       let errorMessage = 'An error occurred';
+      let fieldErrors: Record<string, string[]> | undefined;
       
-      if (apiError.message) {
+      // Handle ASP.NET validation error format: { errors: { FieldName: ["msg"] } }
+      if (apiError.errors && typeof apiError.errors === 'object' && !Array.isArray(apiError.errors)) {
+        fieldErrors = apiError.errors;
+        const allMessages = Object.values(apiError.errors).flat() as string[];
+        errorMessage = allMessages.join(', ');
+      } else if (apiError.message) {
         errorMessage = apiError.message;
-      }
-      if (apiError.errors?.length) {
+      } else if (Array.isArray(apiError.errors) && apiError.errors.length) {
         errorMessage = apiError.errors.join(', ');
+      } else if (apiError.title) {
+        errorMessage = apiError.title;
       }
       
       const enhancedError = new Error(errorMessage);
       (enhancedError as any).originalError = error;
       (enhancedError as any).statusCode = error.response.status;
+      (enhancedError as any).fieldErrors = fieldErrors;
       return Promise.reject(enhancedError);
     }
 
