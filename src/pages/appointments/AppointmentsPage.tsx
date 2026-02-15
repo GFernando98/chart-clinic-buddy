@@ -112,14 +112,14 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('appointments.title')}</h1>
-          <p className="text-muted-foreground">{t('appointments.subtitle')}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold truncate">{t('appointments.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('appointments.subtitle')}</p>
         </div>
-        <Button onClick={handleNewAppointment} className="gap-2">
+        <Button onClick={handleNewAppointment} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           {t('appointments.newAppointment')}
         </Button>
@@ -127,21 +127,22 @@ export default function AppointmentsPage() {
 
       {/* Filters & View Toggle */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <CardContent className="pt-4 md:pt-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             {/* View Toggle */}
             <ToggleGroup
               type="single"
               value={viewMode}
               onValueChange={(value) => value && setViewMode(value as ViewMode)}
               className="justify-start"
+              size="sm"
             >
               <ToggleGroupItem value="calendar" aria-label="Calendar view">
-                <CalendarDays className="h-4 w-4 mr-2" />
+                <CalendarDays className="h-4 w-4 mr-1.5" />
                 {t('appointments.viewCalendar')}
               </ToggleGroupItem>
               <ToggleGroupItem value="list" aria-label="List view">
-                <List className="h-4 w-4 mr-2" />
+                <List className="h-4 w-4 mr-1.5" />
                 {t('appointments.viewList')}
               </ToggleGroupItem>
             </ToggleGroup>
@@ -149,9 +150,9 @@ export default function AppointmentsPage() {
             <div className="flex-1" />
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder={t('appointments.allDoctors')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,7 +166,7 @@ export default function AppointmentsPage() {
               </Select>
 
               <Select value={selectedStatus as string} onValueChange={(value) => setSelectedStatus(value as AppointmentStatus | 'all')}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder={t('appointments.allStatuses')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,7 +198,7 @@ export default function AppointmentsPage() {
 
       {/* Content */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4 md:pt-6 px-2 sm:px-6">
           {viewMode === 'calendar' ? (
             <AppointmentCalendarView
               appointments={filteredAppointments}
