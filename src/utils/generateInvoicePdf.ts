@@ -25,13 +25,38 @@ const formatDate = (d: string) => {
   }
 };
 
-export function generateInvoicePdf({ invoice, clinic, taxInfo }: GenerateInvoicePdfOptions) {
+export async function generateInvoicePdf({ invoice, clinic, taxInfo }: GenerateInvoicePdfOptions) {
   const clinicName = clinic?.clinicName || 'Clínica Dental';
   const clinicLegalName = clinic?.legalName || '';
   const clinicRtn = clinic?.rtn || '';
   const clinicAddress = [clinic?.address, clinic?.city, clinic?.department].filter(Boolean).join(', ');
   const clinicPhone = clinic?.phone || '';
   const clinicEmail = clinic?.email || '';
+
+  // Try to load clinic logo as base64 data URL
+  let logoDataUrl: string | null = null;
+  if (clinic?.logo) {
+    try {
+      // If it's already a data URL, use directly
+      if (clinic.logo.startsWith('data:')) {
+        logoDataUrl = clinic.logo;
+      } else if (clinic.logo.startsWith('http')) {
+        // Fetch remote image and convert to base64
+        const resp = await fetch(clinic.logo);
+        const blob = await resp.blob();
+        logoDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        // Assume it's a base64 string without prefix
+        logoDataUrl = `data:image/png;base64,${clinic.logo}`;
+      }
+    } catch (e) {
+      console.warn('Could not load clinic logo for PDF:', e);
+    }
+  }
 
   // Build header info
   const clinicInfoContent: any[] = [
@@ -152,6 +177,11 @@ export function generateInvoicePdf({ invoice, clinic, taxInfo }: GenerateInvoice
       // Header
       {
         columns: [
+          ...(logoDataUrl ? [{
+            image: logoDataUrl,
+            width: 60,
+            margin: [0, 0, 12, 0] as [number, number, number, number],
+          }] : []),
           { width: '*', stack: clinicInfoContent },
           {
             width: 'auto',
