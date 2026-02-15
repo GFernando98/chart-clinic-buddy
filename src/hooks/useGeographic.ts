@@ -10,21 +10,21 @@ export function useCountries() {
   });
 }
 
-export function useStates(country: string) {
+export function useStates(countryIso2: string) {
   return useQuery({
-    queryKey: ['geographic', 'states', country],
-    queryFn: () => geographicService.getStates(country),
-    enabled: !!country,
+    queryKey: ['geographic', 'states', countryIso2],
+    queryFn: () => geographicService.getStates(countryIso2),
+    enabled: !!countryIso2,
     staleTime: 1000 * 60 * 60 * 24,
     retry: 1,
   });
 }
 
-export function useCities(country: string, state: string) {
+export function useCities(countryIso2: string, stateIso2: string) {
   return useQuery({
-    queryKey: ['geographic', 'cities', country, state],
-    queryFn: () => geographicService.getCities(country, state),
-    enabled: !!country && !!state,
+    queryKey: ['geographic', 'cities', countryIso2, stateIso2],
+    queryFn: () => geographicService.getCities(countryIso2, stateIso2),
+    enabled: !!countryIso2 && !!stateIso2,
     staleTime: 1000 * 60 * 60 * 24,
     retry: 1,
   });

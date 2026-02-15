@@ -1,56 +1,44 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://countriesnow.space/api/v0.1';
+const BASE_URL = 'https://api.countrystatecity.in/v1';
+const API_KEY = 'e6182c2469cc2ffad8255604d601a844270d8593b90836a3a26fb17cd0617c82';
 
-interface CountriesNowResponse<T> {
-  error: boolean;
-  msg: string;
-  data: T;
-}
+const cscClient = axios.create({
+  baseURL: BASE_URL,
+  headers: { 'X-CSCAPI-KEY': API_KEY },
+});
 
-interface CountryData {
-  country: string;
-  iso2: string;
-  iso3: string;
-}
-
-interface StateData {
-  name: string;
-  state_code: string;
-}
-
-interface StatesResponse {
+interface CSCCountry {
+  id: number;
   name: string;
   iso2: string;
-  iso3: string;
-  states: StateData[];
+}
+
+interface CSCState {
+  id: number;
+  name: string;
+  iso2: string;
+}
+
+interface CSCCity {
+  id: number;
+  name: string;
 }
 
 export const geographicService = {
-  async getCountries(): Promise<string[]> {
-    const response = await axios.get<CountriesNowResponse<CountryData[]>>(
-      `${BASE_URL}/countries/iso`
-    );
-    if (response.data.error) throw new Error(response.data.msg);
-    return response.data.data.map((c) => c.country).sort();
+  async getCountries(): Promise<{ name: string; iso2: string }[]> {
+    const { data } = await cscClient.get<CSCCountry[]>('/countries');
+    return data.map((c) => ({ name: c.name, iso2: c.iso2 })).sort((a, b) => a.name.localeCompare(b.name));
   },
 
-  async getStates(country: string): Promise<string[]> {
-    const response = await axios.post<CountriesNowResponse<StatesResponse>>(
-      `${BASE_URL}/countries/states`,
-      { country }
-    );
-    if (response.data.error) throw new Error(response.data.msg);
-    return response.data.data.states.map((s) => s.name).sort();
+  async getStates(countryIso2: string): Promise<{ name: string; iso2: string }[]> {
+    const { data } = await cscClient.get<CSCState[]>(`/countries/${countryIso2}/states`);
+    return data.map((s) => ({ name: s.name, iso2: s.iso2 })).sort((a, b) => a.name.localeCompare(b.name));
   },
 
-  async getCities(country: string, state: string): Promise<string[]> {
-    const response = await axios.post<CountriesNowResponse<string[]>>(
-      `${BASE_URL}/countries/state/cities`,
-      { country, state }
-    );
-    if (response.data.error) throw new Error(response.data.msg);
-    return response.data.data.filter(Boolean).sort();
+  async getCities(countryIso2: string, stateIso2: string): Promise<string[]> {
+    const { data } = await cscClient.get<CSCCity[]>(`/countries/${countryIso2}/states/${stateIso2}/cities`);
+    return data.map((c) => c.name).sort();
   },
 };
 
