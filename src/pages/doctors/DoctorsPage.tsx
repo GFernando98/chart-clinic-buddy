@@ -40,7 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Doctor } from '@/types';
 import { DoctorDetailDialog } from './components/DoctorDetailDialog';
-import { useDoctors, useUpdateDoctor } from '@/hooks/useDoctors';
+import { useDoctors, useToggleDoctorActive } from '@/hooks/useDoctors';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination, MobilePagination } from '@/components/ui/table-pagination';
@@ -59,7 +59,7 @@ export const DoctorsPage = () => {
 
   // Fetch doctors from API
   const { data: doctors = [], isLoading, error } = useDoctors();
-  const updateDoctor = useUpdateDoctor();
+  const toggleActive = useToggleDoctorActive();
 
   // Get unique specialties
   const specialties = useMemo(() => {
@@ -119,8 +119,7 @@ export const DoctorsPage = () => {
   };
 
   const handleToggleActive = (doctor: Doctor) => {
-    const newStatus = doctor.isActive === false ? true : false;
-    updateDoctor.mutate({ id: doctor.id, data: { ...doctor, isActive: newStatus } as any });
+    toggleActive.mutate(doctor.id);
     setIsDetailOpen(false);
   };
 

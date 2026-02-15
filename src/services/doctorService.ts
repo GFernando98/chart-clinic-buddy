@@ -33,6 +33,11 @@ export const doctorService = {
     const response = await apiClient.put<ApiResponse<Doctor>>(`/Doctors/Update/${id}`, data);
     return extractData(response.data);
   },
+
+  async toggleActive(id: string): Promise<Doctor> {
+    const response = await apiClient.put<ApiResponse<Doctor>>(`/Doctors/ToggleActiveDoctor/${id}`);
+    return extractData(response.data);
+  },
 };
 
 export default doctorService;

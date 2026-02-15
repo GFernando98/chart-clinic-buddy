@@ -42,7 +42,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Treatment } from '@/types';
 import { TreatmentFormDialog } from './components/TreatmentFormDialog';
 import { TreatmentDetailDialog } from './components/TreatmentDetailDialog';
-import { useTreatments, useCreateTreatment, useUpdateTreatment } from '@/hooks/useTreatments';
+import { useTreatments, useCreateTreatment, useUpdateTreatment, useToggleTreatmentActive } from '@/hooks/useTreatments';
 import { useTreatmentCategories } from '@/hooks/useTreatmentCategories';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -68,6 +68,7 @@ export const TreatmentsPage = () => {
   const { data: categories = [] } = useTreatmentCategories();
   const createTreatment = useCreateTreatment();
   const updateTreatment = useUpdateTreatment();
+  const toggleTreatmentActive = useToggleTreatmentActive();
 
   // Filtered treatments
   const filteredTreatments = useMemo(() => {
@@ -145,8 +146,7 @@ export const TreatmentsPage = () => {
   };
 
   const handleToggleActive = (treatment: Treatment) => {
-    const newStatus = treatment.isActive === false ? true : false;
-    updateTreatment.mutate({ id: treatment.id, data: { ...treatment, isActive: newStatus } as any });
+    toggleTreatmentActive.mutate(treatment.id);
     setIsDetailOpen(false);
   };
 
