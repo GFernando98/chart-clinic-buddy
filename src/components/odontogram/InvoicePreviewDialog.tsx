@@ -333,7 +333,7 @@ export function InvoicePreviewDialog({
         )}
 
         {/* ===== PRE-CREATION: Preview with treatment selection ===== */}
-        {preview && !createdInvoice && (
+        {preview && !createdInvoice && !isError && (
           <div className="space-y-4">
             {/* Select all */}
             <div className="flex items-center gap-2">
