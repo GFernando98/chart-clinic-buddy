@@ -11,12 +11,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Printer, DollarSign, XCircle } from 'lucide-react';
+import { FileDown, DollarSign, XCircle } from 'lucide-react';
 import { Invoice, InvoiceStatus, PaymentMethod } from '@/types';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { RegisterPaymentDialog } from './RegisterPaymentDialog';
 import { useCancelInvoice } from '@/hooks/useInvoice';
+import { useClinicInformation } from '@/hooks/useClinicInformation';
+import { useTaxInformation } from '@/hooks/useTaxInformation';
 import { useAuth } from '@/contexts/AuthContext';
+import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import {
@@ -57,6 +60,8 @@ export function InvoiceDetailDialog({
   const locale = i18n.language === 'es' ? es : enUS;
   const { hasRole } = useAuth();
   const cancelInvoice = useCancelInvoice();
+  const { data: clinic } = useClinicInformation();
+  const { data: taxInfoList } = useTaxInformation();
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -71,6 +76,8 @@ export function InvoiceDetailDialog({
   const canPay = invoice.status !== InvoiceStatus.Cancelled && invoice.status !== InvoiceStatus.Paid;
   const canCancel = invoice.status !== InvoiceStatus.Cancelled && invoice.payments.length === 0 && hasRole(['Admin']);
 
+  const activeTaxInfo = taxInfoList?.find((ti) => ti.isActive) || null;
+
   const handleCancel = async () => {
     await cancelInvoice.mutateAsync({ invoiceId: invoice.id, reason: cancelReason });
     setCancelOpen(false);
@@ -78,7 +85,13 @@ export function InvoiceDetailDialog({
     onRefresh?.();
   };
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    generateInvoicePdf({
+      invoice,
+      clinic: clinic || null,
+      taxInfo: activeTaxInfo,
+    });
+  };
 
   return (
     <>
@@ -101,7 +114,7 @@ export function InvoiceDetailDialog({
               <div className="flex items-center gap-2 shrink-0">
                 <InvoiceStatusBadge status={invoice.status} />
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
-                  <Printer className="h-4 w-4" />
+                  <FileDown className="h-4 w-4" />
                 </Button>
               </div>
             </div>
