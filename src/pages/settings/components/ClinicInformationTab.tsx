@@ -22,12 +22,14 @@ export function ClinicInformationTab() {
     clinicName: '', legalName: '', rtn: '', address: '',
     city: '', department: '', country: 'Honduras', phone: '', email: '',
   });
+  const [countryIso2, setCountryIso2] = useState('HN');
+  const [stateIso2, setStateIso2] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   const { data: countries = [], isLoading: loadingCountries } = useCountries();
-  const { data: states = [], isLoading: loadingStates } = useStates(form.country);
-  const { data: cities = [], isLoading: loadingCities } = useCities(form.country, form.department);
+  const { data: states = [], isLoading: loadingStates } = useStates(countryIso2);
+  const { data: cities = [], isLoading: loadingCities } = useCities(countryIso2, stateIso2);
 
   useEffect(() => {
     if (clinic) {
@@ -48,6 +50,21 @@ export function ClinicInformationTab() {
     }
   }, [clinic]);
 
+  // Sync iso2 codes when countries/states load and clinic data is available
+  useEffect(() => {
+    if (countries.length && form.country) {
+      const match = countries.find((c) => c.name === form.country);
+      if (match) setCountryIso2(match.iso2);
+    }
+  }, [countries, form.country]);
+
+  useEffect(() => {
+    if (states.length && form.department) {
+      const match = states.find((s) => s.name === form.department);
+      if (match) setStateIso2(match.iso2);
+    }
+  }, [states, form.department]);
+
   useEffect(() => {
     if (clinic?.clinicName) document.title = clinic.clinicName;
   }, [clinic?.clinicName]);
@@ -67,13 +84,18 @@ export function ClinicInformationTab() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleCountryChange = (value: string) => {
-    setForm((prev) => ({ ...prev, country: value, department: '', city: '' }));
+  const handleCountryChange = (iso2: string) => {
+    const country = countries.find((c) => c.iso2 === iso2);
+    setCountryIso2(iso2);
+    setStateIso2('');
+    setForm((prev) => ({ ...prev, country: country?.name || iso2, department: '', city: '' }));
     setFieldErrors((prev) => ({ ...prev, Country: [], Department: [], City: [] }));
   };
 
-  const handleDepartmentChange = (value: string) => {
-    setForm((prev) => ({ ...prev, department: value, city: '' }));
+  const handleDepartmentChange = (iso2: string) => {
+    const state = states.find((s) => s.iso2 === iso2);
+    setStateIso2(iso2);
+    setForm((prev) => ({ ...prev, department: state?.name || iso2, city: '' }));
     setFieldErrors((prev) => ({ ...prev, Department: [], City: [] }));
   };
 
@@ -235,13 +257,13 @@ export function ClinicInformationTab() {
               {/* Country Select */}
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">{t('clinic.country')}</Label>
-                <Select value={form.country} onValueChange={handleCountryChange}>
+                <Select value={countryIso2} onValueChange={handleCountryChange}>
                   <SelectTrigger className={getError('Country') ? 'border-destructive' : ''}>
                     <SelectValue placeholder={loadingCountries ? t('common.loading') : t('common.select')} />
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c.iso2} value={c.iso2}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -252,16 +274,16 @@ export function ClinicInformationTab() {
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">{t('clinic.department')}</Label>
                 <Select
-                  value={form.department}
+                  value={stateIso2}
                   onValueChange={handleDepartmentChange}
-                  disabled={!form.country || loadingStates}
+                  disabled={!countryIso2 || loadingStates}
                 >
                   <SelectTrigger className={getError('Department') ? 'border-destructive' : ''}>
                     <SelectValue placeholder={loadingStates ? t('common.loading') : t('common.select')} />
                   </SelectTrigger>
                   <SelectContent>
                     {states.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                      <SelectItem key={s.iso2} value={s.iso2}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
