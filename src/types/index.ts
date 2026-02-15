@@ -312,6 +312,7 @@ export interface ClinicInformationFormData {
   email: string;
   website?: string;
   logo?: string;
+  logoFile?: File;
 }
 
 // ============= Tax Information (CAI) Types =============
