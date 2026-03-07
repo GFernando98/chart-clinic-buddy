@@ -41,8 +41,8 @@ export function AppSidebar() {
   const { user, logout, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
+  const { state, isMobile } = useSidebar();
+  const collapsed = !isMobile && state === 'collapsed';
 
   const navItems: NavItem[] = [
     { title: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
