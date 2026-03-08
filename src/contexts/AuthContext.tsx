@@ -49,14 +49,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const performLogout = useCallback(async () => {
     clearTimeouts();
+    // Clear tokens BEFORE calling logout API to prevent 401 loop
+    clearTokens();
+    setUser(null);
+    setShowSessionWarning(false);
     try {
       await authService.logout();
     } catch {
-      // Ignore logout errors, still clear local state
+      // Ignore logout errors, local state is already cleared
     }
-    setUser(null);
-    setShowSessionWarning(false);
-    clearTokens();
   }, [clearTimeouts]);
 
   const resetInactivityTimer = useCallback(() => {
