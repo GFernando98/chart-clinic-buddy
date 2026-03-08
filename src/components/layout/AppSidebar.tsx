@@ -41,8 +41,16 @@ export function AppSidebar() {
   const { user, logout, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { state, isMobile } = useSidebar();
+  const { state, isMobile, setOpen } = useSidebar();
   const collapsed = !isMobile && state === 'collapsed';
+
+  const handleMouseEnter = () => {
+    if (!isMobile) setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) setOpen(false);
+  };
 
   const navItems: NavItem[] = [
     { title: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
