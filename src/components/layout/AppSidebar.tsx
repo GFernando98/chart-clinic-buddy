@@ -75,7 +75,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border-r-0" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
