@@ -7,7 +7,7 @@ import { SessionWarningDialog } from '@/components/SessionWarningDialog';
 
 export function MainLayout() {
   return (
-    <SidebarProvider defaultOpen={false} open={undefined}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex flex-col flex-1">
