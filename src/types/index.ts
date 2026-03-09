@@ -441,6 +441,7 @@ export interface Invoice {
 export interface CreateInvoiceData {
   odontogramId: string;
   treatmentRecordIds: string[];
+  products?: { productId: string; quantity: number; customPrice?: number }[];
   discountPercentage?: number;
   discountAmount?: number;
   notes?: string;
