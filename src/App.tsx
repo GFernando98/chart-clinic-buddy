@@ -25,7 +25,14 @@ import AppointmentConfirmationPage from "@/pages/AppointmentConfirmationPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
