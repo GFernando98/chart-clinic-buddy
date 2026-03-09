@@ -46,7 +46,9 @@ export function InventoryExitDialog({ open, onOpenChange, products }: Props) {
     if (insufficientStock) return;
     try {
       await registerExit.mutateAsync({
-        ...values,
+        productId: values.productId,
+        quantity: values.quantity,
+        reason: values.reason,
         notes: values.notes || undefined,
       });
       onOpenChange(false);

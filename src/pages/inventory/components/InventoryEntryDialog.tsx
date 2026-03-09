@@ -43,7 +43,10 @@ export function InventoryEntryDialog({ open, onOpenChange, products }: Props) {
   const onSubmit = async (values: FormValues) => {
     try {
       await registerEntry.mutateAsync({
-        ...values,
+        productId: values.productId,
+        quantity: values.quantity,
+        unitCost: values.unitCost,
+        reason: values.reason,
         referenceDocument: values.referenceDocument || undefined,
         notes: values.notes || undefined,
       });

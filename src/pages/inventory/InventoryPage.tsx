@@ -144,10 +144,10 @@ export default function InventoryPage() {
                 <TablePagination
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages}
-                  pageSize={pagination.pageSize}
-                  totalItems={transactions.length}
+                  itemsPerPage={pagination.itemsPerPage}
+                  totalItems={pagination.totalItems}
                   onPageChange={pagination.setCurrentPage}
-                  onPageSizeChange={pagination.setPageSize}
+                  onItemsPerPageChange={pagination.setItemsPerPage}
                 />
               </CardContent>
             </Card>

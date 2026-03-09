@@ -87,10 +87,19 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
   }, [open, product]);
 
   const onSubmit = async (values: FormValues) => {
-    const data = {
-      ...values,
+    const data: ProductFormData = {
+      code: values.code,
+      name: values.name,
       description: values.description || undefined,
+      category: values.category,
       brand: values.brand || undefined,
+      purchasePrice: values.purchasePrice,
+      salePrice: values.salePrice,
+      initialStock: values.initialStock,
+      minimumStock: values.minimumStock,
+      maximumStock: values.maximumStock,
+      unit: values.unit,
+      requiresPrescription: values.requiresPrescription,
       expirationDate: values.expirationDate ? values.expirationDate.toISOString().split('T')[0] : undefined,
     };
 
