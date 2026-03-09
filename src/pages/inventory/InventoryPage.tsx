@@ -33,11 +33,8 @@ export default function InventoryPage() {
 
   const { data: products = [] } = useProducts(true);
 
-  const pagination = usePagination({ totalItems: transactions.length });
-  const paged = transactions.slice(
-    (pagination.currentPage - 1) * pagination.pageSize,
-    pagination.currentPage * pagination.pageSize,
-  );
+  const pagination = usePagination({ items: transactions });
+  const paged = pagination.paginatedItems;
 
   return (
     <div className="space-y-4">
