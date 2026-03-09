@@ -87,7 +87,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthBypassRequest(originalRequest.url)) {
       if (isRefreshing) {
         // Queue request while refreshing
         return new Promise((resolve, reject) => {
