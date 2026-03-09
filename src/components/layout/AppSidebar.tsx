@@ -13,6 +13,9 @@ import {
   LogOut,
   Settings,
   FileText,
+  Package,
+  ArrowUpDown,
+  ShoppingCart,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -59,7 +62,10 @@ export function AppSidebar() {
     { title: t('nav.appointments'), icon: Calendar, path: '/appointments' },
     { title: t('nav.doctors'), icon: Stethoscope, path: '/doctors', roles: ['Admin'] },
     { title: t('nav.treatments'), icon: ClipboardList, path: '/treatments', roles: ['Admin'] },
+    { title: 'Productos', icon: Package, path: '/products', roles: ['Admin'] },
+    { title: 'Inventario', icon: ArrowUpDown, path: '/inventory', roles: ['Admin'] },
     { title: t('nav.invoices'), icon: FileText, path: '/invoices', roles: ['Admin', 'Doctor'] },
+    { title: 'Factura Productos', icon: ShoppingCart, path: '/nueva-factura-productos', roles: ['Admin', 'Doctor'] },
     { title: t('nav.users'), icon: UserCog, path: '/users', roles: ['Admin'] },
     { title: t('nav.settings'), icon: Settings, path: '/settings', roles: ['Admin'] },
   ];

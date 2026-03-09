@@ -16,6 +16,9 @@ import { UsersPage } from "@/pages/users";
 import { DoctorsPage, DoctorFormPage } from "@/pages/doctors";
 import { TreatmentsPage } from "@/pages/treatments";
 import { InvoicesPage } from "@/pages/invoices";
+import ProductInvoicePage from "@/pages/invoices/ProductInvoicePage";
+import { ProductsPage } from "@/pages/products";
+import { InventoryPage } from "@/pages/inventory";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import AppointmentConfirmationPage from "@/pages/AppointmentConfirmationPage";
@@ -93,10 +96,34 @@ const App = () => (
                   }
                 />
                 <Route
+                  path="/products"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <ProductsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <InventoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/invoices"
                   element={
                     <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
                       <InvoicesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nueva-factura-productos"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
+                      <ProductInvoicePage />
                     </ProtectedRoute>
                   }
                 />
