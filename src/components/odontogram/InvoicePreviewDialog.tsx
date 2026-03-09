@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -16,12 +17,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileDown, Globe, Hash, Receipt, MessageCircle, Mail, CheckCircle2, CreditCard, Loader2 } from 'lucide-react';
+import { FileDown, Globe, Hash, Receipt, MessageCircle, Mail, CheckCircle2, CreditCard, Loader2, Plus, Trash2, Package, AlertTriangle } from 'lucide-react';
 import { useInvoicePreview, useCreateInvoice, useRegisterPayment } from '@/hooks/useInvoice';
 import { useClinicInformation } from '@/hooks/useClinicInformation';
 import { useTaxInformation } from '@/hooks/useTaxInformation';
+import { useProducts } from '@/hooks/useProducts';
 import { InvoiceTreatmentLine, Invoice, PaymentMethod } from '@/types';
+import { Product } from '@/types/product';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
+
+interface ProductLine {
+  id: string;
+  productId: string;
+  product?: Product;
+  quantity: number;
+  customPrice: number;
+}
 
 interface InvoicePreviewDialogProps {
   open: boolean;
@@ -40,6 +51,7 @@ export function InvoicePreviewDialog({
   const { data: preview, isLoading, isError, error } = useInvoicePreview(odontogramId, open);
   const { data: clinic } = useClinicInformation();
   const { data: taxInfoList } = useTaxInformation();
+  const { data: allProducts = [] } = useProducts(true);
   const createInvoice = useCreateInvoice();
   const registerPayment = useRegisterPayment();
 
@@ -48,6 +60,9 @@ export function InvoicePreviewDialog({
   const [discountPct, setDiscountPct] = useState('');
   const [invoiceNotes, setInvoiceNotes] = useState('');
   const [createdInvoice, setCreatedInvoice] = useState<Invoice | null>(null);
+
+  // Product lines state
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
 
   // Payment state
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -61,7 +76,7 @@ export function InvoicePreviewDialog({
   const activeTaxInfo = taxInfoList?.find((ti) => ti.isActive) || null;
 
   // Collect all treatment IDs from preview
-  const allTreatmentIds = React.useMemo(() => {
+  const allTreatmentIds = useMemo(() => {
     if (!preview) return [];
     const ids: string[] = [];
     [...preview.globalTreatments, ...preview.toothTreatments].forEach((item) => {
@@ -71,7 +86,7 @@ export function InvoicePreviewDialog({
     return ids;
   }, [preview]);
 
-  // Auto-select all when preview loads (only when no invoice has been created)
+  // Auto-select all when preview loads
   React.useEffect(() => {
     if (preview && allTreatmentIds.length > 0 && selectedTreatmentIds.length === 0 && !createdInvoice) {
       setSelectedTreatmentIds([...allTreatmentIds]);
@@ -97,15 +112,57 @@ export function InvoicePreviewDialog({
     return ids.length > 0 && ids.every((id) => selectedTreatmentIds.includes(id));
   };
 
+  // Product line helpers
+  const addProductLine = () => {
+    setProductLines(prev => [...prev, {
+      id: crypto.randomUUID(),
+      productId: '',
+      quantity: 1,
+      customPrice: 0,
+    }]);
+  };
+
+  const updateProductLine = (id: string, updates: Partial<ProductLine>) => {
+    setProductLines(prev => prev.map(l => {
+      if (l.id !== id) return l;
+      const updated = { ...l, ...updates };
+      if (updates.productId) {
+        const product = allProducts.find(p => p.id === updates.productId);
+        updated.product = product;
+        updated.customPrice = product?.salePrice || 0;
+      }
+      return updated;
+    }));
+  };
+
+  const removeProductLine = (id: string) => {
+    setProductLines(prev => prev.filter(l => l.id !== id));
+  };
+
+  const productsSubtotal = useMemo(() => {
+    return productLines.reduce((sum, l) => sum + (l.customPrice * l.quantity), 0);
+  }, [productLines]);
+
+  const validProductLines = productLines.filter(l => l.productId && l.quantity > 0);
+  const hasStockIssues = productLines.some(l => l.product && l.quantity > l.product.currentStock);
+
   const handleGenerateInvoice = async () => {
     if (!odontogramId || selectedTreatmentIds.length === 0 || createdInvoice) return;
     try {
-      const invoice = await createInvoice.mutateAsync({
+      const invoiceData: any = {
         odontogramId,
         treatmentRecordIds: selectedTreatmentIds,
         discountPercentage: discountPct ? parseFloat(discountPct) : undefined,
         notes: invoiceNotes || undefined,
-      });
+      };
+      if (validProductLines.length > 0) {
+        invoiceData.products = validProductLines.map(l => ({
+          productId: l.productId,
+          quantity: l.quantity,
+          customPrice: l.customPrice !== l.product?.salePrice ? l.customPrice : undefined,
+        }));
+      }
+      const invoice = await createInvoice.mutateAsync(invoiceData);
       setCreatedInvoice(invoice);
       setPaymentAmount(invoice.total.toString());
     } catch {
@@ -132,7 +189,6 @@ export function InvoicePreviewDialog({
         referenceNumber: paymentRef || undefined,
         notes: paymentNotes || undefined,
       });
-      // Update local invoice state
       const paidAmount = parseFloat(paymentAmount);
       setCreatedInvoice((prev) => prev ? {
         ...prev,
@@ -171,6 +227,7 @@ export function InvoicePreviewDialog({
       setSelectedTreatmentIds([]);
       setDiscountPct('');
       setInvoiceNotes('');
+      setProductLines([]);
       setShowPaymentForm(false);
       setPaymentAmount('');
       setPaymentRef('');
@@ -335,78 +392,195 @@ export function InvoicePreviewDialog({
         {/* ===== PRE-CREATION: Preview with treatment selection ===== */}
         {preview && !createdInvoice && !isError && (
           <div className="space-y-4">
-            {/* Select all */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="select-all-preview"
-                checked={allTreatmentIds.length > 0 && selectedTreatmentIds.length === allTreatmentIds.length}
-                onCheckedChange={handleSelectAll}
-              />
-              <Label htmlFor="select-all-preview" className="text-sm font-medium">
-                {t('invoices.allTreatments')} ({allTreatmentIds.length})
-              </Label>
-            </div>
+            <Tabs defaultValue="treatments" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="treatments" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Tratamientos
+                  {allTreatmentIds.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">{selectedTreatmentIds.length}</Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="products" className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Productos
+                  {validProductLines.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">{validProductLines.length}</Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
 
-            <Separator />
+              {/* ===== TREATMENTS TAB ===== */}
+              <TabsContent value="treatments" className="space-y-4 mt-4">
+                {/* Select all */}
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="select-all-preview"
+                    checked={allTreatmentIds.length > 0 && selectedTreatmentIds.length === allTreatmentIds.length}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <Label htmlFor="select-all-preview" className="text-sm font-medium">
+                    {t('invoices.allTreatments')} ({allTreatmentIds.length})
+                  </Label>
+                </div>
 
-            {/* Global Treatments */}
-            {preview.globalTreatments.length > 0 && (
-              <>
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Globe className="h-4 w-4 text-primary" />
-                  {t('treatments.globalTreatments')}
-                </div>
-                <div className="rounded-lg border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted/50">
-                        <th className="px-3 py-2 w-8"></th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('treatments.code')}</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('common.name')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.qty')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.unitPrice')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.subtotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {preview.globalTreatments.map((item, i) => (
-                        <TreatmentRow key={i} item={item} formatCurrency={formatCurrency} selected={isLineSelected(item)} onToggle={() => toggleLineItem(item)} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+                <Separator />
 
-            {/* Tooth Treatments */}
-            {preview.toothTreatments.length > 0 && (
-              <>
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Hash className="h-4 w-4 text-primary" />
-                  {t('treatments.toothTreatments')}
+                {/* Global Treatments */}
+                {preview.globalTreatments.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <Globe className="h-4 w-4 text-primary" />
+                      {t('treatments.globalTreatments')}
+                    </div>
+                    <div className="rounded-lg border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="px-3 py-2 w-8"></th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('treatments.code')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('common.name')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.qty')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.unitPrice')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.subtotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.globalTreatments.map((item, i) => (
+                            <TreatmentRow key={i} item={item} formatCurrency={formatCurrency} selected={isLineSelected(item)} onToggle={() => toggleLineItem(item)} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+
+                {/* Tooth Treatments */}
+                {preview.toothTreatments.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <Hash className="h-4 w-4 text-primary" />
+                      {t('treatments.toothTreatments')}
+                    </div>
+                    <div className="rounded-lg border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="px-3 py-2 w-8"></th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('treatments.code')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('common.name')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('odontogram.tooth')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.qty')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.unitPrice')}</th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.subtotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.toothTreatments.map((item, i) => (
+                            <TreatmentRow key={i} item={item} formatCurrency={formatCurrency} showTeeth selected={isLineSelected(item)} onToggle={() => toggleLineItem(item)} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+
+              {/* ===== PRODUCTS TAB ===== */}
+              <TabsContent value="products" className="space-y-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Agrega productos adicionales a esta factura</p>
+                  <Button size="sm" variant="outline" onClick={addProductLine}>
+                    <Plus className="h-4 w-4 mr-1" /> Agregar
+                  </Button>
                 </div>
-                <div className="rounded-lg border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted/50">
-                        <th className="px-3 py-2 w-8"></th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('treatments.code')}</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('common.name')}</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('odontogram.tooth')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.qty')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.unitPrice')}</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">{t('invoices.subtotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {preview.toothTreatments.map((item, i) => (
-                        <TreatmentRow key={i} item={item} formatCurrency={formatCurrency} showTeeth selected={isLineSelected(item)} onToggle={() => toggleLineItem(item)} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+
+                {productLines.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No hay productos agregados</p>
+                    <p className="text-xs mt-1">Opcional: agrega productos como pastas dentales, cepillos, etc.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {productLines.map((line) => {
+                      const stockIssue = line.product && line.quantity > line.product.currentStock;
+                      return (
+                        <div key={line.id} className="rounded-lg border p-3 space-y-2">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 space-y-1">
+                              <Label className="text-xs">Producto</Label>
+                              <Select value={line.productId} onValueChange={(v) => updateProductLine(line.id, { productId: v })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar producto..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {allProducts.map((p) => (
+                                    <SelectItem key={p.id} value={p.id} disabled={p.currentStock <= 0}>
+                                      <span className="flex items-center gap-2">
+                                        <span className="font-mono text-xs">{p.code}</span>
+                                        <span>{p.name}</span>
+                                        <span className={`text-xs ${p.currentStock <= p.minimumStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                          (Stock: {p.currentStock})
+                                        </span>
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button variant="ghost" size="icon" className="mt-5 text-destructive" onClick={() => removeProductLine(line.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {line.productId && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-xs">Cantidad</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={line.product?.currentStock || 999}
+                                  value={line.quantity}
+                                  onChange={(e) => updateProductLine(line.id, { quantity: parseInt(e.target.value) || 1 })}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Precio Unit.</Label>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  value={line.customPrice}
+                                  onChange={(e) => updateProductLine(line.id, { customPrice: parseFloat(e.target.value) || 0 })}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Subtotal</Label>
+                                <div className="h-9 flex items-center text-sm font-medium">
+                                  {formatCurrency(line.customPrice * line.quantity)}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {stockIssue && (
+                            <div className="flex items-center gap-1 text-xs text-destructive">
+                              <AlertTriangle className="h-3 w-3" />
+                              Stock insuficiente (disponible: {line.product?.currentStock})
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {productsSubtotal > 0 && (
+                      <div className="flex justify-end text-sm font-medium">
+                        Subtotal productos: {formatCurrency(productsSubtotal)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
 
             {/* Discount & Notes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,9 +609,15 @@ export function InvoicePreviewDialog({
             {/* Totals */}
             <div className="ml-auto w-64 space-y-1">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
+                <span className="text-muted-foreground">{t('invoices.subtotal')} (tratamientos)</span>
                 <span>{formatCurrency(preview.subtotal)}</span>
               </div>
+              {productsSubtotal > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('invoices.subtotal')} (productos)</span>
+                  <span>{formatCurrency(productsSubtotal)}</span>
+                </div>
+              )}
               {preview.tax > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('invoices.tax')}</span>
@@ -453,7 +633,7 @@ export function InvoicePreviewDialog({
               <Separator />
               <div className="flex justify-between font-bold text-base pt-1">
                 <span>{t('common.total')}</span>
-                <span className="text-primary">{formatCurrency(preview.total)}</span>
+                <span className="text-primary">{formatCurrency(preview.total + productsSubtotal)}</span>
               </div>
             </div>
 
@@ -461,12 +641,14 @@ export function InvoicePreviewDialog({
             <Button
               className="w-full"
               onClick={handleGenerateInvoice}
-              disabled={selectedTreatmentIds.length === 0 || createInvoice.isPending}
+              disabled={selectedTreatmentIds.length === 0 || createInvoice.isPending || hasStockIssues}
             >
               <Receipt className="w-4 h-4 mr-2" />
               {createInvoice.isPending ? t('common.saving') : t('invoices.generateInvoice')}
-              {selectedTreatmentIds.length > 0 && (
-                <Badge variant="secondary" className="ml-2">{selectedTreatmentIds.length}</Badge>
+              {(selectedTreatmentIds.length > 0 || validProductLines.length > 0) && (
+                <Badge variant="secondary" className="ml-2">
+                  {selectedTreatmentIds.length + validProductLines.length}
+                </Badge>
               )}
             </Button>
           </div>
