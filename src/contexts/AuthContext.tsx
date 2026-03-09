@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const lastActivityRef = useRef<number>(Date.now());
   const warningTimeoutRef = useRef<NodeJS.Timeout>();
   const logoutTimeoutRef = useRef<NodeJS.Timeout>();
+  const isLoggingOutRef = useRef(false);
   
   const { toast } = useToast();
   const { t } = useTranslation();

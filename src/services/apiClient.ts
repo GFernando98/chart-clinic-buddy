@@ -53,6 +53,17 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
+const isAuthBypassRequest = (url?: string): boolean => {
+  if (!url) return false;
+  const normalizedUrl = url.toLowerCase();
+
+  return (
+    normalizedUrl.includes('/auth/login') ||
+    normalizedUrl.includes('/auth/logout') ||
+    normalizedUrl.includes('/auth/refresh-token')
+  );
+};
+
 // Request interceptor - add Bearer token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
