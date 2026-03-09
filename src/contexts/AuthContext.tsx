@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const lastActivityRef = useRef<number>(Date.now());
   const warningTimeoutRef = useRef<NodeJS.Timeout>();
   const logoutTimeoutRef = useRef<NodeJS.Timeout>();
+  const isLoggingOutRef = useRef(false);
   
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -48,15 +49,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const performLogout = useCallback(async () => {
+    if (isLoggingOutRef.current) return;
+
+    isLoggingOutRef.current = true;
     clearTimeouts();
-    // Clear tokens BEFORE calling logout API to prevent 401 loop
+    // Clear local auth state first to avoid any retry/logout loops
     clearTokens();
     setUser(null);
     setShowSessionWarning(false);
+
     try {
       await authService.logout();
     } catch {
       // Ignore logout errors, local state is already cleared
+    } finally {
+      isLoggingOutRef.current = false;
     }
   }, [clearTimeouts]);
 

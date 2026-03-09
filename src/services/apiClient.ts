@@ -53,6 +53,17 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
+const isAuthBypassRequest = (url?: string): boolean => {
+  if (!url) return false;
+  const normalizedUrl = url.toLowerCase();
+
+  return (
+    normalizedUrl.includes('/auth/login') ||
+    normalizedUrl.includes('/auth/logout') ||
+    normalizedUrl.includes('/auth/refresh-token')
+  );
+};
+
 // Request interceptor - add Bearer token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -76,7 +87,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthBypassRequest(originalRequest.url)) {
       if (isRefreshing) {
         // Queue request while refreshing
         return new Promise((resolve, reject) => {
