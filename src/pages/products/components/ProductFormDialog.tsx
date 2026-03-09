@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { ProductFormData } from '@/types/product';
 import { Loader2 } from 'lucide-react';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { Product, PRODUCT_CATEGORIES, PRODUCT_UNITS } from '@/types/product';
