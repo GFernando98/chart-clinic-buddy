@@ -43,11 +43,8 @@ export default function ProductsPage() {
     );
   }, [products, search]);
 
-  const pagination = usePagination({ totalItems: filtered.length });
-  const paged = filtered.slice(
-    (pagination.currentPage - 1) * pagination.pageSize,
-    pagination.currentPage * pagination.pageSize
-  );
+  const pagination = usePagination({ items: filtered });
+  const paged = pagination.paginatedItems;
 
   const isLowStock = (p: Product) => p.currentStock <= p.minimumStock;
   const isExpiringSoon = (p: Product) => {
