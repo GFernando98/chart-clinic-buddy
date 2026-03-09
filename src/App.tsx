@@ -18,6 +18,7 @@ import { TreatmentsPage } from "@/pages/treatments";
 import { InvoicesPage } from "@/pages/invoices";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
+import AppointmentConfirmationPage from "@/pages/AppointmentConfirmationPage";
 import NotFound from "./pages/NotFound";
 import "@/i18n/i18n";
 
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/confirmar-cita" element={<AppointmentConfirmationPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               
               {/* Protected routes with layout */}
