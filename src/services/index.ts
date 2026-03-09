@@ -41,3 +41,5 @@ export type {
 export { invoiceService } from './invoiceService';
 export { clinicInformationService } from './clinicInformationService';
 export { taxInformationService } from './taxInformationService';
+export { productService } from './productService';
+export { inventoryService } from './inventoryService';

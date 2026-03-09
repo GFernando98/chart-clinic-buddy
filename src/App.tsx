@@ -96,10 +96,34 @@ const App = () => (
                   }
                 />
                 <Route
+                  path="/products"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <ProductsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                      <InventoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/invoices"
                   element={
                     <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
                       <InvoicesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nueva-factura-productos"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
+                      <ProductInvoicePage />
                     </ProtectedRoute>
                   }
                 />
