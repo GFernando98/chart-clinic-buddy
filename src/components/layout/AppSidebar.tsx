@@ -13,6 +13,9 @@ import {
   LogOut,
   Settings,
   FileText,
+  Package,
+  ArrowUpDown,
+  ShoppingCart,
 } from 'lucide-react';
 import {
   Sidebar,
