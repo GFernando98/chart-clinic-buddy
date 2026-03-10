@@ -2,6 +2,14 @@ import apiClient, { extractData } from './apiClient';
 import { ApiResponse } from '@/types';
 import { InventoryTransaction, InventoryEntryData, InventoryExitData } from '@/types/product';
 
+function mapTransaction(raw: any): InventoryTransaction {
+  return {
+    ...raw,
+    type: raw.type === 1 ? 'Entry' : raw.type === 2 ? 'Exit' : raw.type,
+    createdAt: raw.transactionDate || raw.createdAt || '',
+  };
+}
+
 export const inventoryService = {
   async getTransactions(params?: {
     type?: 'Entry' | 'Exit';
@@ -13,15 +21,16 @@ export const inventoryService = {
     if (params?.fromDate) searchParams.append('fromDate', params.fromDate);
     if (params?.toDate) searchParams.append('toDate', params.toDate);
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    const response = await apiClient.get<ApiResponse<InventoryTransaction[]>>(`/Inventory/Transactions${query}`);
-    return extractData(response.data);
+    const response = await apiClient.get<ApiResponse<any[]>>(`/Inventory/Transactions${query}`);
+    const raw = extractData(response.data);
+    return raw.map(mapTransaction);
   },
 
   async getByProduct(productId: string, lastDays = 30): Promise<InventoryTransaction[]> {
-    const response = await apiClient.get<ApiResponse<InventoryTransaction[]>>(
+    const response = await apiClient.get<ApiResponse<any[]>>(
       `/Inventory/Product/${productId}?lastDays=${lastDays}`
     );
-    return extractData(response.data);
+    return extractData(response.data).map(mapTransaction);
   },
 
   async registerEntry(data: InventoryEntryData): Promise<InventoryTransaction> {
