@@ -27,10 +27,10 @@ export const inventoryService = {
   },
 
   async getByProduct(productId: string, lastDays = 30): Promise<InventoryTransaction[]> {
-    const response = await apiClient.get<ApiResponse<InventoryTransaction[]>>(
+    const response = await apiClient.get<ApiResponse<any[]>>(
       `/Inventory/Product/${productId}?lastDays=${lastDays}`
     );
-    return extractData(response.data);
+    return extractData(response.data).map(mapTransaction);
   },
 
   async registerEntry(data: InventoryEntryData): Promise<InventoryTransaction> {
