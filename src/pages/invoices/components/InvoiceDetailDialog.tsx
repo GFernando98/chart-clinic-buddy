@@ -9,13 +9,21 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { FileDown, DollarSign, XCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { FileDown, DollarSign, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Invoice, InvoiceStatus, PaymentMethod } from '@/types';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';
-import { RegisterPaymentDialog } from './RegisterPaymentDialog';
-import { useCancelInvoice } from '@/hooks/useInvoice';
+import { useCancelInvoice, useRegisterPayment } from '@/hooks/useInvoice';
 import { useClinicInformation } from '@/hooks/useClinicInformation';
 import { useTaxInformation } from '@/hooks/useTaxInformation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,7 +40,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
 
 interface InvoiceDetailDialogProps {
   open: boolean;
@@ -60,12 +67,19 @@ export function InvoiceDetailDialog({
   const locale = i18n.language === 'es' ? es : enUS;
   const { hasRole } = useAuth();
   const cancelInvoice = useCancelInvoice();
+  const registerPayment = useRegisterPayment();
   const { data: clinic } = useClinicInformation();
   const { data: taxInfoList } = useTaxInformation();
 
-  const [paymentOpen, setPaymentOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+
+  // Payment form state (inline)
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [payAmount, setPayAmount] = useState('');
+  const [payMethod, setPayMethod] = useState<string>('1');
+  const [payRef, setPayRef] = useState('');
+  const [payNotes, setPayNotes] = useState('');
 
   const formatCurrency = (n: number) => `L ${n.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
   const formatDate = (d: string) => {
@@ -93,9 +107,37 @@ export function InvoiceDetailDialog({
     });
   };
 
+  const handlePayment = async () => {
+    const numAmount = parseFloat(payAmount);
+    if (!numAmount || numAmount <= 0 || numAmount > invoice.balance) return;
+
+    await registerPayment.mutateAsync({
+      invoiceId: invoice.id,
+      amount: numAmount,
+      paymentMethod: parseInt(payMethod) as PaymentMethod,
+      referenceNumber: payRef || undefined,
+      notes: payNotes || undefined,
+    });
+
+    setPayAmount('');
+    setPayMethod('1');
+    setPayRef('');
+    setPayNotes('');
+    setShowPaymentForm(false);
+    onRefresh?.();
+  };
+
+  const resetPaymentForm = () => {
+    setShowPaymentForm(false);
+    setPayAmount('');
+    setPayMethod('1');
+    setPayRef('');
+    setPayNotes('');
+  };
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) resetPaymentForm(); onOpenChange(v); }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-start justify-between gap-4">
@@ -103,10 +145,9 @@ export function InvoiceDetailDialog({
                 <DialogTitle className="text-lg">{invoice.invoiceNumber}</DialogTitle>
                 <DialogDescription className="space-y-0.5">
                   <span className="block">{t('invoices.patient')}: {invoice.patientName}</span>
-                  {invoice.cai && (
+                  {invoice.cai ? (
                     <span className="block text-xs">CAI: {invoice.cai}</span>
-                  )}
-                  {!invoice.cai && (
+                  ) : (
                     <span className="block text-xs text-muted-foreground">({t('invoices.noCai')})</span>
                   )}
                 </DialogDescription>
@@ -181,7 +222,7 @@ export function InvoiceDetailDialog({
             </div>
           </div>
 
-          {/* Payments */}
+          {/* Payment History */}
           {invoice.payments.length > 0 && (
             <div>
               <h4 className="text-sm font-semibold mb-2">{t('invoices.paymentHistory')}</h4>
@@ -204,31 +245,88 @@ export function InvoiceDetailDialog({
             </div>
           )}
 
-          {/* Actions */}
-          <DialogFooter className="gap-2">
-            {canCancel && (
+          {/* Inline Payment Form */}
+          {canPay && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <button
+                type="button"
+                className="flex items-center justify-between w-full text-sm font-semibold"
+                onClick={() => setShowPaymentForm(!showPaymentForm)}
+              >
+                <span className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  {t('invoices.registerPayment')}
+                </span>
+                {showPaymentForm ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showPaymentForm && (
+                <div className="space-y-3 pt-2 border-t">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t('invoices.amount')}</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        max={invoice.balance}
+                        value={payAmount}
+                        onChange={(e) => setPayAmount(e.target.value)}
+                        placeholder={`Max: ${formatCurrency(invoice.balance)}`}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t('invoices.paymentMethod')}</Label>
+                      <Select value={payMethod} onValueChange={setPayMethod}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(paymentMethodKeys).map(([value, key]) => (
+                            <SelectItem key={value} value={value}>
+                              {t(`invoices.${key}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t('invoices.referenceNumber')} ({t('common.optional')})</Label>
+                    <Input value={payRef} onChange={(e) => setPayRef(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t('common.notes')} ({t('common.optional')})</Label>
+                    <Textarea value={payNotes} onChange={(e) => setPayNotes(e.target.value)} rows={2} />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button variant="outline" size="sm" onClick={resetPaymentForm}>
+                      {t('common.cancel')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handlePayment}
+                      disabled={!payAmount || parseFloat(payAmount) <= 0 || parseFloat(payAmount) > invoice.balance || registerPayment.isPending}
+                    >
+                      {registerPayment.isPending ? t('common.saving') : t('invoices.registerPayment')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cancel Action */}
+          {canCancel && (
+            <DialogFooter>
               <Button variant="destructive" size="sm" onClick={() => setCancelOpen(true)}>
                 <XCircle className="h-4 w-4 mr-1" />
                 {t('invoices.cancelInvoice')}
               </Button>
-            )}
-            {canPay && (
-              <Button size="sm" onClick={() => setPaymentOpen(true)}>
-                <DollarSign className="h-4 w-4 mr-1" />
-                {t('invoices.registerPayment')}
-              </Button>
-            )}
-          </DialogFooter>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
-
-      <RegisterPaymentDialog
-        open={paymentOpen}
-        onOpenChange={setPaymentOpen}
-        invoiceId={invoice.id}
-        balance={invoice.balance}
-        onSuccess={onRefresh}
-      />
 
       <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <AlertDialogContent>
