@@ -77,7 +77,15 @@ export default function InventoryPage() {
         </TabsList>
 
         <TabsContent value={tab} className="mt-4">
-          {isLoading ? (
+          {isError ? (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <Package className="w-16 h-16 text-destructive/50 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Error al cargar movimientos</h3>
+                <p className="text-muted-foreground">{error?.message || 'Ocurrió un error inesperado'}</p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <Card className="border-0 shadow-sm"><CardContent className="py-8 space-y-3">
               {[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
             </CardContent></Card>
