@@ -13,8 +13,9 @@ export const inventoryService = {
     if (params?.fromDate) searchParams.append('fromDate', params.fromDate);
     if (params?.toDate) searchParams.append('toDate', params.toDate);
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    const response = await apiClient.get<ApiResponse<InventoryTransaction[]>>(`/Inventory/Transactions${query}`);
-    return extractData(response.data);
+    const response = await apiClient.get<ApiResponse<any[]>>(`/Inventory/Transactions${query}`);
+    const raw = extractData(response.data);
+    return raw.map(mapTransaction);
   },
 
   async getByProduct(productId: string, lastDays = 30): Promise<InventoryTransaction[]> {
