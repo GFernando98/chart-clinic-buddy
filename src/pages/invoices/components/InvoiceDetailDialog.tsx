@@ -306,7 +306,13 @@ export function InvoiceDetailDialog({
                     <Button
                       size="sm"
                       onClick={handlePayment}
-                      disabled={!payAmount || parseFloat(payAmount) <= 0 || parseFloat(payAmount) > invoice.balance || registerPayment.isPending}
+                      disabled={
+                        registerPayment.isPending ||
+                        !payAmount ||
+                        isNaN(Number(payAmount)) ||
+                        Number(payAmount) <= 0 ||
+                        Number(payAmount) > Number(invoice.balance)
+                      }
                     >
                       {registerPayment.isPending ? t('common.saving') : t('invoices.registerPayment')}
                     </Button>
