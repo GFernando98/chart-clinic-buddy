@@ -138,7 +138,7 @@ export function InvoiceDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => { if (!v) resetPaymentForm(); onOpenChange(v); }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto space-y-6 py-8">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="pb-2">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 min-w-0">
