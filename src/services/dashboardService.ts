@@ -36,26 +36,26 @@ export interface UpcomingAppointment {
   status: number;
 }
 
+export interface InventoryDashboardStats {
+  activeProducts: number;
+  inventoryValue: number;
+  lowStockProducts: number;
+  monthMovements: number;
+  movementsByDay: { date: string; entries: number; exits: number }[];
+  topSellingProducts: { productName: string; productCode: string; quantitySold: number; totalRevenue: number }[];
+}
+
 export const dashboardService = {
-  /**
-   * Get dashboard statistics
-   */
   async getStats(): Promise<DashboardStats> {
     const response = await apiClient.get<ApiResponse<DashboardStats>>('/Dashboard/GetStats');
     return extractData(response.data);
   },
 
-  /**
-   * Get appointments grouped by day (last 7 days)
-   */
   async getAppointmentsByDay(): Promise<AppointmentsByDay[]> {
     const response = await apiClient.get<ApiResponse<AppointmentsByDay[]>>('/Dashboard/GetAppointmentsByDay');
     return extractData(response.data);
   },
 
-  /**
-   * Get treatments grouped by category (current month)
-   */
   async getTreatmentsByCategory(): Promise<TreatmentsByCategory[]> {
     const response = await apiClient.get<ApiResponse<TreatmentsByCategoryApi[]>>('/Dashboard/GetTreatmentsByCategory');
     const raw = extractData(response.data);
@@ -66,11 +66,13 @@ export const dashboardService = {
     }));
   },
 
-  /**
-   * Get upcoming appointments
-   */
   async getUpcomingAppointments(limit: number = 5): Promise<UpcomingAppointment[]> {
     const response = await apiClient.get<ApiResponse<UpcomingAppointment[]>>(`/Dashboard/GetUpcomingAppointments?limit=${limit}`);
+    return extractData(response.data);
+  },
+
+  async getInventoryStats(): Promise<InventoryDashboardStats> {
+    const response = await apiClient.get<ApiResponse<InventoryDashboardStats>>('/Dashboard/GetInventoryStats');
     return extractData(response.data);
   },
 };
