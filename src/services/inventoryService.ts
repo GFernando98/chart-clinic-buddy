@@ -2,6 +2,14 @@ import apiClient, { extractData } from './apiClient';
 import { ApiResponse } from '@/types';
 import { InventoryTransaction, InventoryEntryData, InventoryExitData } from '@/types/product';
 
+function mapTransaction(raw: any): InventoryTransaction {
+  return {
+    ...raw,
+    type: raw.type === 1 ? 'Entry' : raw.type === 2 ? 'Exit' : raw.type,
+    createdAt: raw.transactionDate || raw.createdAt || '',
+  };
+}
+
 export const inventoryService = {
   async getTransactions(params?: {
     type?: 'Entry' | 'Exit';
