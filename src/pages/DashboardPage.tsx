@@ -416,7 +416,7 @@ export default function DashboardPage() {
     </div>
   );
 }
-  const { user } = useAuth();
+
   const navigate = useNavigate();
   const locale = i18n.language === 'es' ? es : enUS;
   
