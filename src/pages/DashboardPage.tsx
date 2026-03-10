@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboardStats, useAppointmentsByDay, useTreatmentsByCategory, useUpcomingAppointments } from '@/hooks/useDashboard';
+import { useDashboardStats, useAppointmentsByDay, useTreatmentsByCategory, useUpcomingAppointments, useInventoryStats } from '@/hooks/useDashboard';
 import { useRevenue } from '@/hooks/useInvoice';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Users, Clock, ClipboardList, ArrowRight, Loader2, AlertCircle, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { format, subMonths } from 'date-fns';
+import { Calendar, Users, Clock, ClipboardList, ArrowRight, Loader2, AlertCircle, TrendingUp, DollarSign, Package, ArrowDown, AlertTriangle, ShoppingCart } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { AppointmentStatus, PaymentMethod } from '@/types';
 
@@ -46,8 +45,8 @@ export default function DashboardPage() {
   const { data: appointmentsByDay, isLoading: chartLoading } = useAppointmentsByDay();
   const { data: treatmentsByCategory, isLoading: pieLoading } = useTreatmentsByCategory();
   const { data: upcomingAppointments, isLoading: appointmentsLoading } = useUpcomingAppointments(5);
+  const { data: inventoryStats, isLoading: inventoryLoading } = useInventoryStats();
 
-  // Revenue
   const now = new Date();
   const [revenueStart, setRevenueStart] = useState(format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd'));
   const [revenueEnd, setRevenueEnd] = useState(format(new Date(now.getFullYear(), now.getMonth() + 1, 0), 'yyyy-MM-dd'));
@@ -69,6 +68,13 @@ export default function DashboardPage() {
     { title: t('dashboard.pendingAppointments'), value: stats?.pendingAppointments ?? 0, icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10' },
     { title: t('dashboard.monthTreatments'), value: stats?.monthTreatments ?? 0, icon: ClipboardList, color: 'text-primary', bgColor: 'bg-primary/10' },
   ];
+
+  const inventoryKpis = inventoryStats ? [
+    { title: 'Productos Activos', value: inventoryStats.activeProducts, icon: Package, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Valor del Inventario', value: formatCurrency(inventoryStats.inventoryValue), icon: DollarSign, color: 'text-accent', bgColor: 'bg-accent/10' },
+    { title: 'Stock Bajo', value: inventoryStats.lowStockProducts, icon: AlertTriangle, color: 'text-warning', bgColor: 'bg-warning/10' },
+    { title: 'Movimientos del Mes', value: inventoryStats.monthMovements, icon: ArrowDown, color: 'text-info', bgColor: 'bg-info/10' },
+  ] : [];
 
   return (
     <div className="space-y-6">
@@ -107,7 +113,6 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Appointments by Day */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">{t('dashboard.appointmentsByDay')}</CardTitle>
@@ -136,7 +141,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Treatments by Category */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">{t('dashboard.treatmentsByCategory')}</CardTitle>
@@ -200,7 +204,6 @@ export default function DashboardPage() {
 
           {revenue && (
             <div className="space-y-4">
-              {/* KPI Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="rounded-lg bg-muted/50 p-4">
                   <p className="text-xs text-muted-foreground">{t('invoices.totalInvoices')}</p>
@@ -220,7 +223,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Daily Revenue Chart */}
               {revenue.dailyRevenue.length > 0 && (
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -238,7 +240,6 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Payment Method Breakdown */}
               {revenue.paymentMethodBreakdown.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t('invoices.paymentBreakdown')}</p>
@@ -256,6 +257,102 @@ export default function DashboardPage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Inventory & Products Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Productos e Inventario
+            </CardTitle>
+            <CardDescription>Resumen del mes actual</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/inventory')}>
+            Ver inventario <ArrowRight className="ml-1 w-4 h-4" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {inventoryLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1,2,3,4].map((i) => <Skeleton key={i} className="h-20" />)}
+            </div>
+          ) : inventoryStats ? (
+            <div className="space-y-4">
+              {/* Inventory KPI Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {inventoryKpis.map((kpi, index) => (
+                  <div key={index} className="rounded-lg bg-muted/50 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`w-8 h-8 rounded-lg ${kpi.bgColor} flex items-center justify-center`}>
+                        <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
+                      </div>
+                    </div>
+                    <p className="text-xl font-bold">{kpi.value}</p>
+                    <p className="text-xs text-muted-foreground">{kpi.title}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Movements by Day Chart */}
+              {inventoryStats.movementsByDay.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-3">Entradas vs Salidas (últimos días)</p>
+                  <div className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={inventoryStats.movementsByDay.map((d) => ({
+                        ...d,
+                        dateLabel: format(new Date(d.date), 'dd/MM', { locale }),
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis dataKey="dateLabel" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                        <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} allowDecimals={false} />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                        <Bar dataKey="entries" name="Entradas" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                        <Bar dataKey="exits" name="Salidas" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Top Selling Products */}
+              {inventoryStats.topSellingProducts.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Top Productos Vendidos
+                  </p>
+                  <div className="space-y-2">
+                    {inventoryStats.topSellingProducts.map((product, index) => (
+                      <div key={product.productCode} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-bold text-primary">{index + 1}</span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium">{product.productName}</span>
+                            <span className="block text-xs text-muted-foreground">{product.productCode}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold">{formatCurrency(product.totalRevenue)}</p>
+                          <p className="text-xs text-muted-foreground">{product.quantitySold} vendidos</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              No se pudieron cargar las estadísticas de inventario
             </div>
           )}
         </CardContent>
