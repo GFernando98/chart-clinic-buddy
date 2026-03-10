@@ -108,23 +108,25 @@ export function InvoiceDetailDialog({
   };
 
   const handlePayment = async () => {
-    const numAmount = parseFloat(payAmount);
-    if (!numAmount || numAmount <= 0 || numAmount > invoice.balance) return;
+    const numAmount = Number(payAmount);
+    const balance = Number(invoice.balance);
+    if (!numAmount || numAmount <= 0 || numAmount > balance) return;
 
-    await registerPayment.mutateAsync({
-      invoiceId: invoice.id,
-      amount: numAmount,
-      paymentMethod: parseInt(payMethod) as PaymentMethod,
-      referenceNumber: payRef || undefined,
-      notes: payNotes || undefined,
-    });
+    try {
+      await registerPayment.mutateAsync({
+        invoiceId: invoice.id,
+        amount: numAmount,
+        paymentMethod: parseInt(payMethod) as PaymentMethod,
+        referenceNumber: payRef || undefined,
+        notes: payNotes || undefined,
+      });
 
-    setPayAmount('');
-    setPayMethod('1');
-    setPayRef('');
-    setPayNotes('');
-    setShowPaymentForm(false);
-    onRefresh?.();
+      resetPaymentForm();
+      onRefresh?.();
+      onOpenChange(false);
+    } catch {
+      // Dialog stays open, toast already shown by hook's onError
+    }
   };
 
   const resetPaymentForm = () => {
