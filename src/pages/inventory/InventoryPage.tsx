@@ -25,7 +25,7 @@ export default function InventoryPage() {
 
   const typeFilter = tab === 'entries' ? 'Entry' : tab === 'exits' ? 'Exit' : undefined;
 
-  const { data: transactions = [], isLoading } = useInventoryTransactions({
+  const { data: transactions = [], isLoading, isError, error } = useInventoryTransactions({
     type: typeFilter,
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
