@@ -50,8 +50,8 @@ export default function ProductCategoriesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Categorías de Productos</h1>
-          <p className="text-muted-foreground">Gestiona las categorías para organizar tus productos</p>
+          <h2 className="text-lg font-semibold">Categorías de Productos</h2>
+          <p className="text-sm text-muted-foreground">Gestiona las categorías para organizar tus productos</p>
         </div>
         <Button onClick={() => { setEditingCategory(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Nueva Categoría
