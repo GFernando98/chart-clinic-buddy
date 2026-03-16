@@ -16,6 +16,7 @@ import {
   Package,
   ArrowUpDown,
   ShoppingCart,
+  Tag,
 } from 'lucide-react';
 import {
   Sidebar,
