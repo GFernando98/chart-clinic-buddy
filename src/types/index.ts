@@ -11,26 +11,48 @@ export interface ApiResponse<T> {
 
 export interface UserInfo {
   id: string;
+  userName: string;
   email: string;
   firstName: string;
   lastName: string;
   fullName: string;
   roles: UserRole[];
+  tenantId?: string;
+  clinicName?: string;
 }
 
 export type UserRole = 'Admin' | 'Doctor' | 'Receptionist' | 'Assistant';
 
+// Lookup user (step 1)
+export interface LookupUserRequest {
+  userName: string;
+}
+
+export interface ClinicOption {
+  tenantId: string;
+  name: string;
+  slug: string;
+}
+
+export interface LookupUserResponse {
+  succeeded: boolean;
+  data: ClinicOption[];
+}
+
+// Login (step 2)
 export interface LoginRequest {
-  email: string;
+  userName: string;
   password: string;
+  tenantId: string;
 }
 
 export interface LoginResponse {
   succeeded: boolean;
-  accessToken: string;
-  refreshToken: string;
-  accessTokenExpiration: string;
-  user: UserInfo;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: UserInfo;
+  };
 }
 
 export interface RefreshTokenRequest {
@@ -44,6 +66,7 @@ export interface ChangePasswordRequest {
 }
 
 export interface RegisterUserRequest {
+  userName: string;
   firstName: string;
   lastName: string;
   email: string;
