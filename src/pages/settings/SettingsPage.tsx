@@ -174,6 +174,12 @@ export const SettingsPage = () => {
               {t('tax.title')}
             </div>
           </SelectItem>
+          <SelectItem value="productCategories">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Categorías de Productos
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
 
