@@ -12,6 +12,7 @@ import {
   FolderOpen,
   Building2,
   ShieldCheck,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,7 @@ import {
 import { TreatmentCategoryFormDialog } from './components/TreatmentCategoryFormDialog';
 import { ClinicInformationTab } from './components/ClinicInformationTab';
 import { TaxInformationTab } from './components/TaxInformationTab';
+import ProductCategoriesPage from '@/pages/product-categories/ProductCategoriesPage';
 import { TreatmentCategoryDto, TreatmentCategoryFormData } from '@/services/treatmentCategoryService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePagination } from '@/hooks/usePagination';
@@ -171,6 +173,12 @@ export const SettingsPage = () => {
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               {t('tax.title')}
+            </div>
+          </SelectItem>
+          <SelectItem value="productCategories">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Categorías de Productos
             </div>
           </SelectItem>
         </SelectContent>
@@ -364,6 +372,9 @@ export const SettingsPage = () => {
 
       {/* Tax Section */}
       {activeSection === 'tax' && <TaxInformationTab />}
+
+      {/* Product Categories Section */}
+      {activeSection === 'productCategories' && <ProductCategoriesPage />}
 
       {/* Form Dialog */}
       <TreatmentCategoryFormDialog

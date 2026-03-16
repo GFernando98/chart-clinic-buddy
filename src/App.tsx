@@ -18,7 +18,7 @@ import { TreatmentsPage } from "@/pages/treatments";
 import { InvoicesPage } from "@/pages/invoices";
 import ProductInvoicePage from "@/pages/invoices/ProductInvoicePage";
 import { ProductsPage } from "@/pages/products";
-import { ProductCategoriesPage } from "@/pages/product-categories";
+
 import { InventoryPage } from "@/pages/inventory";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
@@ -108,14 +108,6 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                       <ProductsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/product-categories"
-                  element={
-                    <ProtectedRoute allowedRoles={['Admin']}>
-                      <ProductCategoriesPage />
                     </ProtectedRoute>
                   }
                 />
