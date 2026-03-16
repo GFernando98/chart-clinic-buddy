@@ -286,6 +286,7 @@ export const UsersPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('common.name')}</TableHead>
+                    <TableHead>Usuario</TableHead>
                     <TableHead>{t('common.email')}</TableHead>
                     <TableHead>{t('users.roles')}</TableHead>
                     <TableHead>{t('common.status')}</TableHead>
