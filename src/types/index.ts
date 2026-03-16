@@ -508,10 +508,45 @@ export interface RevenueReport {
 
 export interface User {
   id: string;
+  userName: string;
   email: string;
   firstName: string;
   lastName: string;
   fullName: string;
   roles: UserRole[];
   isActive?: boolean;
+}
+
+// ============= Master Panel Types =============
+
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  userCount: number;
+  createdAt: string;
+}
+
+export interface CreateTenantData {
+  name: string;
+  slug: string;
+  connectionString: string;
+  adminUserName: string;
+  adminPassword: string;
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+}
+
+export interface MasterLoginRequest {
+  userName: string;
+  password: string;
+}
+
+export interface MasterLoginResponse {
+  succeeded: boolean;
+  data: {
+    accessToken: string;
+  };
 }
