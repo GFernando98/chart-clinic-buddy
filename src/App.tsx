@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
 import LoginPage from "@/pages/LoginPage";
+import MasterLoginPage from "@/pages/master/MasterLoginPage";
+import MasterDashboardPage from "@/pages/master/MasterDashboardPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OdontogramPage from "@/pages/OdontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
@@ -18,7 +20,6 @@ import { TreatmentsPage } from "@/pages/treatments";
 import { InvoicesPage } from "@/pages/invoices";
 import ProductInvoicePage from "@/pages/invoices/ProductInvoicePage";
 import { ProductsPage } from "@/pages/products";
-
 import { InventoryPage } from "@/pages/inventory";
 import { SettingsPage } from "@/pages/settings";
 import UnauthorizedPage from "@/pages/UnauthorizedPage";
@@ -48,6 +49,10 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/confirmar-cita" element={<AppointmentConfirmationPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+              {/* Master Panel routes */}
+              <Route path="/master/login" element={<MasterLoginPage />} />
+              <Route path="/master/dashboard" element={<MasterDashboardPage />} />
               
               {/* Protected routes with layout */}
               <Route

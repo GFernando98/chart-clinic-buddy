@@ -89,9 +89,16 @@ export function AppSidebar() {
             <Stethoscope className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground whitespace-nowrap">
-              SmileOS
-            </span>
+            <div className="min-w-0">
+              <span className="font-semibold text-sidebar-foreground whitespace-nowrap block">
+                SmileOS
+              </span>
+              {user?.clinicName && (
+                <span className="text-[10px] text-sidebar-foreground/60 truncate block max-w-[140px]">
+                  {user.clinicName}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </SidebarHeader>

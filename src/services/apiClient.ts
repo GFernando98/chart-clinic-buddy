@@ -60,7 +60,9 @@ const isAuthBypassRequest = (url?: string): boolean => {
   return (
     normalizedUrl.includes('/auth/login') ||
     normalizedUrl.includes('/auth/logout') ||
-    normalizedUrl.includes('/auth/refresh-token')
+    normalizedUrl.includes('/auth/refresh-token') ||
+    normalizedUrl.includes('/auth/lookup-user') ||
+    normalizedUrl.includes('/master/')
   );
 };
 

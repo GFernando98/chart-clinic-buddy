@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { UserInfo } from '@/types';
+import { UserInfo, ClinicOption } from '@/types';
 import { 
   authService, 
   setTokens, 
   clearTokens,
-  getTokens,
   hasValidTokens,
   setOnTokenRefreshed, 
   setOnAuthError, 
@@ -16,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 
 interface AuthContextType {
   user: UserInfo | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  lookupUser: (userName: string) => Promise<ClinicOption[]>;
+  login: (userName: string, password: string, tenantId: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -27,8 +27,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 60 minutes
-const WARNING_BEFORE_TIMEOUT = 5 * 60 * 1000; // 5 minutes before timeout
+const INACTIVITY_TIMEOUT = 60 * 60 * 1000;
+const WARNING_BEFORE_TIMEOUT = 5 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -50,18 +50,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const performLogout = useCallback(async () => {
     if (isLoggingOutRef.current) return;
-
     isLoggingOutRef.current = true;
     clearTimeouts();
-    // Clear local auth state first to avoid any retry/logout loops
     clearTokens();
     setUser(null);
     setShowSessionWarning(false);
-
     try {
       await authService.logout();
     } catch {
-      // Ignore logout errors, local state is already cleared
+      // Ignore
     } finally {
       isLoggingOutRef.current = false;
     }
@@ -79,10 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       logoutTimeoutRef.current = setTimeout(() => {
         performLogout();
-        toast({
-          title: t('auth.sessionExpired'),
-          variant: 'destructive',
-        });
+        toast({ title: t('auth.sessionExpired'), variant: 'destructive' });
       }, INACTIVITY_TIMEOUT);
     }
   }, [user, clearTimeouts, performLogout, toast, t]);
@@ -91,48 +85,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetInactivityTimer();
   }, [resetInactivityTimer]);
 
-  // Set up API client callbacks
   useEffect(() => {
-    setOnTokenRefreshed(() => {
-      // Tokens are already saved in cookies by apiClient
-      // Just reset the inactivity timer
-      resetInactivityTimer();
-    });
-
+    setOnTokenRefreshed(() => { resetInactivityTimer(); });
     setOnAuthError(() => {
       performLogout();
-      toast({
-        title: t('auth.sessionExpired'),
-        variant: 'destructive',
-      });
+      toast({ title: t('auth.sessionExpired'), variant: 'destructive' });
     });
-
     setOnActivityTracked(() => {
       const now = Date.now();
-      if (now - lastActivityRef.current > 1000) {
-        resetInactivityTimer();
-      }
+      if (now - lastActivityRef.current > 1000) { resetInactivityTimer(); }
     });
   }, [performLogout, toast, t, resetInactivityTimer]);
 
-  // Track user activity
   useEffect(() => {
     if (!user) return;
-
     const handleActivity = () => {
       const now = Date.now();
-      if (now - lastActivityRef.current > 1000) { // Throttle to 1 second
-        resetInactivityTimer();
-      }
+      if (now - lastActivityRef.current > 1000) { resetInactivityTimer(); }
     };
-
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
     window.addEventListener('click', handleActivity);
     window.addEventListener('scroll', handleActivity);
-
     resetInactivityTimer();
-
     return () => {
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
@@ -142,16 +117,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, resetInactivityTimer, clearTimeouts]);
 
-  // Initial loading check - try to restore session from cookies
   useEffect(() => {
     const initAuth = async () => {
       if (hasValidTokens()) {
         try {
-          // Try to get current user info from the server
           const userInfo = await authService.getCurrentUser();
           setUser(userInfo);
         } catch {
-          // Tokens are invalid, clear them
           clearTokens();
         }
       }
@@ -160,36 +132,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+  const lookupUser = useCallback(async (userName: string): Promise<ClinicOption[]> => {
+    return await authService.lookupUser({ userName });
+  }, []);
+
+  const login = useCallback(async (userName: string, password: string, tenantId: string): Promise<boolean> => {
     setIsLoading(true);
-    
     try {
-      const response = await authService.login({ email, password });
-      
-      if (response.succeeded) {
-        // Save tokens to cookies
-        setTokens(response.accessToken, response.refreshToken);
-        setUser(response.user);
-        
-        toast({
-          title: `${t('auth.welcomeBack')}, ${response.user.firstName}!`,
-        });
-        
+      const response = await authService.login({ userName, password, tenantId });
+      if (response.succeeded && response.data) {
+        setTokens(response.data.accessToken, response.data.refreshToken);
+        setUser(response.data.user);
+        toast({ title: `${t('auth.welcomeBack')}, ${response.data.user.firstName}!` });
         return true;
       } else {
-        toast({
-          title: t('auth.invalidCredentials'),
-          variant: 'destructive',
-        });
+        toast({ title: t('auth.invalidCredentials'), variant: 'destructive' });
         return false;
       }
     } catch (error) {
       const message = getErrorMessage(error);
-      toast({
-        title: t('auth.invalidCredentials'),
-        description: message,
-        variant: 'destructive',
-      });
+      toast({ title: t('auth.invalidCredentials'), description: message, variant: 'destructive' });
       return false;
     } finally {
       setIsLoading(false);
@@ -207,14 +169,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const value: AuthContextType = {
-    user,
-    login,
-    logout,
-    isAuthenticated: !!user,
-    isLoading,
-    hasRole,
-    showSessionWarning,
-    extendSession,
+    user, lookupUser, login, logout,
+    isAuthenticated: !!user, isLoading, hasRole,
+    showSessionWarning, extendSession,
   };
 
   return (

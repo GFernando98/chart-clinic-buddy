@@ -119,6 +119,7 @@ export const UsersPage = () => {
 
     // Create new user
     const createData: CreateUserData = {
+      userName: userData.userName || '',
       email: userData.email!,
       firstName: userData.firstName!,
       lastName: userData.lastName!,
@@ -285,6 +286,7 @@ export const UsersPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('common.name')}</TableHead>
+                    <TableHead>Usuario</TableHead>
                     <TableHead>{t('common.email')}</TableHead>
                     <TableHead>{t('users.roles')}</TableHead>
                     <TableHead>{t('common.status')}</TableHead>
@@ -295,6 +297,7 @@ export const UsersPage = () => {
                   {paginatedItems.map((user) => (
                     <TableRow key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUser(user)}>
                       <TableCell className={`font-medium ${user.isActive === false ? 'text-destructive' : ''}`}>{user.fullName}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-sm">{user.userName}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">

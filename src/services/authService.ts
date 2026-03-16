@@ -3,6 +3,8 @@ import {
   ApiResponse, 
   LoginRequest, 
   LoginResponse, 
+  LookupUserRequest,
+  ClinicOption,
   UserInfo, 
   RegisterUserRequest,
   ChangePasswordRequest 
@@ -10,11 +12,19 @@ import {
 
 export const authService = {
   /**
-   * Login with email and password
+   * Step 1: Lookup clinics for a userName
+   */
+  async lookupUser(data: LookupUserRequest): Promise<ClinicOption[]> {
+    const response = await apiClient.post<ApiResponse<ClinicOption[]>>('/Auth/lookup-user', data);
+    return extractData(response.data);
+  },
+
+  /**
+   * Step 2: Login with userName, password, and tenantId
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>('/Auth/login', credentials);
-    return extractData(response.data);
+    const response = await apiClient.post<LoginResponse>('/Auth/login', credentials);
+    return response.data;
   },
 
   /**
@@ -24,7 +34,6 @@ export const authService = {
     try {
       await apiClient.post('/Auth/logout');
     } finally {
-      // Always clear tokens, even if API call fails
       clearTokens();
     }
   },
