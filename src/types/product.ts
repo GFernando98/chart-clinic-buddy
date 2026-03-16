@@ -3,7 +3,8 @@ export interface Product {
   code: string;
   name: string;
   description?: string;
-  category: string;
+  categoryId?: string;
+  categoryName?: string;
   brand?: string;
   purchasePrice: number;
   salePrice: number;
@@ -14,6 +15,9 @@ export interface Product {
   requiresPrescription: boolean;
   expirationDate?: string;
   isActive: boolean;
+  isLowStock?: boolean;
+  isOutOfStock?: boolean;
+  isExpiringSoon?: boolean;
   createdAt?: string;
 }
 
@@ -21,7 +25,7 @@ export interface ProductFormData {
   code: string;
   name: string;
   description?: string;
-  category: string;
+  categoryId?: string;
   brand?: string;
   purchasePrice: number;
   salePrice: number;
@@ -79,14 +83,6 @@ export interface CreateProductInvoiceData {
   discountAmount?: number;
   notes?: string;
 }
-
-export const PRODUCT_CATEGORIES = [
-  'Higiene Oral',
-  'Medicamentos',
-  'Material Dental',
-  'Consumibles',
-  'Otros',
-] as const;
 
 export const PRODUCT_UNITS = [
   { value: 'pza', label: 'Pieza' },

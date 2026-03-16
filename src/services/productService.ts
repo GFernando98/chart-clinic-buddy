@@ -27,8 +27,8 @@ export const productService = {
     return extractData(response.data);
   },
 
-  async delete(id: string): Promise<boolean> {
-    const response = await apiClient.delete<ApiResponse<boolean>>(`/Products/${id}`);
+  async toggleStatus(id: string): Promise<Product> {
+    const response = await apiClient.patch<ApiResponse<Product>>(`/Products/${id}/toggle-status`);
     return extractData(response.data);
   },
 };
