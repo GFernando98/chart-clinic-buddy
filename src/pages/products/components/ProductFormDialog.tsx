@@ -12,7 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ProductFormData } from '@/types/product';
 import { Loader2 } from 'lucide-react';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
-import { Product, PRODUCT_CATEGORIES, PRODUCT_UNITS } from '@/types/product';
+import { useProductCategories } from '@/hooks/useProductCategories';
+import { Product, PRODUCT_UNITS } from '@/types/product';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
@@ -23,7 +24,7 @@ const schema = z.object({
   code: z.string().min(1, 'Código requerido').max(50),
   name: z.string().min(1, 'Nombre requerido').max(200),
   description: z.string().max(500).optional(),
-  category: z.string().min(1, 'Categoría requerida'),
+  categoryId: z.string().optional(),
   brand: z.string().max(100).optional(),
   purchasePrice: z.coerce.number().min(0, 'Debe ser >= 0'),
   salePrice: z.coerce.number().min(0, 'Debe ser >= 0'),
@@ -53,11 +54,12 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
   const isEditing = !!product;
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const { data: categories = [] } = useProductCategories(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      code: '', name: '', description: '', category: '', brand: '',
+      code: '', name: '', description: '', categoryId: '', brand: '',
       purchasePrice: 0, salePrice: 0, initialStock: 0,
       minimumStock: 0, maximumStock: 0, unit: 'pza',
       requiresPrescription: false, expirationDate: null,
@@ -69,7 +71,7 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
       if (product) {
         form.reset({
           code: product.code, name: product.name, description: product.description || '',
-          category: product.category, brand: product.brand || '',
+          categoryId: product.categoryId || '', brand: product.brand || '',
           purchasePrice: product.purchasePrice, salePrice: product.salePrice,
           initialStock: undefined, minimumStock: product.minimumStock,
           maximumStock: product.maximumStock, unit: product.unit,
@@ -78,7 +80,7 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
         });
       } else {
         form.reset({
-          code: '', name: '', description: '', category: '', brand: '',
+          code: '', name: '', description: '', categoryId: '', brand: '',
           purchasePrice: 0, salePrice: 0, initialStock: 0,
           minimumStock: 0, maximumStock: 0, unit: 'pza',
           requiresPrescription: false, expirationDate: null,
@@ -92,7 +94,7 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
       code: values.code,
       name: values.name,
       description: values.description || undefined,
-      category: values.category,
+      categoryId: values.categoryId || undefined,
       brand: values.brand || undefined,
       purchasePrice: values.purchasePrice,
       salePrice: values.salePrice,
@@ -156,13 +158,30 @@ export function ProductFormDialog({ open, onOpenChange, product }: Props) {
             )} />
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="category" render={({ field }) => (
+              <FormField control={form.control} name="categoryId" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoría *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger></FormControl>
+                  <FormLabel>Categoría</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar categoría" />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
-                      {PRODUCT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      <SelectItem value="">Sin categoría</SelectItem>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            {c.color && (
+                              <div
+                                className="w-3 h-3 rounded-full shrink-0"
+                                style={{ backgroundColor: c.color }}
+                              />
+                            )}
+                            {c.name}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,14 +12,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Search, Package, ArrowUpDown, Eye } from 'lucide-react';
-import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
+import { Plus, Search, Package, Eye } from 'lucide-react';
+import { useProducts, useToggleProductStatus } from '@/hooks/useProducts';
 import { Product } from '@/types/product';
 import { ProductFormDialog } from './components/ProductFormDialog';
 import { ProductMovementsDialog } from './components/ProductMovementsDialog';
 import { TablePagination } from '@/components/ui/table-pagination';
 import { usePagination } from '@/hooks/usePagination';
-import { differenceInDays } from 'date-fns';
 
 export default function ProductsPage() {
   const { t } = useTranslation();
@@ -30,10 +29,10 @@ export default function ProductsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [movementsProduct, setMovementsProduct] = useState<Product | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [toggleProduct, setToggleProduct] = useState<Product | null>(null);
 
   const { data: products = [], isLoading } = useProducts(onlyActive, onlyLowStock);
-  const deleteProduct = useDeleteProduct();
+  const toggleStatus = useToggleProductStatus();
 
   const filtered = useMemo(() => {
     if (!search) return products;
@@ -46,16 +45,10 @@ export default function ProductsPage() {
   const pagination = usePagination({ items: filtered });
   const paged = pagination.paginatedItems;
 
-  const isLowStock = (p: Product) => p.currentStock <= p.minimumStock;
-  const isExpiringSoon = (p: Product) => {
-    if (!p.expirationDate) return false;
-    return differenceInDays(new Date(p.expirationDate), new Date()) < 90;
-  };
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    await deleteProduct.mutateAsync(deleteId);
-    setDeleteId(null);
+  const handleToggleStatus = async () => {
+    if (!toggleProduct) return;
+    await toggleStatus.mutateAsync(toggleProduct.id);
+    setToggleProduct(null);
   };
 
   return (
@@ -130,13 +123,13 @@ export default function ProductsPage() {
                     <tr key={product.id} className="border-b border-border/50 hover:bg-muted/30">
                       <td className="px-4 py-3 font-mono text-xs">{product.code}</td>
                       <td className="px-4 py-3 font-medium">{product.name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{product.category}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{product.categoryName || '—'}</td>
                       <td className="px-4 py-3 text-muted-foreground">{product.brand || '—'}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className={isLowStock(product) ? 'text-destructive font-bold' : ''}>
+                        <span className={product.isLowStock ? 'text-destructive font-bold' : ''}>
                           {product.currentStock}
                         </span>
-                        {isLowStock(product) && (
+                        {product.isLowStock && (
                           <Badge variant="destructive" className="ml-2 text-[10px]">Bajo</Badge>
                         )}
                       </td>
@@ -146,7 +139,7 @@ export default function ProductsPage() {
                       <td className="px-4 py-3 text-center">
                         {!product.isActive ? (
                           <Badge variant="secondary">Inactivo</Badge>
-                        ) : isExpiringSoon(product) ? (
+                        ) : product.isExpiringSoon ? (
                           <Badge className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30">
                             Por vencer
                           </Badge>
@@ -164,8 +157,13 @@ export default function ProductsPage() {
                           <Button variant="ghost" size="sm" onClick={() => setMovementsProduct(product)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteId(product.id)}>
-                            {t('common.delete')}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={product.isActive ? 'text-destructive' : 'text-green-600'}
+                            onClick={() => setToggleProduct(product)}
+                          >
+                            {product.isActive ? 'Desactivar' : 'Activar'}
                           </Button>
                         </div>
                       </td>
@@ -200,16 +198,25 @@ export default function ProductsPage() {
         />
       )}
 
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+      <AlertDialog open={!!toggleProduct} onOpenChange={(o) => !o && setToggleProduct(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogTitle>
+              {toggleProduct?.isActive ? '¿Deseas desactivar este producto?' : '¿Deseas activar este producto?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {toggleProduct?.isActive
+                ? 'El producto dejará de estar disponible para ventas e inventario.'
+                : 'El producto volverá a estar disponible para ventas e inventario.'}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              {t('common.delete')}
+            <AlertDialogAction
+              onClick={handleToggleStatus}
+              className={toggleProduct?.isActive ? 'bg-destructive text-destructive-foreground' : ''}
+            >
+              {toggleProduct?.isActive ? 'Desactivar' : 'Activar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

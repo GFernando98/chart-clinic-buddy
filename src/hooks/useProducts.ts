@@ -59,18 +59,22 @@ export function useUpdateProduct() {
   });
 }
 
-export function useDeleteProduct() {
+export function useToggleProductStatus() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (id: string) => productService.delete(id),
-    onSuccess: () => {
+    mutationFn: (id: string) => productService.toggleStatus(id),
+    onSuccess: (product) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      toast({ title: 'Producto eliminado', description: 'El producto ha sido eliminado', variant: 'success' });
+      toast({
+        title: product.isActive ? 'Producto activado' : 'Producto desactivado',
+        description: `${product.name} ha sido ${product.isActive ? 'activado' : 'desactivado'}`,
+        variant: 'success',
+      });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error al eliminar producto', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error al cambiar estado', description: error.message, variant: 'destructive' });
     },
   });
 }
