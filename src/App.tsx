@@ -49,6 +49,10 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/confirmar-cita" element={<AppointmentConfirmationPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+              {/* Master Panel routes */}
+              <Route path="/master/login" element={<MasterLoginPage />} />
+              <Route path="/master/dashboard" element={<MasterDashboardPage />} />
               
               {/* Protected routes with layout */}
               <Route

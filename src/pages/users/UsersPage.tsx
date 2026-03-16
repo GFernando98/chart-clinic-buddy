@@ -297,6 +297,7 @@ export const UsersPage = () => {
                   {paginatedItems.map((user) => (
                     <TableRow key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUser(user)}>
                       <TableCell className={`font-medium ${user.isActive === false ? 'text-destructive' : ''}`}>{user.fullName}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-sm">{user.userName}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
