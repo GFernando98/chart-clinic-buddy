@@ -64,7 +64,7 @@ export function AppSidebar() {
     { title: t('nav.doctors'), icon: Stethoscope, path: '/doctors', roles: ['Admin'] },
     { title: t('nav.treatments'), icon: ClipboardList, path: '/treatments', roles: ['Admin'] },
     { title: 'Productos', icon: Package, path: '/products', roles: ['Admin'] },
-    { title: 'Categorías', icon: Tag, path: '/product-categories', roles: ['Admin'] },
+    
     { title: 'Inventario', icon: ArrowUpDown, path: '/inventory', roles: ['Admin'] },
     { title: t('nav.invoices'), icon: FileText, path: '/invoices', roles: ['Admin', 'Doctor'] },
     { title: 'Factura Productos', icon: ShoppingCart, path: '/nueva-factura-productos', roles: ['Admin', 'Doctor'] },
