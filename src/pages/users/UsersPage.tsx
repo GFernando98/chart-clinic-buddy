@@ -119,6 +119,7 @@ export const UsersPage = () => {
 
     // Create new user
     const createData: CreateUserData = {
+      userName: userData.userName || '',
       email: userData.email!,
       firstName: userData.firstName!,
       lastName: userData.lastName!,
