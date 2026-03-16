@@ -49,6 +49,7 @@ import {
 import { TreatmentCategoryFormDialog } from './components/TreatmentCategoryFormDialog';
 import { ClinicInformationTab } from './components/ClinicInformationTab';
 import { TaxInformationTab } from './components/TaxInformationTab';
+import ProductCategoriesPage from '@/pages/product-categories/ProductCategoriesPage';
 import { TreatmentCategoryDto, TreatmentCategoryFormData } from '@/services/treatmentCategoryService';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePagination } from '@/hooks/usePagination';
