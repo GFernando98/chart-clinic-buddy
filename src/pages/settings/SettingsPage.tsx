@@ -373,6 +373,9 @@ export const SettingsPage = () => {
       {/* Tax Section */}
       {activeSection === 'tax' && <TaxInformationTab />}
 
+      {/* Product Categories Section */}
+      {activeSection === 'productCategories' && <ProductCategoriesPage />}
+
       {/* Form Dialog */}
       <TreatmentCategoryFormDialog
         open={isFormOpen}
