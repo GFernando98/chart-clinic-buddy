@@ -90,7 +90,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <span className="font-semibold text-sidebar-foreground whitespace-nowrap">
-              Clínica Dental
+              SmileOS
             </span>
           )}
         </div>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Stethoscope, Loader2, Eye, EyeOff } from 'lucide-react';
+import loginBg from '@/assets/login-bg.jpg';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -34,84 +35,103 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-card/95 backdrop-blur">
-        <CardHeader className="space-y-4 text-center pb-2">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-            <Stethoscope className="w-9 h-9 text-primary-foreground" />
-          </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">Clínica Dental</CardTitle>
-            <CardDescription className="mt-2">
-              {t('auth.loginSubtitle')}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="correo@clinica.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                autoComplete="email"
-                className="h-11"
-              />
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
+
+      <div className="relative z-10 w-full max-w-md space-y-6">
+        <Card className="shadow-2xl border-0 bg-card/90 backdrop-blur-md">
+          <CardHeader className="space-y-4 text-center pb-2">
+            <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+              <Stethoscope className="w-9 h-9 text-primary-foreground" />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  autoComplete="current-password"
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+            <div>
+              <CardTitle className="text-2xl font-bold tracking-tight">SmileOS</CardTitle>
+              <CardDescription className="mt-2">
+                {t('auth.loginSubtitle')}
+              </CardDescription>
             </div>
-            
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full h-11 text-base font-medium"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('common.loading')}
-                </>
-              ) : (
-                t('auth.login')
-              )}
-            </Button>
-          </form>
+          </CardHeader>
           
-          <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
-            <p>{t('auth.forgotPassword')}</p>
-          </div>
-        </CardContent>
-      </Card>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="correo@clinica.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  autoComplete="email"
+                  className="h-11"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    autoComplete="current-password"
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              
+              <Button 
+                type="submit" 
+                className="w-full h-11 text-base font-medium"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('common.loading')}
+                  </>
+                ) : (
+                  t('auth.login')
+                )}
+              </Button>
+            </form>
+            
+            <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
+              <p>{t('auth.forgotPassword')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subtle SysCore branding */}
+        <p className="text-center text-xs text-white/70 drop-shadow-sm">
+          © {new Date().getFullYear()} SmileOS · Distribuido por{' '}
+          <span className="font-medium text-white/90">SysCore</span>
+        </p>
+      </div>
     </div>
   );
 }
