@@ -27,6 +27,7 @@ const today = new Date();
 export const mockUsers: User[] = [
   {
     id: 'user-1',
+    userName: 'admin',
     email: 'admin@dentalclinic.com',
     firstName: 'Admin',
     lastName: 'Sistema',
@@ -36,6 +37,7 @@ export const mockUsers: User[] = [
   },
   {
     id: 'user-2',
+    userName: 'cmejia',
     email: 'carlos.mejia@dentalclinic.com',
     firstName: 'Carlos',
     lastName: 'Mejía',
@@ -45,6 +47,7 @@ export const mockUsers: User[] = [
   },
   {
     id: 'user-3',
+    userName: 'arodriguez',
     email: 'ana.rodriguez@dentalclinic.com',
     firstName: 'Ana',
     lastName: 'Rodríguez',
@@ -54,6 +57,7 @@ export const mockUsers: User[] = [
   },
   {
     id: 'user-4',
+    userName: 'mlopez',
     email: 'maria.lopez@dentalclinic.com',
     firstName: 'María',
     lastName: 'López',
@@ -63,6 +67,7 @@ export const mockUsers: User[] = [
   },
   {
     id: 'user-5',
+    userName: 'jgarcia',
     email: 'jose.garcia@dentalclinic.com',
     firstName: 'José',
     lastName: 'García',
