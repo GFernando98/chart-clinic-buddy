@@ -15,6 +15,9 @@ export function MainLayout() {
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <Outlet />
           </main>
+          <footer className="py-3 px-6 text-center text-xs text-muted-foreground/60 border-t">
+            © {new Date().getFullYear()} SmileOS · Distribuido por <span className="font-medium">SysCore</span>
+          </footer>
         </SidebarInset>
       </div>
       <SessionWarningDialog />
