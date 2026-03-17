@@ -522,25 +522,31 @@ export interface User {
 export interface Tenant {
   id: string;
   name: string;
-  slug: string;
+  subdomain: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone?: string;
+  databaseName: string;
+  connectionString?: string;
   isActive: boolean;
   userCount: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateTenantData {
   name: string;
-  slug: string;
-  connectionString: string;
-  adminUserName: string;
-  adminPassword: string;
-  adminFirstName: string;
-  adminLastName: string;
-  adminEmail: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone?: string;
+  subdomain: string;
+  databaseName: string;
 }
 
+export interface UpdateTenantData extends CreateTenantData {}
+
 export interface MasterLoginRequest {
-  userName: string;
+  email: string;
   password: string;
 }
 

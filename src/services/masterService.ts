@@ -1,13 +1,14 @@
 import axios from 'axios';
-import { ApiResponse, Tenant, CreateTenantData, MasterLoginRequest, MasterLoginResponse } from '@/types';
+import { ApiResponse, Tenant, CreateTenantData, UpdateTenantData, MasterLoginRequest, MasterLoginResponse } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7820/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
-const MASTER_TOKEN_KEY = 'masterToken';
+// In-memory token storage (not localStorage)
+let masterToken: string | null = null;
 
-export const getMasterToken = (): string | null => localStorage.getItem(MASTER_TOKEN_KEY);
-export const setMasterToken = (token: string) => localStorage.setItem(MASTER_TOKEN_KEY, token);
-export const clearMasterToken = () => localStorage.removeItem(MASTER_TOKEN_KEY);
+export const getMasterToken = (): string | null => masterToken;
+export const setMasterToken = (token: string) => { masterToken = token; };
+export const clearMasterToken = () => { masterToken = null; };
 
 const masterClient = axios.create({
   baseURL: API_BASE_URL,
@@ -33,27 +34,32 @@ const extractData = <T>(response: ApiResponse<T>): T => {
 
 export const masterService = {
   async login(credentials: MasterLoginRequest): Promise<MasterLoginResponse> {
-    const response = await masterClient.post<MasterLoginResponse>('/Master/login', credentials);
+    const response = await masterClient.post<MasterLoginResponse>('/api/master/auth/login', credentials);
     return response.data;
   },
 
   async getTenants(): Promise<Tenant[]> {
-    const response = await masterClient.get<ApiResponse<Tenant[]>>('/Master/tenants');
+    const response = await masterClient.get<ApiResponse<Tenant[]>>('/api/master/tenants');
+    return extractData(response.data);
+  },
+
+  async getTenant(id: string): Promise<Tenant> {
+    const response = await masterClient.get<ApiResponse<Tenant>>(`/api/master/tenants/${id}`);
     return extractData(response.data);
   },
 
   async createTenant(data: CreateTenantData): Promise<Tenant> {
-    const response = await masterClient.post<ApiResponse<Tenant>>('/Master/tenants', data);
+    const response = await masterClient.post<ApiResponse<Tenant>>('/api/master/tenants', data);
     return extractData(response.data);
   },
 
-  async toggleTenantStatus(id: string): Promise<Tenant> {
-    const response = await masterClient.patch<ApiResponse<Tenant>>(`/Master/tenants/${id}/toggle-status`);
+  async updateTenant(id: string, data: UpdateTenantData): Promise<Tenant> {
+    const response = await masterClient.put<ApiResponse<Tenant>>(`/api/master/tenants/${id}`, data);
     return extractData(response.data);
   },
 
-  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<boolean> {
-    const response = await masterClient.patch<ApiResponse<boolean>>('/Master/change-password', data);
+  async deleteTenant(id: string): Promise<boolean> {
+    const response = await masterClient.delete<ApiResponse<boolean>>(`/api/master/tenants/${id}`);
     return extractData(response.data);
   },
 };
