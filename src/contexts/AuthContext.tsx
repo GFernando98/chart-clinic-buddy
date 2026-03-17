@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { UserInfo, ClinicOption } from '@/types';
+import { UserInfo } from '@/types';
 import { 
   authService, 
   setTokens, 
@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 
 interface AuthContextType {
   user: UserInfo | null;
-  lookupUser: (userName: string) => Promise<ClinicOption[]>;
   login: (userName: string, password: string, tenantId: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -132,10 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const lookupUser = useCallback(async (userName: string): Promise<ClinicOption[]> => {
-    return await authService.lookupUser({ userName });
-  }, []);
-
   const login = useCallback(async (userName: string, password: string, tenantId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -169,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const value: AuthContextType = {
-    user, lookupUser, login, logout,
+    user, login, logout,
     isAuthenticated: !!user, isLoading, hasRole,
     showSessionWarning, extendSession,
   };

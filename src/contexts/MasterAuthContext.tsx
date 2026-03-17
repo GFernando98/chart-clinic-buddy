@@ -3,7 +3,7 @@ import { masterService, setMasterToken, clearMasterToken, getMasterToken } from 
 
 interface MasterAuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (userName: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -12,11 +12,11 @@ const MasterAuthContext = createContext<MasterAuthContextType | null>(null);
 export function MasterAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getMasterToken());
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (userName: string, password: string) => {
     try {
-      const response = await masterService.login({ email, password });
+      const response = await masterService.login({ userName, password });
       if (response.succeeded && response.data) {
-        setMasterToken(response.data.accessToken);
+        setMasterToken(response.data.token);
         setIsAuthenticated(true);
         return true;
       }
