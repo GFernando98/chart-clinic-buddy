@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 
 interface AuthContextType {
   user: UserInfo | null;
-  lookupUser: (userName: string) => Promise<ClinicOption[]>;
   login: (userName: string, password: string, tenantId: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
