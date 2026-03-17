@@ -131,10 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const lookupUser = useCallback(async (userName: string): Promise<ClinicOption[]> => {
-    return await authService.lookupUser({ userName });
-  }, []);
-
   const login = useCallback(async (userName: string, password: string, tenantId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -168,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const value: AuthContextType = {
-    user, lookupUser, login, logout,
+    user, login, logout,
     isAuthenticated: !!user, isLoading, hasRole,
     showSessionWarning, extendSession,
   };
