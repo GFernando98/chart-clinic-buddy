@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { UserInfo, ClinicOption } from '@/types';
+import { UserInfo } from '@/types';
 import { 
   authService, 
   setTokens, 
