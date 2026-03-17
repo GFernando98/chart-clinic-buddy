@@ -3,8 +3,6 @@ import {
   ApiResponse, 
   LoginRequest, 
   LoginResponse, 
-  LookupUserRequest,
-  ClinicOption,
   UserInfo, 
   RegisterUserRequest,
   ChangePasswordRequest 
@@ -12,15 +10,7 @@ import {
 
 export const authService = {
   /**
-   * Step 1: Lookup clinics for a userName
-   */
-  async lookupUser(data: LookupUserRequest): Promise<ClinicOption[]> {
-    const response = await apiClient.post<ApiResponse<ClinicOption[]>>('/Auth/lookup-user', data);
-    return extractData(response.data);
-  },
-
-  /**
-   * Step 2: Login with userName, password, and tenantId
+   * Login with userName, password, and tenantId
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>('/Auth/login', credentials);

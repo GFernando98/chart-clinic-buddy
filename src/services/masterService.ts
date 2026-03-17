@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ApiResponse, Tenant, CreateTenantData, UpdateTenantData, MasterLoginRequest, MasterLoginResponse } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://clinic-api.syscore.app';
 
 // In-memory token storage (not localStorage)
 let masterToken: string | null = null;
@@ -34,7 +34,7 @@ const extractData = <T>(response: ApiResponse<T>): T => {
 
 export const masterService = {
   async login(credentials: MasterLoginRequest): Promise<MasterLoginResponse> {
-    const response = await masterClient.post<MasterLoginResponse>('/api/master/auth/login', credentials);
+    const response = await masterClient.post<MasterLoginResponse>('/api/master/login', credentials);
     return response.data;
   },
 
@@ -61,6 +61,10 @@ export const masterService = {
   async deleteTenant(id: string): Promise<boolean> {
     const response = await masterClient.delete<ApiResponse<boolean>>(`/api/master/tenants/${id}`);
     return extractData(response.data);
+  },
+
+  async toggleTenantStatus(id: string): Promise<void> {
+    await masterClient.patch(`/api/master/tenants/${id}/toggle-status`);
   },
 };
 

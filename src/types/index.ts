@@ -546,13 +546,15 @@ export interface CreateTenantData {
 export interface UpdateTenantData extends CreateTenantData {}
 
 export interface MasterLoginRequest {
-  email: string;
+  userName: string;
   password: string;
 }
 
 export interface MasterLoginResponse {
   succeeded: boolean;
   data: {
-    accessToken: string;
+    token: string;
+    userName: string;
+    role: string;
   };
 }

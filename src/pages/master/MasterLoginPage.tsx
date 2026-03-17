@@ -9,7 +9,7 @@ import { useMasterAuth } from '@/contexts/MasterAuthContext';
 
 export default function MasterLoginPage() {
   const { isAuthenticated, login } = useMasterAuth();
-  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -21,11 +21,11 @@ export default function MasterLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email || !password) { setError('All fields are required'); return; }
+    if (!userName || !password) { setError('All fields are required'); return; }
 
     setIsLoading(true);
     try {
-      const success = await login(email, password);
+      const success = await login(userName, password);
       if (success) {
         navigate('/master/dashboard');
       } else {
@@ -57,13 +57,13 @@ export default function MasterLoginPage() {
           <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="masterEmail" className="text-white/70">Email</Label>
+                <Label htmlFor="masterUserName" className="text-white/70">Username</Label>
                 <Input
-                  id="masterEmail"
-                  type="email"
-                  placeholder="admin@smileos.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="masterUserName"
+                  type="text"
+                  placeholder="admin"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
                   disabled={isLoading}
                   autoFocus
                   className="h-11 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-indigo-500"
