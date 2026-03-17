@@ -8,7 +8,20 @@ import {
   ChangePasswordRequest 
 } from '@/types';
 
+export interface PublicTenant {
+  id: string;
+  name: string;
+}
+
 export const authService = {
+  /**
+   * Get public list of tenants for clinic selection
+   */
+  async getPublicTenants(): Promise<PublicTenant[]> {
+    const response = await apiClient.get<{ data: PublicTenant[] }>('/Master/tenants/public');
+    return response.data.data;
+  },
+
   /**
    * Login with userName, password, and tenantId
    */
