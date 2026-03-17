@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import { ApiResponse } from '@/types';
 
 // API Base URL from environment or default
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7820/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://clinic-api.syscore.app/api';
 
 // Cookie names
 const ACCESS_TOKEN_COOKIE = 'dental_access_token';
