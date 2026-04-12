@@ -88,19 +88,19 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
   const renderBleedingRow = (label: string, surface: 'vest' | 'pal') => (
     <tr className="border-b border-border/50">
-      <td className="sticky left-0 bg-background z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+      <td className="sticky left-0 bg-background z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
         {label}
       </td>
       {toothData.map(({ toothNum, isMissing, vestPoints, palPoints }) => {
         const points = surface === 'vest' ? vestPoints : palPoints;
         return (
-          <td key={toothNum} className={cn('px-0 py-0.5', isMissing && 'opacity-30')}>
-            <div className="flex justify-center gap-0">
+          <td key={toothNum} className={cn('px-0 py-1', isMissing && 'opacity-30')}>
+            <div className="flex justify-center gap-0.5">
               {points.map((m, i) => (
-                <span key={i} className="w-[18px] flex justify-center">
+                <span key={i} className="w-[22px] flex justify-center">
                   <span
                     className={cn(
-                      'w-2 h-2 rounded-full inline-block',
+                      'w-2.5 h-2.5 rounded-full inline-block',
                       m?.bleedingOnProbing ? 'bg-red-500' : 'border border-muted-foreground/40'
                     )}
                   />
