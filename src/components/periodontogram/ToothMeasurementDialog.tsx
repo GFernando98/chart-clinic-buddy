@@ -155,6 +155,7 @@ export function ToothMeasurementDialog({
                   updatePoint(setter, point, 'probingDepth', Math.max(0, Math.min(15, Number(e.target.value))))
                 }
                 className="h-7 text-xs"
+                disabled={readOnly}
               />
             </div>
 
@@ -169,6 +170,7 @@ export function ToothMeasurementDialog({
                   updatePoint(setter, point, 'recession', Math.max(0, Math.min(15, Number(e.target.value))))
                 }
                 className="h-7 text-xs"
+                disabled={readOnly}
               />
             </div>
 
@@ -185,6 +187,7 @@ export function ToothMeasurementDialog({
                 onCheckedChange={(checked) =>
                   updatePoint(setter, point, 'bleeding', !!checked)
                 }
+                disabled={readOnly}
               />
               <Label htmlFor={`bleeding-${label}-${point}`} className="text-[10px]">Sangrado</Label>
             </div>
@@ -196,6 +199,7 @@ export function ToothMeasurementDialog({
                 onCheckedChange={(checked) =>
                   updatePoint(setter, point, 'plaque', !!checked)
                 }
+                disabled={readOnly}
               />
               <Label htmlFor={`plaque-${label}-${point}`} className="text-[10px]">Placa</Label>
             </div>
