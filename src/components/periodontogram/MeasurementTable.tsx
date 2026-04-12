@@ -303,7 +303,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 strokeDasharray="4 2"
                 strokeWidth={1}
               />
-              <text x={2} y={getYPos(4) - 2} className="text-[8px] fill-red-400">
+              <text x={2} y={getYPos(4) - 3} className="text-[10px] fill-red-400">
                 4mm
               </text>
 
