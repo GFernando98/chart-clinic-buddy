@@ -243,8 +243,15 @@ export const setOnActivityTracked = (callback: () => void) => {
 // Helper to extract data from API response
 export const extractData = <T>(response: ApiResponse<T>): T => {
   if (!response.succeeded) {
-    const errorMessage = response.message || response.errors?.join(', ') || 'An error occurred';
-    throw new Error(errorMessage);
+    const mainMessage = response.message || 'An error occurred';
+    const errorDetails = response.errors || [];
+    const fullMessage = errorDetails.length > 0
+      ? `${mainMessage}\n${errorDetails.join('\n')}`
+      : mainMessage;
+    const error = new Error(fullMessage);
+    (error as any).apiMessage = mainMessage;
+    (error as any).errorDetails = errorDetails;
+    throw error;
   }
   if (response.data === null) {
     throw new Error('No data received');
