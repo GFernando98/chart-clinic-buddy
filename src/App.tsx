@@ -20,7 +20,7 @@ import PeriodontogramPage from "@/pages/PeriodontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
 import { AppointmentsPage } from "@/pages/appointments";
 import { UsersPage } from "@/pages/users";
-import { DoctorsPage, DoctorFormPage } from "@/pages/doctors";
+import { DoctorsPage, DoctorFormPage, DoctorAvailabilityPage } from "@/pages/doctors";
 import { TreatmentsPage } from "@/pages/treatments";
 import { InvoicesPage } from "@/pages/invoices";
 import ProductInvoicePage from "@/pages/invoices/ProductInvoicePage";
@@ -116,6 +116,14 @@ const App = () => (
                     element={
                       <ProtectedRoute allowedRoles={['Admin']}>
                         <DoctorFormPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/doctors/:id/availability"
+                    element={
+                      <ProtectedRoute allowedRoles={['Admin']}>
+                        <DoctorAvailabilityPage />
                       </ProtectedRoute>
                     }
                   />

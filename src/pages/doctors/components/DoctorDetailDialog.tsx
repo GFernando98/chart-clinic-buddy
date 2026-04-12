@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -18,6 +19,7 @@ import {
   CheckCircle2,
   XCircle,
   User,
+  CalendarClock,
 } from 'lucide-react';
 
 interface DoctorDetailDialogProps {
@@ -36,6 +38,7 @@ export const DoctorDetailDialog = ({
   onToggleActive,
 }: DoctorDetailDialogProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (!doctor) return null;
 
@@ -116,6 +119,17 @@ export const DoctorDetailDialog = ({
             className="w-full sm:w-auto"
           >
             {doctor.isActive !== false ? t('users.deactivate') : t('users.activate')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              onOpenChange(false);
+              navigate(`/doctors/${doctor.id}/availability`);
+            }}
+            className="w-full sm:w-auto"
+          >
+            <CalendarClock className="h-4 w-4 mr-2" />
+            Disponibilidad
           </Button>
           <Button onClick={() => onEdit(doctor)} className="w-full sm:w-auto">
             {t('common.edit')}

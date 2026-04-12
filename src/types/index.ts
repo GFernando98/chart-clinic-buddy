@@ -142,6 +142,44 @@ export interface Doctor {
   userId?: string;
 }
 
+export type DayOfWeek = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+
+export interface DoctorAvailability {
+  id: string;
+  doctorId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  slotDurationMinutes: number;
+}
+
+export interface SetAvailabilityData {
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  slotDurationMinutes: number;
+}
+
+export interface DoctorException {
+  id: string;
+  doctorId: string;
+  exceptionDate: string;
+  isFullDayOff: boolean;
+  startTime: string | null;
+  endTime: string | null;
+  reason: string | null;
+}
+
+export interface AddExceptionData {
+  exceptionDate: string;
+  isFullDayOff: boolean;
+  startTime?: string;
+  endTime?: string;
+  reason?: string;
+}
+
 export interface DoctorFormData {
   firstName: string;
   lastName: string;
