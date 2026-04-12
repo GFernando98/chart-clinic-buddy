@@ -203,11 +203,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
           <tbody>
             {/* Mobility */}
             <tr className="border-b border-border/50 bg-muted/30">
-              <td className="sticky left-0 bg-muted/30 z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+              <td className="sticky left-0 bg-muted/30 z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
                 Movilidad
               </td>
               {toothData.map(({ toothNum, isMissing, mobility }) => (
-                <td key={toothNum} className={cn('text-center text-[10px] py-1', isMissing && 'opacity-30')}>
+                <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
                   {isMissing ? '—' : mobility > 0 ? `${['', 'I', 'II', 'III'][mobility]}` : '0'}
                 </td>
               ))}
@@ -215,11 +215,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Furcation */}
             <tr className="border-b border-border/50 bg-muted/30">
-              <td className="sticky left-0 bg-muted/30 z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+              <td className="sticky left-0 bg-muted/30 z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
                 Furcación
               </td>
               {toothData.map(({ toothNum, isMissing, hasFurcation, furcation }) => (
-                <td key={toothNum} className={cn('text-center text-[10px] py-1', isMissing && 'opacity-30')}>
+                <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
                   {isMissing ? '—' : !hasFurcation ? '—' : furcation != null && furcation > 0 ? `${['', 'I', 'II', 'III'][furcation]}` : '0'}
                 </td>
               ))}
@@ -227,7 +227,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Vestibular section */}
             <tr className="bg-blue-50/50 dark:bg-blue-950/20">
-              <td colSpan={teeth.length + 1} className="px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+              <td colSpan={teeth.length + 1} className="px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400">
                 Vestibular
               </td>
             </tr>
