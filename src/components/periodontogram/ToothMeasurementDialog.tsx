@@ -65,6 +65,7 @@ export function ToothMeasurementDialog({
   existingMeasurements,
   onSave,
   isSaving,
+  readOnly = false,
 }: ToothMeasurementDialogProps) {
   const toothType = getToothType(toothNumber);
   const hasFurcation = toothType === 'molar' || toothType === 'premolar';
