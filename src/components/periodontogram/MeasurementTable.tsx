@@ -300,7 +300,12 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
             <div className="text-sm font-medium text-muted-foreground mb-2">
               Gráfica de Sondaje — {jaw === 'upper' ? 'Superior' : 'Inferior'}
             </div>
-            <svg width={totalWidth} height={chartHeight + 35} className="block">
+            <svg
+              viewBox={`0 0 ${totalWidth} ${chartHeight + 35}`}
+              preserveAspectRatio="none"
+              className="block w-full"
+              style={{ minWidth: totalWidth, height: Math.max(220, chartHeight + 35) }}
+            >
               {/* Pathological zone (≥4mm) */}
               <rect
                 x={0}
