@@ -160,25 +160,37 @@ apiClient.interceptors.response.use(
     if (error.response?.data) {
       const apiError = error.response.data as any;
       let errorMessage = 'An error occurred';
+      let errorDetails: string[] = [];
       let fieldErrors: Record<string, string[]> | undefined;
       
-      // Handle ASP.NET validation error format: { errors: { FieldName: ["msg"] } }
-      if (apiError.errors && typeof apiError.errors === 'object' && !Array.isArray(apiError.errors)) {
-        fieldErrors = apiError.errors;
-        const allMessages = Object.values(apiError.errors).flat() as string[];
-        errorMessage = allMessages.join(', ');
-      } else if (apiError.message) {
+      // Extract main message
+      if (apiError.message) {
         errorMessage = apiError.message;
-      } else if (Array.isArray(apiError.errors) && apiError.errors.length) {
-        errorMessage = apiError.errors.join(', ');
       } else if (apiError.title) {
         errorMessage = apiError.title;
       }
+
+      // Extract error details
+      if (Array.isArray(apiError.errors) && apiError.errors.length) {
+        // Array of error strings: ["error1", "error2"]
+        errorDetails = apiError.errors;
+      } else if (apiError.errors && typeof apiError.errors === 'object') {
+        // ASP.NET validation format: { FieldName: ["msg"] }
+        fieldErrors = apiError.errors;
+        errorDetails = Object.values(apiError.errors).flat() as string[];
+      }
+
+      // Combine message + details for the error text
+      const fullMessage = errorDetails.length > 0
+        ? `${errorMessage}\n${errorDetails.join('\n')}`
+        : errorMessage;
       
-      const enhancedError = new Error(errorMessage);
+      const enhancedError = new Error(fullMessage);
       (enhancedError as any).originalError = error;
       (enhancedError as any).statusCode = error.response.status;
       (enhancedError as any).fieldErrors = fieldErrors;
+      (enhancedError as any).errorDetails = errorDetails;
+      (enhancedError as any).apiMessage = errorMessage;
       return Promise.reject(enhancedError);
     }
 
