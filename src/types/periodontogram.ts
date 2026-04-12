@@ -8,68 +8,47 @@ export interface Periodontogram {
   doctorName?: string;
   examinationDate: string;
   notes?: string;
-  bleedingIndex: number; // % calculated
-  plaqueIndex: number;   // % calculated
+  bleedingIndex: number | null;
+  plaqueIndex: number | null;
   status: PeriodontogramStatus;
   measurements: PeriodontalMeasurement[];
 }
 
-export enum PeriodontogramStatus {
-  Draft = 1,
-  Finalized = 2,
-}
+export type PeriodontogramStatus = 'Draft' | 'Finalized';
 
 export interface PeriodontalMeasurement {
   id: string;
-  periodontogramId: string;
   toothNumber: number;
   surface: PerioSurface;
   point: PerioPoint;
-  probingDepth: number;     // mm (1-15)
-  gingivalRecession: number; // mm (0-15)
-  clinicalAttachmentLevel: number; // calculated: probingDepth + recession
-  bleedingOnProbing: boolean;
-  plaquePresent: boolean;
-  furcation: FurcationGrade | null; // only molars/premolars
-  mobility: MobilityGrade;  // per tooth, same for all 6 points
+  probingDepth: number;
+  recession: number;
+  clinicalAttachmentLevel: number;
+  bleeding: boolean;
+  plaque: boolean;
+  furcation: FurcationGrade | null;
+  mobility: MobilityGrade | null;
 }
 
-export enum PerioSurface {
-  Vestibular = 'vestibular',
-  PalatinoLingual = 'palatino_lingual',
-}
+export type PerioSurface = 'Vestibular' | 'LingualPalatine';
 
-export enum PerioPoint {
-  Mesial = 'mesial',
-  Central = 'central',
-  Distal = 'distal',
-}
+export type PerioPoint = 'Mesial' | 'Central' | 'Distal';
 
-export enum FurcationGrade {
-  None = 0,
-  Initial = 1,
-  Partial = 2,
-  Total = 3,
-}
+export type FurcationGrade = 'None' | 'GradeI' | 'GradeII' | 'GradeIII';
 
-export enum MobilityGrade {
-  None = 0,
-  GradeI = 1,
-  GradeII = 2,
-  GradeIII = 3,
-}
+export type MobilityGrade = 'None' | 'GradeI' | 'GradeII' | 'GradeIII';
 
 // Form data for a single tooth (6 measurement points)
 export interface ToothPerioData {
   toothNumber: number;
   mobility: MobilityGrade;
-  furcation: FurcationGrade | null;
+  furcation: FurcationGrade;
   vestibular: {
     mesial: PointData;
     central: PointData;
     distal: PointData;
   };
-  palatino_lingual: {
+  lingualPalatine: {
     mesial: PointData;
     central: PointData;
     distal: PointData;
@@ -78,32 +57,34 @@ export interface ToothPerioData {
 
 export interface PointData {
   probingDepth: number;
-  gingivalRecession: number;
-  bleedingOnProbing: boolean;
-  plaquePresent: boolean;
+  recession: number;
+  bleeding: boolean;
+  plaque: boolean;
 }
 
-// API request/response types
+// API request types
 export interface CreatePeriodontogramData {
   patientId: string;
   doctorId: string;
-  examinationDate: string;
+  examinationDate?: string;
   notes?: string;
 }
 
-export interface SaveToothMeasurementsData {
-  periodontogramId: string;
+export interface SaveToothMeasurementsPayload {
+  periodontalRecordId: string;
   toothNumber: number;
+  vestibular: MeasurementPointPayload[];
+  lingualPalatine: MeasurementPointPayload[];
+  furcation: FurcationGrade;
   mobility: MobilityGrade;
-  furcation: FurcationGrade | null;
-  measurements: {
-    surface: PerioSurface;
-    point: PerioPoint;
-    probingDepth: number;
-    gingivalRecession: number;
-    bleedingOnProbing: boolean;
-    plaquePresent: boolean;
-  }[];
+}
+
+export interface MeasurementPointPayload {
+  point: PerioPoint;
+  probingDepth: number;
+  recession: number;
+  bleeding: boolean;
+  plaque: boolean;
 }
 
 export interface FinalizePeriodontogramData {
@@ -124,7 +105,7 @@ export interface FinalizePeriodontogramData {
  *   → ApiResponse<Periodontogram>
  *
  * POST   /api/Periodontogram/SaveToothMeasurements
- *   Body: SaveToothMeasurementsData
+ *   Body: SaveToothMeasurementsPayload
  *   → ApiResponse<PeriodontalMeasurement[]>
  *
  * PATCH  /api/Periodontogram/Finalize/{id}
@@ -132,5 +113,5 @@ export interface FinalizePeriodontogramData {
  *   → ApiResponse<Periodontogram>
  *
  * DELETE /api/Periodontogram/Delete/{id}
- *   → ApiResponse<null>
+ *   → ApiResponse<boolean>
  */

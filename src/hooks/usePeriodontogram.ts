@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { periodontogramService } from '@/services/periodontogramService';
 import {
   CreatePeriodontogramData,
-  SaveToothMeasurementsData,
+  SaveToothMeasurementsPayload,
   FinalizePeriodontogramData,
 } from '@/types/periodontogram';
 import { useToast } from '@/hooks/use-toast';
@@ -51,9 +51,9 @@ export function useSaveToothMeasurements() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: SaveToothMeasurementsData) => periodontogramService.saveToothMeasurements(data),
+    mutationFn: (data: SaveToothMeasurementsPayload) => periodontogramService.saveToothMeasurements(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: periodontogramKeys.detail(variables.periodontogramId) });
+      queryClient.invalidateQueries({ queryKey: periodontogramKeys.detail(variables.periodontalRecordId) });
       toast({ title: `Diente ${variables.toothNumber} guardado`, variant: 'success' as any });
     },
     onError: (error: any) => {

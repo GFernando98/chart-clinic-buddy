@@ -5,6 +5,8 @@ import {
   PeriodontalMeasurement,
   PerioSurface,
   PerioPoint,
+  MobilityGrade,
+  FurcationGrade,
 } from '@/types/periodontogram';
 
 interface MeasurementTableProps {
@@ -13,7 +15,7 @@ interface MeasurementTableProps {
   jaw: 'upper' | 'lower';
 }
 
-const POINTS_ORDER: PerioPoint[] = [PerioPoint.Mesial, PerioPoint.Central, PerioPoint.Distal];
+const POINTS_ORDER: PerioPoint[] = ['Mesial', 'Central', 'Distal'];
 
 function getMeasurement(
   measurements: PeriodontalMeasurement[],
@@ -37,23 +39,36 @@ function getRecessionColor(value: number): string {
   return '';
 }
 
+const MOBILITY_LABELS: Record<string, string> = {
+  None: '0',
+  GradeI: 'I',
+  GradeII: 'II',
+  GradeIII: 'III',
+};
+
+const FURCATION_LABELS: Record<string, string> = {
+  None: '0',
+  GradeI: 'I',
+  GradeII: 'II',
+  GradeIII: 'III',
+};
+
 export function MeasurementTable({ measurements, missingTeeth, jaw }: MeasurementTableProps) {
   const teeth = jaw === 'upper' ? PERMANENT_TEETH.upper : PERMANENT_TEETH.lower;
 
-  // Build data structure: for each tooth, 6 values (vestibular M/C/D then palatal M/C/D)
   const toothData = useMemo(() => {
     return teeth.map((toothNum) => {
       const isMissing = missingTeeth.includes(toothNum);
       const vestPoints = POINTS_ORDER.map((p) =>
-        getMeasurement(measurements, toothNum, PerioSurface.Vestibular, p)
+        getMeasurement(measurements, toothNum, 'Vestibular', p)
       );
       const palPoints = POINTS_ORDER.map((p) =>
-        getMeasurement(measurements, toothNum, PerioSurface.PalatinoLingual, p)
+        getMeasurement(measurements, toothNum, 'LingualPalatine', p)
       );
       const toothType = getToothType(toothNum);
       const hasFurcation = toothType === 'molar' || toothType === 'premolar';
-      const mobility = vestPoints[0]?.mobility ?? palPoints[0]?.mobility ?? 0;
-      const furcation = vestPoints[0]?.furcation ?? palPoints[0]?.furcation ?? null;
+      const mobility: MobilityGrade = vestPoints[0]?.mobility ?? palPoints[0]?.mobility ?? 'None';
+      const furcation: FurcationGrade | null = vestPoints[0]?.furcation ?? palPoints[0]?.furcation ?? null;
 
       return { toothNum, isMissing, vestPoints, palPoints, hasFurcation, mobility, furcation };
     });
@@ -101,7 +116,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                   <span
                     className={cn(
                       'w-2.5 h-2.5 rounded-full inline-block',
-                      m?.bleedingOnProbing ? 'bg-red-500' : 'border border-muted-foreground/40'
+                      m?.bleeding ? 'bg-red-500' : 'border border-muted-foreground/40'
                     )}
                   />
                 </span>
@@ -128,7 +143,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                   <span
                     className={cn(
                       'w-2.5 h-2.5 rounded-full inline-block',
-                      m?.plaquePresent ? 'bg-yellow-500' : 'border border-muted-foreground/40'
+                      m?.plaque ? 'bg-yellow-500' : 'border border-muted-foreground/40'
                     )}
                   />
                 </span>
@@ -143,7 +158,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   // Zigzag SVG chart
   const chartHeight = 160;
   const chartYMax = 10;
-  const colWidth = 70; // px per tooth
+  const colWidth = 70;
   const totalWidth = teeth.length * colWidth;
 
   const getYPos = (value: number) => {
@@ -170,7 +185,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
       if (missingTeeth.includes(toothNum)) return;
       POINTS_ORDER.forEach((point, pIdx) => {
         const m = getMeasurement(measurements, toothNum, surface, point);
-        if (m?.bleedingOnProbing) {
+        if (m?.bleeding) {
           const x = tIdx * colWidth + (colWidth / 4) * (pIdx + 0.5);
           const y = getYPos(m.probingDepth);
           dots.push({ x, y });
@@ -208,7 +223,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
               </td>
               {toothData.map(({ toothNum, isMissing, mobility }) => (
                 <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
-                  {isMissing ? '—' : mobility > 0 ? `${['', 'I', 'II', 'III'][mobility]}` : '0'}
+                  {isMissing ? '—' : MOBILITY_LABELS[mobility] || '0'}
                 </td>
               ))}
             </tr>
@@ -220,7 +235,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
               </td>
               {toothData.map(({ toothNum, isMissing, hasFurcation, furcation }) => (
                 <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
-                  {isMissing ? '—' : !hasFurcation ? '—' : furcation != null && furcation > 0 ? `${['', 'I', 'II', 'III'][furcation]}` : '0'}
+                  {isMissing ? '—' : !hasFurcation ? '—' : furcation ? FURCATION_LABELS[furcation] || '0' : '0'}
                 </td>
               ))}
             </tr>
@@ -241,12 +256,12 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
             })}
 
             {renderRow('Recesión (V)', 'vest', (m) => {
-              const v = m?.gingivalRecession ?? 0;
+              const v = m?.recession ?? 0;
               return <span className={getRecessionColor(v)}>{v || '0'}</span>;
             })}
 
             {renderRow('NIC (V)', 'vest', (m) => {
-              const v = (m?.probingDepth ?? 0) + (m?.gingivalRecession ?? 0);
+              const v = (m?.probingDepth ?? 0) + (m?.recession ?? 0);
               return <span className="text-muted-foreground">{v || '0'}</span>;
             }, 'bg-muted/20')}
 
@@ -266,12 +281,12 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
             })}
 
             {renderRow('Recesión (P/L)', 'pal', (m) => {
-              const v = m?.gingivalRecession ?? 0;
+              const v = m?.recession ?? 0;
               return <span className={getRecessionColor(v)}>{v || '0'}</span>;
             })}
 
             {renderRow('NIC (P/L)', 'pal', (m) => {
-              const v = (m?.probingDepth ?? 0) + (m?.gingivalRecession ?? 0);
+              const v = (m?.probingDepth ?? 0) + (m?.recession ?? 0);
               return <span className="text-muted-foreground">{v || '0'}</span>;
             }, 'bg-muted/20')}
           </tbody>
@@ -281,7 +296,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
       {/* Zigzag Chart */}
       {measurements.length > 0 && (
         <div className="overflow-x-auto">
-        <div className="min-w-max p-3">
+          <div className="min-w-max p-3">
             <div className="text-sm font-medium text-muted-foreground mb-2">
               Gráfica de Sondaje — {jaw === 'upper' ? 'Superior' : 'Inferior'}
             </div>
@@ -323,7 +338,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
               {/* Vestibular line (blue) */}
               <polyline
-                points={buildPolyline(PerioSurface.Vestibular)}
+                points={buildPolyline('Vestibular')}
                 fill="none"
                 stroke="hsl(217 91% 60%)"
                 strokeWidth={2}
@@ -332,7 +347,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
               {/* Palatino/Lingual line (green) */}
               <polyline
-                points={buildPolyline(PerioSurface.PalatinoLingual)}
+                points={buildPolyline('LingualPalatine')}
                 fill="none"
                 stroke="hsl(142 76% 36%)"
                 strokeWidth={2}
@@ -340,12 +355,12 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
               />
 
               {/* Bleeding dots - vestibular */}
-              {bleedingDots(PerioSurface.Vestibular).map((dot, i) => (
+              {bleedingDots('Vestibular').map((dot, i) => (
                 <circle key={`bv-${i}`} cx={dot.x} cy={dot.y} r={4} fill="hsl(0 72% 51%)" />
               ))}
 
               {/* Bleeding dots - palatal */}
-              {bleedingDots(PerioSurface.PalatinoLingual).map((dot, i) => (
+              {bleedingDots('LingualPalatine').map((dot, i) => (
                 <circle key={`bp-${i}`} cx={dot.x} cy={dot.y} r={4} fill="hsl(0 72% 51%)" />
               ))}
 
