@@ -354,21 +354,21 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 <text
                   key={v}
                   x={totalWidth - 2}
-                  y={getYPos(v) + 3}
+                  y={getYPos(v) + 4}
                   textAnchor="end"
-                  className="text-[7px] fill-muted-foreground"
+                  className="text-[9px] fill-muted-foreground"
                 >
                   {v}
                 </text>
               ))}
 
               {/* Legend */}
-              <line x1={5} y1={chartHeight + 10} x2={20} y2={chartHeight + 10} stroke="hsl(217 91% 60%)" strokeWidth={2} />
-              <text x={23} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Vestibular</text>
-              <line x1={85} y1={chartHeight + 10} x2={100} y2={chartHeight + 10} stroke="hsl(142 76% 36%)" strokeWidth={2} />
-              <text x={103} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Palatino/Lingual</text>
-              <circle cx={185} cy={chartHeight + 10} r={3} fill="hsl(0 72% 51%)" />
-              <text x={190} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Sangrado</text>
+              <line x1={5} y1={chartHeight + 14} x2={25} y2={chartHeight + 14} stroke="hsl(217 91% 60%)" strokeWidth={2} />
+              <text x={28} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Vestibular</text>
+              <line x1={105} y1={chartHeight + 14} x2={125} y2={chartHeight + 14} stroke="hsl(142 76% 36%)" strokeWidth={2} />
+              <text x={128} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Palatino/Lingual</text>
+              <circle cx={225} cy={chartHeight + 14} r={3.5} fill="hsl(0 72% 51%)" />
+              <text x={232} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Sangrado</text>
             </svg>
           </div>
         </div>
