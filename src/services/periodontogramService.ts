@@ -4,7 +4,7 @@ import {
   Periodontogram,
   PeriodontalMeasurement,
   CreatePeriodontogramData,
-  SaveToothMeasurementsData,
+  SaveToothMeasurementsPayload,
   FinalizePeriodontogramData,
 } from '@/types/periodontogram';
 
@@ -31,7 +31,7 @@ export const periodontogramService = {
     return extractData(response.data);
   },
 
-  async saveToothMeasurements(data: SaveToothMeasurementsData): Promise<PeriodontalMeasurement[]> {
+  async saveToothMeasurements(data: SaveToothMeasurementsPayload): Promise<PeriodontalMeasurement[]> {
     const response = await apiClient.post<ApiResponse<PeriodontalMeasurement[]>>(
       '/Periodontogram/SaveToothMeasurements',
       data
