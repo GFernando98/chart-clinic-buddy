@@ -16,6 +16,7 @@ import {
   Package,
   ArrowUpDown,
   ShoppingCart,
+  Activity,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -59,7 +60,7 @@ export function AppSidebar() {
     { title: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
     { title: t('nav.patients'), icon: Users, path: '/patients' },
     { title: t('nav.odontogram'), icon: Scan, path: '/odontogram', roles: ['Admin', 'Doctor'] },
-    { title: 'Periodontograma', icon: ClipboardList, path: '/periodontogram', roles: ['Admin', 'Doctor'] },
+    { title: 'Periodontograma', icon: Activity, path: '/periodontogram', roles: ['Admin', 'Doctor'] },
     { title: t('nav.appointments'), icon: Calendar, path: '/appointments' },
     { title: t('nav.doctors'), icon: Stethoscope, path: '/doctors', roles: ['Admin'] },
     { title: t('nav.treatments'), icon: ClipboardList, path: '/treatments', roles: ['Admin'] },
