@@ -124,7 +124,7 @@ export const DoctorDetailDialog = ({
             variant="outline"
             onClick={() => {
               onOpenChange(false);
-              window.location.href = `/doctors/${doctor.id}/availability`;
+              navigate(`/doctors/${doctor.id}/availability`);
             }}
             className="w-full sm:w-auto"
           >
