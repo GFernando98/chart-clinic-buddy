@@ -141,9 +141,9 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   );
 
   // Zigzag SVG chart
-  const chartHeight = 80;
+  const chartHeight = 100;
   const chartYMax = 10;
-  const colWidth = 54; // px per tooth
+  const colWidth = 70; // px per tooth
   const totalWidth = teeth.length * colWidth;
 
   const getYPos = (value: number) => {
