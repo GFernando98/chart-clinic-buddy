@@ -16,12 +16,6 @@ export const periodontogramService = {
     return extractData(response.data);
   },
 
-  async getById(id: string): Promise<Periodontogram> {
-    const response = await apiClient.get<ApiResponse<Periodontogram>>(
-      `/Periodontogram/GetById/${id}`
-    );
-    return extractData(response.data);
-  },
 
   async create(data: CreatePeriodontogramData): Promise<Periodontogram> {
     const response = await apiClient.post<ApiResponse<Periodontogram>>(
