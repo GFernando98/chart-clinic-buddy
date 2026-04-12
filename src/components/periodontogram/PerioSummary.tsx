@@ -10,8 +10,8 @@ export function PerioSummary({ measurements }: PerioSummaryProps) {
   if (measurements.length === 0) return null;
 
   const totalPoints = measurements.length;
-  const bleedingCount = measurements.filter((m) => m.bleedingOnProbing).length;
-  const plaqueCount = measurements.filter((m) => m.plaquePresent).length;
+  const bleedingCount = measurements.filter((m) => m.bleeding).length;
+  const plaqueCount = measurements.filter((m) => m.plaque).length;
   const pockets4 = measurements.filter((m) => m.probingDepth >= 4).length;
   const pockets6 = measurements.filter((m) => m.probingDepth >= 6).length;
 

@@ -35,9 +35,9 @@ interface ToothMeasurementDialogProps {
 
 const DEFAULT_POINT: PointData = {
   probingDepth: 0,
-  gingivalRecession: 0,
-  bleedingOnProbing: false,
-  plaquePresent: false,
+  recession: 0,
+  bleeding: false,
+  plaque: false,
 };
 
 function getExistingPoint(
@@ -51,9 +51,9 @@ function getExistingPoint(
   if (!m) return { ...DEFAULT_POINT };
   return {
     probingDepth: m.probingDepth,
-    gingivalRecession: m.gingivalRecession,
-    bleedingOnProbing: m.bleedingOnProbing,
-    plaquePresent: m.plaquePresent,
+    recession: m.recession,
+    bleeding: m.bleeding,
+    plaque: m.plaque,
   };
 }
 
@@ -68,43 +68,43 @@ export function ToothMeasurementDialog({
   const toothType = getToothType(toothNumber);
   const hasFurcation = toothType === 'molar' || toothType === 'premolar';
 
-  const existingMobility = existingMeasurements.length > 0
-    ? existingMeasurements[0].mobility
-    : MobilityGrade.None;
-  const existingFurcation = existingMeasurements.length > 0
-    ? existingMeasurements[0].furcation
-    : FurcationGrade.None;
+  const existingMobility: MobilityGrade = existingMeasurements.length > 0
+    ? (existingMeasurements[0].mobility ?? 'None')
+    : 'None';
+  const existingFurcation: FurcationGrade = existingMeasurements.length > 0
+    ? (existingMeasurements[0].furcation ?? 'None')
+    : 'None';
 
   const [mobility, setMobility] = useState<MobilityGrade>(existingMobility);
-  const [furcation, setFurcation] = useState<FurcationGrade | null>(
-    hasFurcation ? (existingFurcation ?? FurcationGrade.None) : null
+  const [furcation, setFurcation] = useState<FurcationGrade>(
+    hasFurcation ? existingFurcation : 'None'
   );
 
   const [vestibular, setVestibular] = useState({
-    mesial: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Mesial),
-    central: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Central),
-    distal: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Distal),
+    mesial: getExistingPoint(existingMeasurements, 'Vestibular', 'Mesial'),
+    central: getExistingPoint(existingMeasurements, 'Vestibular', 'Central'),
+    distal: getExistingPoint(existingMeasurements, 'Vestibular', 'Distal'),
   });
 
-  const [palatinoLingual, setPalatinoLingual] = useState({
-    mesial: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Mesial),
-    central: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Central),
-    distal: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Distal),
+  const [lingualPalatine, setLingualPalatine] = useState({
+    mesial: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Mesial'),
+    central: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Central'),
+    distal: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Distal'),
   });
 
   // Reset when tooth changes
   useEffect(() => {
     setMobility(existingMobility);
-    setFurcation(hasFurcation ? (existingFurcation ?? FurcationGrade.None) : null);
+    setFurcation(hasFurcation ? existingFurcation : 'None');
     setVestibular({
-      mesial: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Mesial),
-      central: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Central),
-      distal: getExistingPoint(existingMeasurements, PerioSurface.Vestibular, PerioPoint.Distal),
+      mesial: getExistingPoint(existingMeasurements, 'Vestibular', 'Mesial'),
+      central: getExistingPoint(existingMeasurements, 'Vestibular', 'Central'),
+      distal: getExistingPoint(existingMeasurements, 'Vestibular', 'Distal'),
     });
-    setPalatinoLingual({
-      mesial: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Mesial),
-      central: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Central),
-      distal: getExistingPoint(existingMeasurements, PerioSurface.PalatinoLingual, PerioPoint.Distal),
+    setLingualPalatine({
+      mesial: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Mesial'),
+      central: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Central'),
+      distal: getExistingPoint(existingMeasurements, 'LingualPalatine', 'Distal'),
     });
   }, [toothNumber, existingMeasurements]);
 
@@ -114,7 +114,7 @@ export function ToothMeasurementDialog({
       mobility,
       furcation,
       vestibular,
-      palatino_lingual: palatinoLingual,
+      lingualPalatine,
     });
   };
 
@@ -162,9 +162,9 @@ export function ToothMeasurementDialog({
                 type="number"
                 min={0}
                 max={15}
-                value={data[point].gingivalRecession}
+                value={data[point].recession}
                 onChange={(e) =>
-                  updatePoint(setter, point, 'gingivalRecession', Math.max(0, Math.min(15, Number(e.target.value))))
+                  updatePoint(setter, point, 'recession', Math.max(0, Math.min(15, Number(e.target.value))))
                 }
                 className="h-7 text-xs"
               />
@@ -172,16 +172,16 @@ export function ToothMeasurementDialog({
 
             <div className="space-y-1">
               <Label className="text-[10px]">
-                NIC: {data[point].probingDepth + data[point].gingivalRecession} mm
+                NIC: {data[point].probingDepth + data[point].recession} mm
               </Label>
             </div>
 
             <div className="flex items-center gap-1.5">
               <Checkbox
                 id={`bleeding-${label}-${point}`}
-                checked={data[point].bleedingOnProbing}
+                checked={data[point].bleeding}
                 onCheckedChange={(checked) =>
-                  updatePoint(setter, point, 'bleedingOnProbing', !!checked)
+                  updatePoint(setter, point, 'bleeding', !!checked)
                 }
               />
               <Label htmlFor={`bleeding-${label}-${point}`} className="text-[10px]">Sangrado</Label>
@@ -190,9 +190,9 @@ export function ToothMeasurementDialog({
             <div className="flex items-center gap-1.5">
               <Checkbox
                 id={`plaque-${label}-${point}`}
-                checked={data[point].plaquePresent}
+                checked={data[point].plaque}
                 onCheckedChange={(checked) =>
-                  updatePoint(setter, point, 'plaquePresent', !!checked)
+                  updatePoint(setter, point, 'plaque', !!checked)
                 }
               />
               <Label htmlFor={`plaque-${label}-${point}`} className="text-[10px]">Placa</Label>
@@ -205,7 +205,7 @@ export function ToothMeasurementDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto pr-8">
         <DialogHeader>
           <DialogTitle>Diente #{toothNumber} — Mediciones Periodontales</DialogTitle>
           <DialogDescription>
@@ -219,17 +219,17 @@ export function ToothMeasurementDialog({
             <div className="space-y-1">
               <Label className="text-xs">Movilidad</Label>
               <Select
-                value={String(mobility)}
-                onValueChange={(v) => setMobility(Number(v) as MobilityGrade)}
+                value={mobility}
+                onValueChange={(v) => setMobility(v as MobilityGrade)}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">0 — Sin movilidad</SelectItem>
-                  <SelectItem value="1">I — Ligera</SelectItem>
-                  <SelectItem value="2">II — Moderada</SelectItem>
-                  <SelectItem value="3">III — Severa</SelectItem>
+                  <SelectItem value="None">0 — Sin movilidad</SelectItem>
+                  <SelectItem value="GradeI">I — Ligera</SelectItem>
+                  <SelectItem value="GradeII">II — Moderada</SelectItem>
+                  <SelectItem value="GradeIII">III — Severa</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -238,17 +238,17 @@ export function ToothMeasurementDialog({
               <div className="space-y-1">
                 <Label className="text-xs">Furcación</Label>
                 <Select
-                  value={String(furcation ?? 0)}
-                  onValueChange={(v) => setFurcation(Number(v) as FurcationGrade)}
+                  value={furcation}
+                  onValueChange={(v) => setFurcation(v as FurcationGrade)}
                 >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">0 — Sin afectación</SelectItem>
-                    <SelectItem value="1">I — Inicial</SelectItem>
-                    <SelectItem value="2">II — Parcial</SelectItem>
-                    <SelectItem value="3">III — Total</SelectItem>
+                    <SelectItem value="None">0 — Sin afectación</SelectItem>
+                    <SelectItem value="GradeI">I — Inicial</SelectItem>
+                    <SelectItem value="GradeII">II — Parcial</SelectItem>
+                    <SelectItem value="GradeIII">III — Total</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -261,7 +261,7 @@ export function ToothMeasurementDialog({
 
           <Separator />
 
-          {renderSurfaceInputs('Palatino / Lingual', palatinoLingual, setPalatinoLingual)}
+          {renderSurfaceInputs('Palatino / Lingual', lingualPalatine, setLingualPalatine)}
         </div>
 
         <DialogFooter>
