@@ -281,11 +281,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
       {/* Zigzag Chart */}
       {measurements.length > 0 && (
         <div className="overflow-x-auto">
-          <div className="min-w-max p-2">
-            <div className="text-xs font-medium text-muted-foreground mb-1">
+        <div className="min-w-max p-3">
+            <div className="text-sm font-medium text-muted-foreground mb-2">
               Gráfica de Sondaje — {jaw === 'upper' ? 'Superior' : 'Inferior'}
             </div>
-            <svg width={totalWidth} height={chartHeight + 20} className="block">
+            <svg width={totalWidth} height={chartHeight + 25} className="block">
               {/* Pathological zone (≥4mm) */}
               <rect
                 x={0}
