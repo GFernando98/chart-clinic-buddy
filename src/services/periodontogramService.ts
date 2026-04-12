@@ -34,7 +34,7 @@ export const periodontogramService = {
   async saveToothMeasurements(data: SaveToothMeasurementsPayload): Promise<PeriodontalMeasurement[]> {
     const response = await apiClient.post<ApiResponse<PeriodontalMeasurement[]>>(
       '/Periodontogram/SaveToothMeasurements',
-      data
+      { dto: data }
     );
     return extractData(response.data);
   },
