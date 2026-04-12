@@ -252,7 +252,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Palatino/Lingual section */}
             <tr className="bg-green-50/50 dark:bg-green-950/20">
-              <td colSpan={teeth.length + 1} className="px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:text-green-400">
+              <td colSpan={teeth.length + 1} className="px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-400">
                 Palatino / Lingual
               </td>
             </tr>
