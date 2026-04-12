@@ -31,6 +31,7 @@ interface ToothMeasurementDialogProps {
   existingMeasurements: PeriodontalMeasurement[];
   onSave: (data: ToothPerioData) => void;
   isSaving?: boolean;
+  readOnly?: boolean;
 }
 
 const DEFAULT_POINT: PointData = {
@@ -64,6 +65,7 @@ export function ToothMeasurementDialog({
   existingMeasurements,
   onSave,
   isSaving,
+  readOnly = false,
 }: ToothMeasurementDialogProps) {
   const toothType = getToothType(toothNumber);
   const hasFurcation = toothType === 'molar' || toothType === 'premolar';
@@ -153,6 +155,7 @@ export function ToothMeasurementDialog({
                   updatePoint(setter, point, 'probingDepth', Math.max(0, Math.min(15, Number(e.target.value))))
                 }
                 className="h-7 text-xs"
+                disabled={readOnly}
               />
             </div>
 
@@ -167,6 +170,7 @@ export function ToothMeasurementDialog({
                   updatePoint(setter, point, 'recession', Math.max(0, Math.min(15, Number(e.target.value))))
                 }
                 className="h-7 text-xs"
+                disabled={readOnly}
               />
             </div>
 
@@ -183,6 +187,7 @@ export function ToothMeasurementDialog({
                 onCheckedChange={(checked) =>
                   updatePoint(setter, point, 'bleeding', !!checked)
                 }
+                disabled={readOnly}
               />
               <Label htmlFor={`bleeding-${label}-${point}`} className="text-[10px]">Sangrado</Label>
             </div>
@@ -194,6 +199,7 @@ export function ToothMeasurementDialog({
                 onCheckedChange={(checked) =>
                   updatePoint(setter, point, 'plaque', !!checked)
                 }
+                disabled={readOnly}
               />
               <Label htmlFor={`plaque-${label}-${point}`} className="text-[10px]">Placa</Label>
             </div>
@@ -209,7 +215,7 @@ export function ToothMeasurementDialog({
         <DialogHeader>
           <DialogTitle>Diente #{toothNumber} — Mediciones Periodontales</DialogTitle>
           <DialogDescription>
-            Ingrese las mediciones de los 6 puntos de sondaje
+            {readOnly ? 'Registro finalizado — solo lectura' : 'Ingrese las mediciones de los 6 puntos de sondaje'}
           </DialogDescription>
         </DialogHeader>
 
@@ -221,6 +227,7 @@ export function ToothMeasurementDialog({
               <Select
                 value={mobility}
                 onValueChange={(v) => setMobility(v as MobilityGrade)}
+                disabled={readOnly}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
@@ -240,6 +247,7 @@ export function ToothMeasurementDialog({
                 <Select
                   value={furcation}
                   onValueChange={(v) => setFurcation(v as FurcationGrade)}
+                  disabled={readOnly}
                 >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
@@ -265,10 +273,14 @@ export function ToothMeasurementDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Guardando...' : 'Guardar'}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {readOnly ? 'Cerrar' : 'Cancelar'}
           </Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 export const periodontogramKeys = {
   all: ['periodontograms'] as const,
   byPatient: (patientId: string) => [...periodontogramKeys.all, 'patient', patientId] as const,
-  detail: (id: string) => [...periodontogramKeys.all, 'detail', id] as const,
 };
 
 export function usePatientPeriodontograms(patientId: string) {
@@ -21,13 +20,6 @@ export function usePatientPeriodontograms(patientId: string) {
   });
 }
 
-export function usePeriodontogram(id: string) {
-  return useQuery({
-    queryKey: periodontogramKeys.detail(id),
-    queryFn: () => periodontogramService.getById(id),
-    enabled: !!id,
-  });
-}
 
 export function useCreatePeriodontogram() {
   const queryClient = useQueryClient();
@@ -53,7 +45,7 @@ export function useSaveToothMeasurements() {
   return useMutation({
     mutationFn: (data: SaveToothMeasurementsPayload) => periodontogramService.saveToothMeasurements(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: periodontogramKeys.detail(variables.periodontalRecordId) });
+      queryClient.invalidateQueries({ queryKey: periodontogramKeys.all });
       toast({ title: `Diente ${variables.toothNumber} guardado`, variant: 'success' as any });
     },
     onError: (error: any) => {
