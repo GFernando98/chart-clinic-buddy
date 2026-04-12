@@ -438,6 +438,7 @@ export default function PeriodontogramPage() {
           existingMeasurements={toothMeasurements}
           onSave={handleSaveTooth}
           isSaving={saveMeasurementsMutation.isPending}
+          readOnly={!isDraft}
         />
       )}
 

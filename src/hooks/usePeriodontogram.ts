@@ -53,7 +53,7 @@ export function useSaveToothMeasurements() {
   return useMutation({
     mutationFn: (data: SaveToothMeasurementsPayload) => periodontogramService.saveToothMeasurements(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: periodontogramKeys.detail(variables.periodontalRecordId) });
+      queryClient.invalidateQueries({ queryKey: periodontogramKeys.all });
       toast({ title: `Diente ${variables.toothNumber} guardado`, variant: 'success' as any });
     },
     onError: (error: any) => {
