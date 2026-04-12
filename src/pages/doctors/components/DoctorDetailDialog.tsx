@@ -38,6 +38,7 @@ export const DoctorDetailDialog = ({
   onToggleActive,
 }: DoctorDetailDialogProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (!doctor) return null;
 
