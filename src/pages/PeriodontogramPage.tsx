@@ -34,13 +34,10 @@ import { ToothMeasurementDialog } from '@/components/periodontogram/ToothMeasure
 import { PerioSummary } from '@/components/periodontogram/PerioSummary';
 import { ToothCondition } from '@/types';
 import {
-  Periodontogram,
-  PeriodontogramStatus,
   PeriodontalMeasurement,
   ToothPerioData,
-  PerioSurface,
-  PerioPoint,
-  SaveToothMeasurementsData,
+  SaveToothMeasurementsPayload,
+  MeasurementPointPayload,
 } from '@/types/periodontogram';
 
 export default function PeriodontogramPage() {
@@ -126,44 +123,69 @@ export default function PeriodontogramPage() {
   const handleSaveTooth = (data: ToothPerioData) => {
     if (!selectedPerio) return;
 
-    const measurementEntries: SaveToothMeasurementsData['measurements'] = [];
+    // Build the payload matching the API contract
+    const vestibularPoints: MeasurementPointPayload[] = (['mesial', 'central', 'distal'] as const).map((p) => ({
+      point: (p.charAt(0).toUpperCase() + p.slice(1)) as 'Mesial' | 'Central' | 'Distal',
+      probingDepth: data.vestibular[p].probingDepth,
+      recession: data.vestibular[p].recession,
+      bleeding: data.vestibular[p].bleeding,
+      plaque: data.vestibular[p].plaque,
+    }));
 
-    for (const surface of [PerioSurface.Vestibular, PerioSurface.PalatinoLingual]) {
-      const surfaceData =
-        surface === PerioSurface.Vestibular ? data.vestibular : data.palatino_lingual;
-      for (const point of [PerioPoint.Mesial, PerioPoint.Central, PerioPoint.Distal]) {
-        const pd = surfaceData[point];
-        measurementEntries.push({
-          surface,
-          point,
-          probingDepth: pd.probingDepth,
-          gingivalRecession: pd.gingivalRecession,
-          bleedingOnProbing: pd.bleedingOnProbing,
-          plaquePresent: pd.plaquePresent,
-        });
-      }
-    }
+    const lingualPalatinePoints: MeasurementPointPayload[] = (['mesial', 'central', 'distal'] as const).map((p) => ({
+      point: (p.charAt(0).toUpperCase() + p.slice(1)) as 'Mesial' | 'Central' | 'Distal',
+      probingDepth: data.lingualPalatine[p].probingDepth,
+      recession: data.lingualPalatine[p].recession,
+      bleeding: data.lingualPalatine[p].bleeding,
+      plaque: data.lingualPalatine[p].plaque,
+    }));
 
-    const payload: SaveToothMeasurementsData = {
-      periodontogramId: selectedPerio.id,
+    const payload: SaveToothMeasurementsPayload = {
+      periodontalRecordId: selectedPerio.id,
       toothNumber: data.toothNumber,
-      mobility: data.mobility,
+      vestibular: vestibularPoints,
+      lingualPalatine: lingualPalatinePoints,
       furcation: data.furcation,
-      measurements: measurementEntries,
+      mobility: data.mobility,
     };
 
-    // Update local state immediately
+    // Update local state immediately for instant feedback
     setLocalMeasurements((prev) => {
       const filtered = prev.filter((m) => m.toothNumber !== data.toothNumber);
-      const newMeasurements: PeriodontalMeasurement[] = measurementEntries.map((entry, i) => ({
-        id: `local-${data.toothNumber}-${i}`,
-        periodontogramId: selectedPerio.id,
-        toothNumber: data.toothNumber,
-        ...entry,
-        clinicalAttachmentLevel: entry.probingDepth + entry.gingivalRecession,
-        mobility: data.mobility,
-        furcation: data.furcation,
-      }));
+      const newMeasurements: PeriodontalMeasurement[] = [];
+
+      vestibularPoints.forEach((vp, i) => {
+        newMeasurements.push({
+          id: `local-v-${data.toothNumber}-${i}`,
+          toothNumber: data.toothNumber,
+          surface: 'Vestibular',
+          point: vp.point,
+          probingDepth: vp.probingDepth,
+          recession: vp.recession,
+          clinicalAttachmentLevel: vp.probingDepth + vp.recession,
+          bleeding: vp.bleeding,
+          plaque: vp.plaque,
+          furcation: data.furcation,
+          mobility: data.mobility,
+        });
+      });
+
+      lingualPalatinePoints.forEach((lp, i) => {
+        newMeasurements.push({
+          id: `local-l-${data.toothNumber}-${i}`,
+          toothNumber: data.toothNumber,
+          surface: 'LingualPalatine',
+          point: lp.point,
+          probingDepth: lp.probingDepth,
+          recession: lp.recession,
+          clinicalAttachmentLevel: lp.probingDepth + lp.recession,
+          bleeding: lp.bleeding,
+          plaque: lp.plaque,
+          furcation: data.furcation,
+          mobility: data.mobility,
+        });
+      });
+
       return [...filtered, ...newMeasurements];
     });
 
@@ -197,10 +219,10 @@ export default function PeriodontogramPage() {
   const handleFinalize = () => {
     if (!selectedPerio) return;
     const totalPoints = localMeasurements.length;
-    const bleedingCount = localMeasurements.filter((m) => m.bleedingOnProbing).length;
-    const plaqueCount = localMeasurements.filter((m) => m.plaquePresent).length;
-    const bleedingIndex = totalPoints > 0 ? Math.round((bleedingCount / totalPoints) * 100) : 0;
-    const plaqueIndex = totalPoints > 0 ? Math.round((plaqueCount / totalPoints) * 100) : 0;
+    const bleedingCount = localMeasurements.filter((m) => m.bleeding).length;
+    const plaqueCount = localMeasurements.filter((m) => m.plaque).length;
+    const bleedingIndex = totalPoints > 0 ? parseFloat(((bleedingCount / totalPoints) * 100).toFixed(2)) : 0;
+    const plaqueIndex = totalPoints > 0 ? parseFloat(((plaqueCount / totalPoints) * 100).toFixed(2)) : 0;
 
     finalizeMutation.mutate({
       id: selectedPerio.id,
@@ -213,7 +235,7 @@ export default function PeriodontogramPage() {
     return localMeasurements.filter((m) => m.toothNumber === selectedTooth);
   }, [selectedTooth, localMeasurements]);
 
-  const isDraft = selectedPerio?.status === PeriodontogramStatus.Draft;
+  const isDraft = selectedPerio?.status === 'Draft';
 
   return (
     <div className="space-y-4">
@@ -275,7 +297,7 @@ export default function PeriodontogramPage() {
                           }
                         })()
                       : `Registro ${p.id.slice(0, 8)}`}
-                    {p.status === PeriodontogramStatus.Draft ? ' (Borrador)' : ''}
+                    {p.status === 'Draft' ? ' (Borrador)' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
