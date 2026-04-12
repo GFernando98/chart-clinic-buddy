@@ -39,8 +39,9 @@ export function useCreatePeriodontogram() {
       queryClient.invalidateQueries({ queryKey: periodontogramKeys.byPatient(newPerio.patientId) });
       toast({ title: 'Periodontograma creado', variant: 'success' as any });
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error al crear periodontograma', description: error.message, variant: 'destructive' });
+    onError: (error: any) => {
+      const details = error.errorDetails?.length ? error.errorDetails.join(' • ') : error.message;
+      toast({ title: error.apiMessage || 'Error al crear periodontograma', description: details, variant: 'destructive' });
     },
   });
 }
@@ -55,8 +56,9 @@ export function useSaveToothMeasurements() {
       queryClient.invalidateQueries({ queryKey: periodontogramKeys.detail(variables.periodontogramId) });
       toast({ title: `Diente ${variables.toothNumber} guardado`, variant: 'success' as any });
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error al guardar mediciones', description: error.message, variant: 'destructive' });
+    onError: (error: any) => {
+      const details = error.errorDetails?.length ? error.errorDetails.join(' • ') : error.message;
+      toast({ title: error.apiMessage || 'Error al guardar mediciones', description: details, variant: 'destructive' });
     },
   });
 }
@@ -72,8 +74,9 @@ export function useFinalizePeriodontogram() {
       queryClient.invalidateQueries({ queryKey: periodontogramKeys.all });
       toast({ title: 'Periodontograma finalizado', variant: 'success' as any });
     },
-    onError: (error: Error) => {
-      toast({ title: 'Error al finalizar', description: error.message, variant: 'destructive' });
+    onError: (error: any) => {
+      const details = error.errorDetails?.length ? error.errorDetails.join(' • ') : error.message;
+      toast({ title: error.apiMessage || 'Error al finalizar', description: details, variant: 'destructive' });
     },
   });
 }
