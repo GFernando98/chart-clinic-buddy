@@ -31,6 +31,7 @@ interface ToothMeasurementDialogProps {
   existingMeasurements: PeriodontalMeasurement[];
   onSave: (data: ToothPerioData) => void;
   isSaving?: boolean;
+  readOnly?: boolean;
 }
 
 const DEFAULT_POINT: PointData = {
