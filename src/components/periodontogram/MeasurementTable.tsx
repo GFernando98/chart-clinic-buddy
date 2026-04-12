@@ -181,17 +181,17 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="overflow-x-auto">
-        <table className="border-collapse text-xs min-w-max">
+        <table className="border-collapse text-sm w-full min-w-max">
           <thead>
             <tr className="border-b">
-              <th className="sticky left-0 bg-background z-10 px-2 py-1 text-left text-[10px] font-medium border-r" />
+              <th className="sticky left-0 bg-background z-10 px-3 py-2 text-left text-xs font-medium border-r w-[110px]" />
               {toothData.map(({ toothNum, isMissing }) => (
                 <th
                   key={toothNum}
                   className={cn(
-                    'px-0 py-1 text-center text-[10px] font-bold min-w-[54px]',
+                    'px-0 py-2 text-center text-xs font-bold min-w-[70px]',
                     isMissing && 'opacity-30'
                   )}
                 >
