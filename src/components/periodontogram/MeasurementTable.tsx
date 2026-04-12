@@ -66,16 +66,16 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
     className?: string
   ) => (
     <tr className={cn('border-b border-border/50', className)}>
-      <td className="sticky left-0 bg-background z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+      <td className="sticky left-0 bg-background z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
         {label}
       </td>
       {toothData.map(({ toothNum, isMissing, vestPoints, palPoints }) => {
         const points = surface === 'vest' ? vestPoints : palPoints;
         return (
-          <td key={toothNum} className={cn('px-0 py-0.5', isMissing && 'opacity-30')}>
-            <div className="flex justify-center gap-0">
+          <td key={toothNum} className={cn('px-0 py-1', isMissing && 'opacity-30')}>
+            <div className="flex justify-center gap-0.5">
               {points.map((m, i) => (
-                <span key={i} className="w-[18px] text-center text-[10px]">
+                <span key={i} className="w-[22px] text-center text-xs">
                   {isMissing ? '—' : getValue(m)}
                 </span>
               ))}
