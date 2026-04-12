@@ -215,7 +215,7 @@ export function ToothMeasurementDialog({
         <DialogHeader>
           <DialogTitle>Diente #{toothNumber} — Mediciones Periodontales</DialogTitle>
           <DialogDescription>
-            Ingrese las mediciones de los 6 puntos de sondaje
+            {readOnly ? 'Registro finalizado — solo lectura' : 'Ingrese las mediciones de los 6 puntos de sondaje'}
           </DialogDescription>
         </DialogHeader>
 
@@ -227,6 +227,7 @@ export function ToothMeasurementDialog({
               <Select
                 value={mobility}
                 onValueChange={(v) => setMobility(v as MobilityGrade)}
+                disabled={readOnly}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
@@ -246,6 +247,7 @@ export function ToothMeasurementDialog({
                 <Select
                   value={furcation}
                   onValueChange={(v) => setFurcation(v as FurcationGrade)}
+                  disabled={readOnly}
                 >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
@@ -271,10 +273,14 @@ export function ToothMeasurementDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Guardando...' : 'Guardar'}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {readOnly ? 'Cerrar' : 'Cancelar'}
           </Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
