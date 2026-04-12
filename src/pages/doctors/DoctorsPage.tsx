@@ -265,6 +265,15 @@ export const DoctorsPage = () => {
                               <Edit className="h-4 w-4 mr-2" />
                               {t('common.edit')}
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/doctors/${doctor.id}/availability`);
+                              }}
+                            >
+                              <CalendarClock className="h-4 w-4 mr-2" />
+                              Disponibilidad
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={(e) => {
@@ -359,6 +368,15 @@ export const DoctorsPage = () => {
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/doctors/${doctor.id}/availability`);
+                              }}
+                            >
+                              <CalendarClock className="h-4 w-4 mr-2" />
+                              Disponibilidad
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
