@@ -16,6 +16,7 @@ import MasterTenantsPage from "@/pages/master/MasterTenantsPage";
 import TenantDetailPage from "@/pages/master/TenantDetailPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OdontogramPage from "@/pages/OdontogramPage";
+import PeriodontogramPage from "@/pages/PeriodontogramPage";
 import { PatientsListPage, PatientDetailPage, PatientFormPage } from "@/pages/patients";
 import { AppointmentsPage } from "@/pages/appointments";
 import { UsersPage } from "@/pages/users";
@@ -82,6 +83,14 @@ const App = () => (
                     element={
                       <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
                         <OdontogramPage />
+                    </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/periodontogram"
+                    element={
+                      <ProtectedRoute allowedRoles={['Admin', 'Doctor']}>
+                        <PeriodontogramPage />
                       </ProtectedRoute>
                     }
                   />
