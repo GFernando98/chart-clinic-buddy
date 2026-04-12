@@ -141,7 +141,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   );
 
   // Zigzag SVG chart
-  const chartHeight = 100;
+  const chartHeight = 160;
   const chartYMax = 10;
   const colWidth = 70; // px per tooth
   const totalWidth = teeth.length * colWidth;
@@ -285,7 +285,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
             <div className="text-sm font-medium text-muted-foreground mb-2">
               Gráfica de Sondaje — {jaw === 'upper' ? 'Superior' : 'Inferior'}
             </div>
-            <svg width={totalWidth} height={chartHeight + 25} className="block">
+            <svg width={totalWidth} height={chartHeight + 35} className="block">
               {/* Pathological zone (≥4mm) */}
               <rect
                 x={0}
@@ -303,7 +303,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 strokeDasharray="4 2"
                 strokeWidth={1}
               />
-              <text x={2} y={getYPos(4) - 3} className="text-[10px] fill-red-400">
+              <text x={2} y={getYPos(4) - 4} className="text-xs fill-red-400 font-medium">
                 4mm
               </text>
 
@@ -326,7 +326,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 points={buildPolyline(PerioSurface.Vestibular)}
                 fill="none"
                 stroke="hsl(217 91% 60%)"
-                strokeWidth={1.5}
+                strokeWidth={2}
                 strokeLinejoin="round"
               />
 
@@ -335,40 +335,40 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 points={buildPolyline(PerioSurface.PalatinoLingual)}
                 fill="none"
                 stroke="hsl(142 76% 36%)"
-                strokeWidth={1.5}
+                strokeWidth={2}
                 strokeLinejoin="round"
               />
 
               {/* Bleeding dots - vestibular */}
               {bleedingDots(PerioSurface.Vestibular).map((dot, i) => (
-                <circle key={`bv-${i}`} cx={dot.x} cy={dot.y} r={2.5} fill="hsl(0 72% 51%)" />
+                <circle key={`bv-${i}`} cx={dot.x} cy={dot.y} r={4} fill="hsl(0 72% 51%)" />
               ))}
 
               {/* Bleeding dots - palatal */}
               {bleedingDots(PerioSurface.PalatinoLingual).map((dot, i) => (
-                <circle key={`bp-${i}`} cx={dot.x} cy={dot.y} r={2.5} fill="hsl(0 72% 51%)" />
+                <circle key={`bp-${i}`} cx={dot.x} cy={dot.y} r={4} fill="hsl(0 72% 51%)" />
               ))}
 
               {/* Y axis labels */}
               {[0, 2, 4, 6, 8, 10].map((v) => (
                 <text
                   key={v}
-                  x={totalWidth - 2}
-                  y={getYPos(v) + 4}
+                  x={totalWidth - 4}
+                  y={getYPos(v) + 5}
                   textAnchor="end"
-                  className="text-[9px] fill-muted-foreground"
+                  className="text-xs fill-muted-foreground"
                 >
                   {v}
                 </text>
               ))}
 
               {/* Legend */}
-              <line x1={5} y1={chartHeight + 14} x2={25} y2={chartHeight + 14} stroke="hsl(217 91% 60%)" strokeWidth={2} />
-              <text x={28} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Vestibular</text>
-              <line x1={105} y1={chartHeight + 14} x2={125} y2={chartHeight + 14} stroke="hsl(142 76% 36%)" strokeWidth={2} />
-              <text x={128} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Palatino/Lingual</text>
-              <circle cx={225} cy={chartHeight + 14} r={3.5} fill="hsl(0 72% 51%)" />
-              <text x={232} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Sangrado</text>
+              <line x1={10} y1={chartHeight + 22} x2={35} y2={chartHeight + 22} stroke="hsl(217 91% 60%)" strokeWidth={3} />
+              <text x={40} y={chartHeight + 26} className="text-xs fill-muted-foreground">Vestibular</text>
+              <line x1={130} y1={chartHeight + 22} x2={155} y2={chartHeight + 22} stroke="hsl(142 76% 36%)" strokeWidth={3} />
+              <text x={160} y={chartHeight + 26} className="text-xs fill-muted-foreground">Palatino/Lingual</text>
+              <circle cx={280} cy={chartHeight + 22} r={4} fill="hsl(0 72% 51%)" />
+              <text x={288} y={chartHeight + 26} className="text-xs fill-muted-foreground">Sangrado</text>
             </svg>
           </div>
         </div>
