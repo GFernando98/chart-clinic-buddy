@@ -66,16 +66,16 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
     className?: string
   ) => (
     <tr className={cn('border-b border-border/50', className)}>
-      <td className="sticky left-0 bg-background z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+      <td className="sticky left-0 bg-background z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
         {label}
       </td>
       {toothData.map(({ toothNum, isMissing, vestPoints, palPoints }) => {
         const points = surface === 'vest' ? vestPoints : palPoints;
         return (
-          <td key={toothNum} className={cn('px-0 py-0.5', isMissing && 'opacity-30')}>
-            <div className="flex justify-center gap-0">
+          <td key={toothNum} className={cn('px-0 py-1', isMissing && 'opacity-30')}>
+            <div className="flex justify-center gap-0.5">
               {points.map((m, i) => (
-                <span key={i} className="w-[18px] text-center text-[10px]">
+                <span key={i} className="w-[22px] text-center text-xs">
                   {isMissing ? '—' : getValue(m)}
                 </span>
               ))}
@@ -88,19 +88,19 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
   const renderBleedingRow = (label: string, surface: 'vest' | 'pal') => (
     <tr className="border-b border-border/50">
-      <td className="sticky left-0 bg-background z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+      <td className="sticky left-0 bg-background z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
         {label}
       </td>
       {toothData.map(({ toothNum, isMissing, vestPoints, palPoints }) => {
         const points = surface === 'vest' ? vestPoints : palPoints;
         return (
-          <td key={toothNum} className={cn('px-0 py-0.5', isMissing && 'opacity-30')}>
-            <div className="flex justify-center gap-0">
+          <td key={toothNum} className={cn('px-0 py-1', isMissing && 'opacity-30')}>
+            <div className="flex justify-center gap-0.5">
               {points.map((m, i) => (
-                <span key={i} className="w-[18px] flex justify-center">
+                <span key={i} className="w-[22px] flex justify-center">
                   <span
                     className={cn(
-                      'w-2 h-2 rounded-full inline-block',
+                      'w-2.5 h-2.5 rounded-full inline-block',
                       m?.bleedingOnProbing ? 'bg-red-500' : 'border border-muted-foreground/40'
                     )}
                   />
@@ -115,19 +115,19 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
   const renderPlaqueRow = (label: string, surface: 'vest' | 'pal') => (
     <tr className="border-b border-border/50">
-      <td className="sticky left-0 bg-background z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+      <td className="sticky left-0 bg-background z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
         {label}
       </td>
       {toothData.map(({ toothNum, isMissing, vestPoints, palPoints }) => {
         const points = surface === 'vest' ? vestPoints : palPoints;
         return (
-          <td key={toothNum} className={cn('px-0 py-0.5', isMissing && 'opacity-30')}>
-            <div className="flex justify-center gap-0">
+          <td key={toothNum} className={cn('px-0 py-1', isMissing && 'opacity-30')}>
+            <div className="flex justify-center gap-0.5">
               {points.map((m, i) => (
-                <span key={i} className="w-[18px] flex justify-center">
+                <span key={i} className="w-[22px] flex justify-center">
                   <span
                     className={cn(
-                      'w-2 h-2 rounded-full inline-block',
+                      'w-2.5 h-2.5 rounded-full inline-block',
                       m?.plaquePresent ? 'bg-yellow-500' : 'border border-muted-foreground/40'
                     )}
                   />
@@ -141,9 +141,9 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   );
 
   // Zigzag SVG chart
-  const chartHeight = 80;
+  const chartHeight = 100;
   const chartYMax = 10;
-  const colWidth = 54; // px per tooth
+  const colWidth = 70; // px per tooth
   const totalWidth = teeth.length * colWidth;
 
   const getYPos = (value: number) => {
@@ -181,17 +181,17 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="overflow-x-auto">
-        <table className="border-collapse text-xs min-w-max">
+        <table className="border-collapse text-sm w-full min-w-max">
           <thead>
             <tr className="border-b">
-              <th className="sticky left-0 bg-background z-10 px-2 py-1 text-left text-[10px] font-medium border-r" />
+              <th className="sticky left-0 bg-background z-10 px-3 py-2 text-left text-xs font-medium border-r w-[110px]" />
               {toothData.map(({ toothNum, isMissing }) => (
                 <th
                   key={toothNum}
                   className={cn(
-                    'px-0 py-1 text-center text-[10px] font-bold min-w-[54px]',
+                    'px-0 py-2 text-center text-xs font-bold min-w-[70px]',
                     isMissing && 'opacity-30'
                   )}
                 >
@@ -203,11 +203,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
           <tbody>
             {/* Mobility */}
             <tr className="border-b border-border/50 bg-muted/30">
-              <td className="sticky left-0 bg-muted/30 z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+              <td className="sticky left-0 bg-muted/30 z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
                 Movilidad
               </td>
               {toothData.map(({ toothNum, isMissing, mobility }) => (
-                <td key={toothNum} className={cn('text-center text-[10px] py-1', isMissing && 'opacity-30')}>
+                <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
                   {isMissing ? '—' : mobility > 0 ? `${['', 'I', 'II', 'III'][mobility]}` : '0'}
                 </td>
               ))}
@@ -215,11 +215,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Furcation */}
             <tr className="border-b border-border/50 bg-muted/30">
-              <td className="sticky left-0 bg-muted/30 z-10 px-2 py-1 text-[10px] font-medium text-muted-foreground whitespace-nowrap border-r">
+              <td className="sticky left-0 bg-muted/30 z-10 px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap border-r">
                 Furcación
               </td>
               {toothData.map(({ toothNum, isMissing, hasFurcation, furcation }) => (
-                <td key={toothNum} className={cn('text-center text-[10px] py-1', isMissing && 'opacity-30')}>
+                <td key={toothNum} className={cn('text-center text-xs py-1.5', isMissing && 'opacity-30')}>
                   {isMissing ? '—' : !hasFurcation ? '—' : furcation != null && furcation > 0 ? `${['', 'I', 'II', 'III'][furcation]}` : '0'}
                 </td>
               ))}
@@ -227,7 +227,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Vestibular section */}
             <tr className="bg-blue-50/50 dark:bg-blue-950/20">
-              <td colSpan={teeth.length + 1} className="px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+              <td colSpan={teeth.length + 1} className="px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400">
                 Vestibular
               </td>
             </tr>
@@ -252,7 +252,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
 
             {/* Palatino/Lingual section */}
             <tr className="bg-green-50/50 dark:bg-green-950/20">
-              <td colSpan={teeth.length + 1} className="px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:text-green-400">
+              <td colSpan={teeth.length + 1} className="px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-400">
                 Palatino / Lingual
               </td>
             </tr>
@@ -281,11 +281,11 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
       {/* Zigzag Chart */}
       {measurements.length > 0 && (
         <div className="overflow-x-auto">
-          <div className="min-w-max p-2">
-            <div className="text-xs font-medium text-muted-foreground mb-1">
+        <div className="min-w-max p-3">
+            <div className="text-sm font-medium text-muted-foreground mb-2">
               Gráfica de Sondaje — {jaw === 'upper' ? 'Superior' : 'Inferior'}
             </div>
-            <svg width={totalWidth} height={chartHeight + 20} className="block">
+            <svg width={totalWidth} height={chartHeight + 25} className="block">
               {/* Pathological zone (≥4mm) */}
               <rect
                 x={0}
@@ -303,7 +303,7 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 strokeDasharray="4 2"
                 strokeWidth={1}
               />
-              <text x={2} y={getYPos(4) - 2} className="text-[8px] fill-red-400">
+              <text x={2} y={getYPos(4) - 3} className="text-[10px] fill-red-400">
                 4mm
               </text>
 
@@ -354,21 +354,21 @@ export function MeasurementTable({ measurements, missingTeeth, jaw }: Measuremen
                 <text
                   key={v}
                   x={totalWidth - 2}
-                  y={getYPos(v) + 3}
+                  y={getYPos(v) + 4}
                   textAnchor="end"
-                  className="text-[7px] fill-muted-foreground"
+                  className="text-[9px] fill-muted-foreground"
                 >
                   {v}
                 </text>
               ))}
 
               {/* Legend */}
-              <line x1={5} y1={chartHeight + 10} x2={20} y2={chartHeight + 10} stroke="hsl(217 91% 60%)" strokeWidth={2} />
-              <text x={23} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Vestibular</text>
-              <line x1={85} y1={chartHeight + 10} x2={100} y2={chartHeight + 10} stroke="hsl(142 76% 36%)" strokeWidth={2} />
-              <text x={103} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Palatino/Lingual</text>
-              <circle cx={185} cy={chartHeight + 10} r={3} fill="hsl(0 72% 51%)" />
-              <text x={190} y={chartHeight + 13} className="text-[8px] fill-muted-foreground">Sangrado</text>
+              <line x1={5} y1={chartHeight + 14} x2={25} y2={chartHeight + 14} stroke="hsl(217 91% 60%)" strokeWidth={2} />
+              <text x={28} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Vestibular</text>
+              <line x1={105} y1={chartHeight + 14} x2={125} y2={chartHeight + 14} stroke="hsl(142 76% 36%)" strokeWidth={2} />
+              <text x={128} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Palatino/Lingual</text>
+              <circle cx={225} cy={chartHeight + 14} r={3.5} fill="hsl(0 72% 51%)" />
+              <text x={232} y={chartHeight + 17} className="text-[10px] fill-muted-foreground">Sangrado</text>
             </svg>
           </div>
         </div>
