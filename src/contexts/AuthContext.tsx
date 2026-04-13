@@ -87,8 +87,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setOnTokenRefreshed(() => { resetInactivityTimer(); });
     setOnAuthError(() => {
-      performLogout();
-      toast({ title: t('auth.sessionExpired'), variant: 'destructive' });
+      // Don't show session-expired on public pages (e.g. /confirmar-cita)
+      const isPublicPage = window.location.pathname.startsWith('/confirmar-cita');
+      if (!isPublicPage) {
+        performLogout();
+        toast({ title: t('auth.sessionExpired'), variant: 'destructive' });
+      }
     });
     setOnActivityTracked(() => {
       const now = Date.now();
