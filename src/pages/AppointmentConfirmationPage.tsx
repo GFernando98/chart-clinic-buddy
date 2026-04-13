@@ -6,22 +6,26 @@ import { es } from 'date-fns/locale';
 import confetti from 'canvas-confetti';
 import {
   CalendarDays, Clock, CheckCircle2, RefreshCw,
-  AlertTriangle, Loader2, Phone
+  AlertTriangle, Loader2, Phone, User, Stethoscope,
+  FileText, ArrowLeft,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogDescription, DialogFooter, DialogClose
+  DialogDescription, DialogFooter, DialogClose,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import {
   appointmentConfirmationService,
   type TimeSlot,
+  type AppointmentDetails,
+  type PublicDoctor,
 } from '@/services/appointmentConfirmationService';
 
 /* ── confetti helper ── */
@@ -35,29 +39,57 @@ const fireConfetti = () => {
   })();
 };
 
-type PageState = 'initial' | 'reschedule' | 'confirmed' | 'rescheduled' | 'error';
+type PageState = 'loading' | 'initial' | 'reschedule' | 'confirmed' | 'rescheduled' | 'error';
 
 export default function AppointmentConfirmationPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
-  const doctorId = searchParams.get('doctorId') || '';
   const { toast } = useToast();
 
-  const [pageState, setPageState] = useState<PageState>('initial');
+  const [pageState, setPageState] = useState<PageState>('loading');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Reschedule state
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [rescheduleNotes, setRescheduleNotes] = useState('');
 
-  // Fetch slots when date is selected
+  // 1. Fetch appointment details by token
+  const appointmentQuery = useQuery({
+    queryKey: ['public-appointment', token],
+    queryFn: () => appointmentConfirmationService.getAppointmentByToken(token),
+    enabled: !!token,
+    retry: false,
+  });
+
+  const appointment = appointmentQuery.data || null;
+
+  // Set initial state once data loads
+  if (appointmentQuery.isSuccess && pageState === 'loading') {
+    setSelectedDoctorId(appointmentQuery.data.doctorId);
+    setPageState('initial');
+  }
+  if (appointmentQuery.isError && pageState === 'loading') {
+    setErrorMessage((appointmentQuery.error as Error).message);
+    setPageState('error');
+  }
+
+  // 2. Fetch public doctors list (for reschedule doctor selection)
+  const doctorsQuery = useQuery({
+    queryKey: ['public-doctors'],
+    queryFn: () => appointmentConfirmationService.getDoctors(),
+    enabled: pageState === 'reschedule',
+    retry: false,
+  });
+
+  // 3. Fetch slots when doctor + date are selected
   const slotsQuery = useQuery({
-    queryKey: ['public-slots', doctorId, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''],
-    queryFn: () => appointmentConfirmationService.getSlots(doctorId, format(selectedDate!, 'yyyy-MM-dd')),
-    enabled: !!doctorId && !!selectedDate && pageState === 'reschedule',
+    queryKey: ['public-slots', selectedDoctorId, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''],
+    queryFn: () => appointmentConfirmationService.getSlots(selectedDoctorId, format(selectedDate!, 'yyyy-MM-dd')),
+    enabled: !!selectedDoctorId && !!selectedDate && pageState === 'reschedule',
     retry: false,
   });
 
@@ -102,6 +134,18 @@ export default function AppointmentConfirmationPage() {
     return <PageShell><ErrorCard message="No se proporcionó un enlace válido." /></PageShell>;
   }
 
+  // Loading appointment details
+  if (pageState === 'loading') {
+    return (
+      <PageShell>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground">Cargando información de tu cita…</p>
+        </div>
+      </PageShell>
+    );
+  }
+
   // Success states
   if (pageState === 'confirmed') {
     return (
@@ -133,15 +177,53 @@ export default function AppointmentConfirmationPage() {
 
   // Reschedule view
   if (pageState === 'reschedule') {
+    const doctors: PublicDoctor[] = doctorsQuery.data || [];
+
     return (
       <PageShell>
         <Card className="w-full max-w-md shadow-lg border-0 overflow-hidden">
           <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-bold text-foreground">Reprogramar Cita</CardTitle>
-            <p className="text-sm text-muted-foreground">Seleccione una nueva fecha y horario disponible.</p>
+            <p className="text-sm text-muted-foreground">Seleccione un doctor, fecha y horario disponible.</p>
           </CardHeader>
           <CardContent className="space-y-5">
+            {/* Doctor selector */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Doctor</label>
+              {doctorsQuery.isLoading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Cargando doctores…</span>
+                </div>
+              ) : (
+                <Select
+                  value={selectedDoctorId}
+                  onValueChange={(val) => {
+                    setSelectedDoctorId(val);
+                    setSelectedSlot(null);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccionar doctor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {doctors.map((doc) => (
+                      <SelectItem key={doc.id} value={doc.id}>
+                        <div className="flex items-center gap-2">
+                          <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                          <span>{doc.fullName}</span>
+                          {doc.specialty && (
+                            <span className="text-xs text-muted-foreground">— {doc.specialty}</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
             {/* Date picker */}
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Fecha</label>
@@ -169,7 +251,7 @@ export default function AppointmentConfirmationPage() {
             </div>
 
             {/* Slots */}
-            {selectedDate && (
+            {selectedDate && selectedDoctorId && (
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Horarios disponibles</label>
                 {slotsQuery.isLoading && (
@@ -183,7 +265,7 @@ export default function AppointmentConfirmationPage() {
                 )}
                 {slotsQuery.isSuccess && availableSlots.length === 0 && (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    {slotsQuery.data.message || 'No hay horarios disponibles para esta fecha.'}
+                    {slotsQuery.data.message || 'No hay horarios disponibles para esta fecha. Intente otra fecha.'}
                   </p>
                 )}
                 {slotsQuery.isSuccess && availableSlots.length > 0 && (
@@ -232,8 +314,10 @@ export default function AppointmentConfirmationPage() {
                   setSelectedDate(undefined);
                   setSelectedSlot(null);
                   setRescheduleNotes('');
+                  if (appointment) setSelectedDoctorId(appointment.doctorId);
                 }}
               >
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver
               </Button>
               <Button
@@ -255,29 +339,65 @@ export default function AppointmentConfirmationPage() {
     );
   }
 
-  // Initial view — two options
+  // Initial view — appointment details + two options
   return (
     <PageShell>
       <Card className="w-full max-w-md shadow-lg border-0 overflow-hidden">
         <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
         <CardHeader className="pb-2 text-center">
           <CardTitle className="text-xl font-bold text-foreground">Gestión de Cita</CardTitle>
-          <p className="text-sm text-muted-foreground">Seleccione una opción para su cita.</p>
+          <p className="text-sm text-muted-foreground">Revise los detalles de su cita y seleccione una opción.</p>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          <Button
-            className="w-full h-14 text-base font-semibold bg-success hover:bg-success/90 text-success-foreground"
-            onClick={() => setShowConfirmDialog(true)}
-          >
-            <CheckCircle2 className="mr-2 h-5 w-5" /> Confirmar Cita
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-14 text-base font-semibold border-primary text-primary hover:bg-primary/10"
-            onClick={() => setPageState('reschedule')}
-          >
-            <RefreshCw className="mr-2 h-5 w-5" /> Reprogramar Cita
-          </Button>
+        <CardContent className="space-y-5 pt-2">
+          {/* Appointment details */}
+          {appointment && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <DetailRow
+                icon={<User className="h-4 w-4 text-muted-foreground" />}
+                label="Paciente"
+                value={appointment.patientName}
+              />
+              <DetailRow
+                icon={<Stethoscope className="h-4 w-4 text-muted-foreground" />}
+                label="Doctor"
+                value={appointment.doctorName}
+              />
+              <DetailRow
+                icon={<CalendarDays className="h-4 w-4 text-muted-foreground" />}
+                label="Fecha"
+                value={format(new Date(appointment.scheduledDate), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+              />
+              <DetailRow
+                icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+                label="Horario"
+                value={`${appointment.scheduledDate.split('T')[1]?.substring(0, 5)} - ${appointment.scheduledEndDate.split('T')[1]?.substring(0, 5)}`}
+              />
+              {appointment.reason && (
+                <DetailRow
+                  icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                  label="Motivo"
+                  value={appointment.reason}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="space-y-3">
+            <Button
+              className="w-full h-14 text-base font-semibold bg-success hover:bg-success/90 text-success-foreground"
+              onClick={() => setShowConfirmDialog(true)}
+            >
+              <CheckCircle2 className="mr-2 h-5 w-5" /> Confirmar Cita
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-14 text-base font-semibold border-primary text-primary hover:bg-primary/10"
+              onClick={() => setPageState('reschedule')}
+            >
+              <RefreshCw className="mr-2 h-5 w-5" /> Reprogramar Cita
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -318,6 +438,18 @@ function PageShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background flex flex-col items-center justify-center px-4 py-8">
       {children}
       <p className="mt-8 text-xs text-muted-foreground">Powered by SysCore</p>
+    </div>
+  );
+}
+
+function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5">{icon}</div>
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-foreground capitalize">{value}</p>
+      </div>
     </div>
   );
 }

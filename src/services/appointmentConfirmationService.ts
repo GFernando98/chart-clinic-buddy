@@ -9,6 +9,27 @@ const publicClient = axios.create({
   timeout: 30000,
 });
 
+export interface AppointmentDetails {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  scheduledDate: string;
+  scheduledEndDate: string;
+  status: string;
+  reason: string;
+}
+
+export interface PublicDoctor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  specialty: string;
+  isActive: boolean;
+}
+
 export interface TimeSlot {
   start: string;
   end: string;
@@ -20,39 +41,40 @@ export interface RescheduleRequest {
   notes?: string;
 }
 
-const extractData = <T>(response: ApiResponse<T>): T => {
-  if (!response.succeeded) {
-    const msg = response.errors?.length ? response.errors[0] : response.message || 'Ocurrió un error';
-    throw new Error(msg);
-  }
-  if (response.data === null || response.data === undefined) throw new Error('No data received');
-  return response.data;
-};
-
-const extractMessage = (response: ApiResponse<unknown>): string => {
-  if (!response.succeeded) {
-    const msg = response.errors?.length ? response.errors[0] : response.message || 'Ocurrió un error';
-    throw new Error(msg);
-  }
-  return response.message || '';
+const handleError = (data: ApiResponse<unknown>): never => {
+  const msg = data.errors?.length ? data.errors[0] : data.message || 'Ocurrió un error';
+  throw new Error(msg);
 };
 
 export const appointmentConfirmationService = {
+  async getAppointmentByToken(token: string): Promise<AppointmentDetails> {
+    const response = await publicClient.get<ApiResponse<AppointmentDetails>>(
+      `/appointment/${encodeURIComponent(token)}`
+    );
+    if (!response.data.succeeded || !response.data.data) handleError(response.data);
+    return response.data.data!;
+  },
+
+  async getDoctors(): Promise<PublicDoctor[]> {
+    const response = await publicClient.get<ApiResponse<PublicDoctor[]>>('/doctors');
+    if (!response.data.succeeded) handleError(response.data);
+    return response.data.data || [];
+  },
+
   async getSlots(doctorId: string, date: string): Promise<{ slots: TimeSlot[]; message: string | null }> {
     const response = await publicClient.get<ApiResponse<TimeSlot[]>>('/slots', {
       params: { doctorId, date },
     });
-    const data = response.data;
-    if (!data.succeeded) {
-      const msg = data.errors?.length ? data.errors[0] : data.message || 'Error al obtener horarios';
-      throw new Error(msg);
-    }
-    return { slots: data.data || [], message: data.message || null };
+    if (!response.data.succeeded) handleError(response.data);
+    return { slots: response.data.data || [], message: response.data.message || null };
   },
 
   async confirm(token: string): Promise<string> {
-    const response = await publicClient.post<ApiResponse<boolean>>(`/confirm/${encodeURIComponent(token)}`);
-    return extractMessage(response.data);
+    const response = await publicClient.post<ApiResponse<boolean>>(
+      `/confirm/${encodeURIComponent(token)}`
+    );
+    if (!response.data.succeeded) handleError(response.data);
+    return response.data.message || '';
   },
 
   async reschedule(token: string, data: RescheduleRequest): Promise<string> {
@@ -60,6 +82,7 @@ export const appointmentConfirmationService = {
       `/reschedule/${encodeURIComponent(token)}`,
       data
     );
-    return extractMessage(response.data);
+    if (!response.data.succeeded) handleError(response.data);
+    return response.data.message || '';
   },
 };
