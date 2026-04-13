@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Appointment, AppointmentStatus } from '@/types';
 import { AppointmentStatusBadge } from './AppointmentStatusBadge';
+import { normalizeAppointmentStatus } from './appointmentStatus';
 
 interface AppointmentDetailDialogProps {
   open: boolean;
@@ -58,6 +59,7 @@ export function AppointmentDetailDialog({
 
   if (!appointment) return null;
 
+  const normalizedStatus = normalizeAppointmentStatus(appointment.status);
   const scheduledDate = new Date(appointment.scheduledDate);
   const endDate = appointment.scheduledEndDate ? new Date(appointment.scheduledEndDate) : null;
 
@@ -83,11 +85,11 @@ export function AppointmentDetailDialog({
     onStatusChange(appointment.id, AppointmentStatus.NoShow);
   };
 
-  const canConfirm = appointment.status === AppointmentStatus.Scheduled;
-  const canStart = appointment.status === AppointmentStatus.Confirmed;
-  const canComplete = appointment.status === AppointmentStatus.InProgress;
-  const canCancel = [AppointmentStatus.Scheduled, AppointmentStatus.Confirmed].includes(appointment.status);
-  const canNoShow = [AppointmentStatus.Scheduled, AppointmentStatus.Confirmed].includes(appointment.status);
+  const canConfirm = normalizedStatus === AppointmentStatus.Scheduled;
+  const canStart = normalizedStatus === AppointmentStatus.Confirmed;
+  const canComplete = normalizedStatus === AppointmentStatus.InProgress;
+  const canCancel = [AppointmentStatus.Scheduled, AppointmentStatus.Confirmed].includes(normalizedStatus);
+  const canNoShow = [AppointmentStatus.Scheduled, AppointmentStatus.Confirmed].includes(normalizedStatus);
 
   return (
     <>
@@ -96,12 +98,11 @@ export function AppointmentDetailDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>{t('appointments.appointmentDetails')}</span>
-              <AppointmentStatusBadge status={appointment.status} />
+              <AppointmentStatusBadge status={normalizedStatus} />
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Patient Info */}
             <div className="flex items-start gap-3">
               <User className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -110,7 +111,6 @@ export function AppointmentDetailDialog({
               </div>
             </div>
 
-            {/* Doctor Info */}
             <div className="flex items-start gap-3">
               <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -119,7 +119,6 @@ export function AppointmentDetailDialog({
               </div>
             </div>
 
-            {/* Date */}
             <div className="flex items-start gap-3">
               <CalendarDays className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -130,7 +129,6 @@ export function AppointmentDetailDialog({
               </div>
             </div>
 
-            {/* Time */}
             <div className="flex items-start gap-3">
               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -142,7 +140,6 @@ export function AppointmentDetailDialog({
               </div>
             </div>
 
-            {/* Reason */}
             <div className="flex items-start gap-3">
               <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
@@ -151,7 +148,6 @@ export function AppointmentDetailDialog({
               </div>
             </div>
 
-            {/* Notes */}
             {appointment.notes && (
               <div className="bg-muted/50 p-3 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">{t('common.notes')}</p>
@@ -159,8 +155,7 @@ export function AppointmentDetailDialog({
               </div>
             )}
 
-            {/* Cancellation Reason */}
-            {appointment.status === AppointmentStatus.Cancelled && appointment.cancellationReason && (
+            {normalizedStatus === AppointmentStatus.Cancelled && appointment.cancellationReason && (
               <div className="bg-destructive/10 p-3 rounded-lg border border-destructive/20">
                 <p className="text-sm text-destructive font-medium mb-1">{t('appointments.cancellationReason')}</p>
                 <p className="text-sm">{appointment.cancellationReason}</p>
@@ -169,7 +164,6 @@ export function AppointmentDetailDialog({
 
             <Separator />
 
-            {/* Action Buttons */}
             <div className="flex flex-wrap gap-2">
               {canConfirm && (
                 <Button size="sm" onClick={handleConfirm} className="gap-1">
@@ -214,7 +208,6 @@ export function AppointmentDetailDialog({
 
             <Separator />
 
-            {/* Edit Button */}
             <Button variant="outline" className="w-full gap-2" onClick={onEdit}>
               <Edit className="h-4 w-4" />
               {t('common.edit')}
@@ -223,7 +216,6 @@ export function AppointmentDetailDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Cancel Confirmation Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

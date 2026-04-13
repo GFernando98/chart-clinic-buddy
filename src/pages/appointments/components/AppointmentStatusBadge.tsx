@@ -2,9 +2,10 @@ import { Badge } from '@/components/ui/badge';
 import { AppointmentStatus } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { normalizeAppointmentStatus } from './appointmentStatus';
 
 interface AppointmentStatusBadgeProps {
-  status: AppointmentStatus;
+  status: AppointmentStatus | string;
   className?: string;
 }
 
@@ -37,7 +38,8 @@ const statusConfig: Record<AppointmentStatus, { labelKey: string; className: str
 
 export function AppointmentStatusBadge({ status, className }: AppointmentStatusBadgeProps) {
   const { t } = useTranslation();
-  const config = statusConfig[status];
+  const normalizedStatus = normalizeAppointmentStatus(status);
+  const config = statusConfig[normalizedStatus];
 
   return (
     <Badge className={cn(config.className, className)}>
