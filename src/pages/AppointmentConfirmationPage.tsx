@@ -491,3 +491,15 @@ function StatusCard({ icon, title, message }: { icon: React.ReactNode; title: st
     </Card>
   );
 }
+
+function TokenUsedCard() {
+  return (
+    <Card className="w-full max-w-md text-center p-8 space-y-4">
+      <AlertTriangle className="mx-auto h-14 w-14 text-warning" />
+      <h2 className="text-lg font-semibold text-foreground">Enlace ya utilizado</h2>
+      <p className="text-muted-foreground">
+        Este enlace ya fue utilizado o ha expirado. Si necesitas ayuda, contáctanos.
+      </p>
+    </Card>
+  );
+}
