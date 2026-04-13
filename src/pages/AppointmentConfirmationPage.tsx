@@ -51,9 +51,6 @@ export default function AppointmentConfirmationPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Appointment details from token
-  const [appointment, setAppointment] = useState<AppointmentDetails | null>(null);
-
   // Reschedule state
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -61,21 +58,24 @@ export default function AppointmentConfirmationPage() {
   const [rescheduleNotes, setRescheduleNotes] = useState('');
 
   // 1. Fetch appointment details by token
-  useQuery({
+  const appointmentQuery = useQuery({
     queryKey: ['public-appointment', token],
     queryFn: () => appointmentConfirmationService.getAppointmentByToken(token),
     enabled: !!token,
     retry: false,
-    onSuccess: (data: AppointmentDetails) => {
-      setAppointment(data);
-      setSelectedDoctorId(data.doctorId);
-      setPageState('initial');
-    },
-    onError: (err: Error) => {
-      setErrorMessage(err.message);
-      setPageState('error');
-    },
-  } as any);
+  });
+
+  const appointment = appointmentQuery.data || null;
+
+  // Set initial state once data loads
+  if (appointmentQuery.isSuccess && pageState === 'loading') {
+    setSelectedDoctorId(appointmentQuery.data.doctorId);
+    setPageState('initial');
+  }
+  if (appointmentQuery.isError && pageState === 'loading') {
+    setErrorMessage((appointmentQuery.error as Error).message);
+    setPageState('error');
+  }
 
   // 2. Fetch public doctors list (for reschedule doctor selection)
   const doctorsQuery = useQuery({
