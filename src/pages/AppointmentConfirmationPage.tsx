@@ -39,7 +39,7 @@ const fireConfetti = () => {
   })();
 };
 
-type PageState = 'loading' | 'initial' | 'reschedule' | 'confirmed' | 'rescheduled' | 'error';
+type PageState = 'loading' | 'initial' | 'reschedule' | 'confirmed' | 'rescheduled' | 'token-used' | 'error';
 
 export default function AppointmentConfirmationPage() {
   const [searchParams] = useSearchParams();
@@ -61,7 +61,7 @@ export default function AppointmentConfirmationPage() {
   const appointmentQuery = useQuery({
     queryKey: ['public-appointment', token],
     queryFn: () => appointmentConfirmationService.getAppointmentByToken(token),
-    enabled: !!token,
+    enabled: !!token && !['confirmed', 'rescheduled'].includes(pageState),
     retry: false,
   });
 
@@ -73,8 +73,13 @@ export default function AppointmentConfirmationPage() {
     setPageState('initial');
   }
   if (appointmentQuery.isError && pageState === 'loading') {
-    setErrorMessage((appointmentQuery.error as Error).message);
-    setPageState('error');
+    const errMsg = (appointmentQuery.error as Error).message?.toLowerCase() || '';
+    if (errMsg.includes('token') && (errMsg.includes('inválido') || errMsg.includes('invalid') || errMsg.includes('expirado') || errMsg.includes('expired'))) {
+      setPageState('token-used');
+    } else {
+      setErrorMessage((appointmentQuery.error as Error).message);
+      setPageState('error');
+    }
   }
 
   // 2. Fetch public doctors list (for reschedule doctor selection)
@@ -167,6 +172,14 @@ export default function AppointmentConfirmationPage() {
           title="¡Cita Reprogramada!"
           message={successMessage}
         />
+      </PageShell>
+    );
+  }
+
+  if (pageState === 'token-used') {
+    return (
+      <PageShell>
+        <TokenUsedCard />
       </PageShell>
     );
   }
