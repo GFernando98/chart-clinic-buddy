@@ -1,7 +1,6 @@
 import React from 'react';
 import { ToothCondition, ToothSurface, ToothRecord } from '@/types';
 import { getToothType, getConditionColor, isUpperTooth } from './toothUtils';
-import { getToothPaths } from './toothPaths';
 import { cn } from '@/lib/utils';
 
 interface ToothSVGProps {
@@ -12,236 +11,164 @@ interface ToothSVGProps {
   size?: number;
 }
 
-export function ToothSVG({
-  toothRecord,
-  isSelected,
-  onToothClick,
+export function ToothSVG({ 
+  toothRecord, 
+  isSelected, 
+  onToothClick, 
   onSurfaceClick,
-  size = 50,
+  size = 50 
 }: ToothSVGProps) {
   const { toothNumber, condition, isPresent, surfaces } = toothRecord;
   const toothType = getToothType(toothNumber);
   const isUpper = isUpperTooth(toothNumber);
-
+  
   const getSurfaceCondition = (surface: ToothSurface): ToothCondition => {
-    const rec = surfaces.find((s) => s.surface === surface);
-    return rec?.condition || ToothCondition.Healthy;
+    const surfaceRecord = surfaces.find(s => s.surface === surface);
+    return surfaceRecord?.condition || ToothCondition.Healthy;
   };
 
   const getSurfaceFill = (surface: ToothSurface): string => {
-    const c = getSurfaceCondition(surface);
-    return c !== ToothCondition.Healthy ? getConditionColor(c) : 'hsl(0 0% 100%)';
+    const surfaceCondition = getSurfaceCondition(surface);
+    if (surfaceCondition !== ToothCondition.Healthy) {
+      return getConditionColor(surfaceCondition);
+    }
+    return 'hsl(0 0% 100%)';
   };
 
   const handleSurfaceClick = (e: React.MouseEvent, surface: ToothSurface) => {
     e.stopPropagation();
-    if (onSurfaceClick && isPresent) onSurfaceClick(toothNumber, surface);
+    if (onSurfaceClick && isPresent) {
+      onSurfaceClick(toothNumber, surface);
+    }
   };
 
-  const outlineColor =
-    condition === ToothCondition.Healthy
-      ? 'hsl(215 15% 65%)'
-      : getConditionColor(condition);
-  const hasCondition = condition !== ToothCondition.Healthy;
-  const strokeW = hasCondition ? 2.2 : 1.4;
-
-  const paths = getToothPaths(toothType, isUpper);
-  const [cx, cy, cw, ch] = paths.crownBox;
-
-  // Surface geometry: 5-zone cross pattern inside the crown bounding box
-  const margin = 2;
-  const sx = cx + margin;
-  const sy = cy + margin;
-  const sw = cw - margin * 2;
-  const sh = ch - margin * 2;
-  const innerMargin = Math.min(sw, sh) * 0.22;
-  const ix = sx + innerMargin;
-  const iy = sy + innerMargin;
-  const iw = sw - innerMargin * 2;
-  const ih = sh - innerMargin * 2;
-
-  const centerSurface =
-    toothType === 'molar' || toothType === 'premolar'
-      ? ToothSurface.Occlusal
-      : ToothSurface.Incisal;
-
-  // ---- Extracted / Missing ----
+  // Render extracted tooth with X mark
   if (condition === ToothCondition.Extracted || !isPresent) {
     return (
-      <div className="flex flex-col items-center">
-        {isUpper && (
-          <span className="text-[10px] font-semibold text-muted-foreground leading-none mb-0.5">
-            {toothNumber}
-          </span>
-        )}
-        <svg
-          width={size * 0.72}
-          height={size * 1.2}
-          viewBox="0 0 56 100"
-          className={cn(
-            'cursor-pointer transition-transform hover:scale-105',
-            isSelected && 'drop-shadow-[0_0_4px_hsl(var(--primary))]'
-          )}
-          onClick={() => onToothClick(toothNumber)}
-        >
-          <path
-            d={paths.outline}
-            fill="hsl(220 10% 92%)"
-            stroke="hsl(220 10% 75%)"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
-            opacity="0.5"
-          />
-          {/* X mark */}
-          <line
-            x1={cx + 4}
-            y1={cy + 4}
-            x2={cx + cw - 4}
-            y2={cy + ch - 4}
-            stroke="hsl(0 60% 50%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
-          <line
-            x1={cx + cw - 4}
-            y1={cy + 4}
-            x2={cx + 4}
-            y2={cy + ch - 4}
-            stroke="hsl(0 60% 50%)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
-        </svg>
-        {!isUpper && (
-          <span className="text-[10px] font-semibold text-muted-foreground leading-none mt-0.5">
-            {toothNumber}
-          </span>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center">
-      {isUpper && (
-        <span className="text-[10px] font-semibold text-muted-foreground leading-none mb-0.5">
-          {toothNumber}
-        </span>
-      )}
-      <svg
-        width={size * 0.72}
-        height={size * 1.2}
-        viewBox="0 0 56 100"
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 50 50"
         className={cn(
-          'cursor-pointer transition-transform hover:scale-105',
-          isSelected && 'drop-shadow-[0_0_6px_hsl(var(--primary))]'
+          'cursor-pointer transition-transform hover:scale-110',
+          isSelected && 'ring-2 ring-primary ring-offset-2 rounded'
         )}
         onClick={() => onToothClick(toothNumber)}
       >
-        {/* Tooth silhouette (roots + crown outline) */}
-        <path
-          d={paths.outline}
-          fill="hsl(40 30% 97%)"
-          stroke={outlineColor}
-          strokeWidth={strokeW}
-          strokeLinejoin="round"
+        <rect
+          x="5" y="5" width="40" height="40" rx="4"
+          fill="hsl(220 9% 90%)"
+          stroke="hsl(220 9% 60%)"
+          strokeWidth="2"
+          strokeDasharray="4 2"
         />
-
-        {/* Crown fill on top */}
-        <path
-          d={paths.crown}
-          fill="hsl(0 0% 100%)"
-          stroke={outlineColor}
-          strokeWidth={strokeW * 0.8}
-          strokeLinejoin="round"
-        />
-
-        {/* ── Interactive 5-surface cross overlay ── */}
-        {/* Clip to crown shape */}
-        <defs>
-          <clipPath id={`crown-clip-${toothNumber}`}>
-            <path d={paths.crown} />
-          </clipPath>
-        </defs>
-
-        <g clipPath={`url(#crown-clip-${toothNumber})`}>
-          {/* Buccal (top for lower, bottom for upper) */}
-          <path
-            d={`M ${sx} ${sy} L ${sx + sw} ${sy} L ${ix + iw} ${iy} L ${ix} ${iy} Z`}
-            fill={getSurfaceFill(isUpper ? ToothSurface.Lingual : ToothSurface.Buccal)}
-            stroke={outlineColor}
-            strokeWidth="0.7"
-            className="cursor-pointer hover:brightness-90 transition-all"
-            onClick={(e) => handleSurfaceClick(e, isUpper ? ToothSurface.Lingual : ToothSurface.Buccal)}
-          />
-
-          {/* Lingual (bottom for lower, top for upper) */}
-          <path
-            d={`M ${sx} ${sy + sh} L ${ix} ${iy + ih} L ${ix + iw} ${iy + ih} L ${sx + sw} ${sy + sh} Z`}
-            fill={getSurfaceFill(isUpper ? ToothSurface.Buccal : ToothSurface.Lingual)}
-            stroke={outlineColor}
-            strokeWidth="0.7"
-            className="cursor-pointer hover:brightness-90 transition-all"
-            onClick={(e) => handleSurfaceClick(e, isUpper ? ToothSurface.Buccal : ToothSurface.Lingual)}
-          />
-
-          {/* Mesial (left) */}
-          <path
-            d={`M ${sx} ${sy} L ${ix} ${iy} L ${ix} ${iy + ih} L ${sx} ${sy + sh} Z`}
-            fill={getSurfaceFill(ToothSurface.Mesial)}
-            stroke={outlineColor}
-            strokeWidth="0.7"
-            className="cursor-pointer hover:brightness-90 transition-all"
-            onClick={(e) => handleSurfaceClick(e, ToothSurface.Mesial)}
-          />
-
-          {/* Distal (right) */}
-          <path
-            d={`M ${sx + sw} ${sy} L ${sx + sw} ${sy + sh} L ${ix + iw} ${iy + ih} L ${ix + iw} ${iy} Z`}
-            fill={getSurfaceFill(ToothSurface.Distal)}
-            stroke={outlineColor}
-            strokeWidth="0.7"
-            className="cursor-pointer hover:brightness-90 transition-all"
-            onClick={(e) => handleSurfaceClick(e, ToothSurface.Distal)}
-          />
-
-          {/* Center (Occlusal/Incisal) */}
-          <rect
-            x={ix}
-            y={iy}
-            width={iw}
-            height={ih}
-            rx={2}
-            fill={getSurfaceFill(centerSurface)}
-            stroke={outlineColor}
-            strokeWidth="0.7"
-            className="cursor-pointer hover:brightness-90 transition-all"
-            onClick={(e) => handleSurfaceClick(e, centerSurface)}
-          />
-        </g>
-
-        {/* Selection ring */}
-        {isSelected && (
-          <rect
-            x="1"
-            y="1"
-            width="54"
-            height="98"
-            rx="6"
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="2"
-            strokeDasharray="4 2"
-          />
-        )}
+        <line x1="10" y1="10" x2="40" y2="40" stroke="hsl(220 9% 50%)" strokeWidth="3" />
+        <line x1="40" y1="10" x2="10" y2="40" stroke="hsl(220 9% 50%)" strokeWidth="3" />
       </svg>
-      {!isUpper && (
-        <span className="text-[10px] font-semibold text-muted-foreground leading-none mt-0.5">
-          {toothNumber}
-        </span>
+    );
+  }
+
+  const getOutlineColor = () => {
+    if (condition === ToothCondition.Healthy) return 'hsl(220 13% 70%)';
+    return getConditionColor(condition);
+  };
+
+  const outlineColor = getOutlineColor();
+  const hasCondition = condition !== ToothCondition.Healthy;
+
+  // Render molar/premolar (5 surfaces with Occlusal center)
+  if (toothType === 'molar' || toothType === 'premolar') {
+    return (
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 50 50"
+        className={cn(
+          'cursor-pointer transition-transform hover:scale-110',
+          isSelected && 'ring-2 ring-primary ring-offset-2 rounded'
+        )}
+        onClick={() => onToothClick(toothNumber)}
+      >
+        <rect x="2" y="2" width="46" height="46" rx="6"
+          fill="none" stroke={outlineColor} strokeWidth={hasCondition ? 3 : 2} />
+        
+        {/* Buccal (top) */}
+        <path d="M 2 2 L 48 2 L 40 12 L 10 12 Z"
+          fill={getSurfaceFill(ToothSurface.Buccal)} stroke={outlineColor} strokeWidth="1"
+          className="cursor-pointer hover:opacity-80"
+          onClick={(e) => handleSurfaceClick(e, ToothSurface.Buccal)} />
+        
+        {/* Lingual (bottom) */}
+        <path d="M 2 48 L 10 38 L 40 38 L 48 48 Z"
+          fill={getSurfaceFill(ToothSurface.Lingual)} stroke={outlineColor} strokeWidth="1"
+          className="cursor-pointer hover:opacity-80"
+          onClick={(e) => handleSurfaceClick(e, ToothSurface.Lingual)} />
+        
+        {/* Mesial (left) */}
+        <path d="M 2 2 L 10 12 L 10 38 L 2 48 Z"
+          fill={getSurfaceFill(ToothSurface.Mesial)} stroke={outlineColor} strokeWidth="1"
+          className="cursor-pointer hover:opacity-80"
+          onClick={(e) => handleSurfaceClick(e, ToothSurface.Mesial)} />
+        
+        {/* Distal (right) */}
+        <path d="M 48 2 L 48 48 L 40 38 L 40 12 Z"
+          fill={getSurfaceFill(ToothSurface.Distal)} stroke={outlineColor} strokeWidth="1"
+          className="cursor-pointer hover:opacity-80"
+          onClick={(e) => handleSurfaceClick(e, ToothSurface.Distal)} />
+        
+        {/* Occlusal (center) */}
+        <rect x="10" y="12" width="30" height="26"
+          fill={getSurfaceFill(ToothSurface.Occlusal)} stroke={outlineColor} strokeWidth="1"
+          className="cursor-pointer hover:opacity-80"
+          onClick={(e) => handleSurfaceClick(e, ToothSurface.Occlusal)} />
+      </svg>
+    );
+  }
+
+  // Render incisor/canine (4 surfaces + incisal edge)
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 50 50"
+      className={cn(
+        'cursor-pointer transition-transform hover:scale-110',
+        isSelected && 'ring-2 ring-primary ring-offset-2 rounded'
       )}
-    </div>
+      onClick={() => onToothClick(toothNumber)}
+    >
+      <rect x="8" y="2" width="34" height="46" rx="4"
+        fill="none" stroke={outlineColor} strokeWidth={hasCondition ? 3 : 2} />
+      
+      {/* Buccal (top) */}
+      <path d="M 8 2 L 42 2 L 36 12 L 14 12 Z"
+        fill={getSurfaceFill(ToothSurface.Buccal)} stroke={outlineColor} strokeWidth="1"
+        className="cursor-pointer hover:opacity-80"
+        onClick={(e) => handleSurfaceClick(e, ToothSurface.Buccal)} />
+      
+      {/* Lingual (bottom) */}
+      <path d="M 8 48 L 14 38 L 36 38 L 42 48 Z"
+        fill={getSurfaceFill(ToothSurface.Lingual)} stroke={outlineColor} strokeWidth="1"
+        className="cursor-pointer hover:opacity-80"
+        onClick={(e) => handleSurfaceClick(e, ToothSurface.Lingual)} />
+      
+      {/* Mesial (left) */}
+      <path d="M 8 2 L 14 12 L 14 38 L 8 48 Z"
+        fill={getSurfaceFill(ToothSurface.Mesial)} stroke={outlineColor} strokeWidth="1"
+        className="cursor-pointer hover:opacity-80"
+        onClick={(e) => handleSurfaceClick(e, ToothSurface.Mesial)} />
+      
+      {/* Distal (right) */}
+      <path d="M 42 2 L 42 48 L 36 38 L 36 12 Z"
+        fill={getSurfaceFill(ToothSurface.Distal)} stroke={outlineColor} strokeWidth="1"
+        className="cursor-pointer hover:opacity-80"
+        onClick={(e) => handleSurfaceClick(e, ToothSurface.Distal)} />
+      
+      {/* Incisal (center) */}
+      <rect x="14" y="12" width="22" height="26"
+        fill={getSurfaceFill(ToothSurface.Incisal)} stroke={outlineColor} strokeWidth="1"
+        className="cursor-pointer hover:opacity-80"
+        onClick={(e) => handleSurfaceClick(e, ToothSurface.Incisal)} />
+    </svg>
   );
 }
