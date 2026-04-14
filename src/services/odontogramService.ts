@@ -154,7 +154,7 @@ export const odontogramService = {
    */
   async getById(id: string): Promise<Odontogram> {
     const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/GetById/${id}`);
-    return extractData(response.data);
+    return normalizeOdontogram(extractData(response.data));
   },
 
   /**
