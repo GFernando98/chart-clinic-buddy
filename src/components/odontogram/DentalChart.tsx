@@ -50,7 +50,7 @@ export function DentalChart({
         </div>
         
         {/* Upper Jaw */}
-        <div className="flex justify-center gap-1 mb-2">
+        <div className="flex justify-center gap-0.5 mb-2">
           {teeth.upper.map((toothNumber) => (
             <ToothSVG
               key={toothNumber}
@@ -58,7 +58,7 @@ export function DentalChart({
               isSelected={selectedTooth === toothNumber}
               onToothClick={onToothClick}
               onSurfaceClick={onSurfaceClick}
-              size={isPediatric ? 55 : 48}
+              size={isPediatric ? 44 : 38}
             />
           ))}
         </div>
@@ -73,7 +73,7 @@ export function DentalChart({
         </div>
         
         {/* Lower Jaw */}
-        <div className="flex justify-center gap-1 mt-2">
+        <div className="flex justify-center gap-0.5 mt-2">
           {teeth.lower.map((toothNumber) => (
             <ToothSVG
               key={toothNumber}
@@ -81,7 +81,7 @@ export function DentalChart({
               isSelected={selectedTooth === toothNumber}
               onToothClick={onToothClick}
               onSurfaceClick={onSurfaceClick}
-              size={isPediatric ? 55 : 48}
+              size={isPediatric ? 44 : 38}
             />
           ))}
         </div>
