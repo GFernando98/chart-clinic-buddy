@@ -181,7 +181,7 @@ export const odontogramService = {
    */
   async addSurface(toothRecordId: string, data: AddSurfaceData): Promise<ToothRecord> {
     const response = await apiClient.post<ApiResponse<ToothRecord>>(`/Odontogram/AddSurface/${toothRecordId}`, data);
-    return extractData(response.data);
+    return normalizeToothRecord(extractData(response.data));
   },
 
   /**
