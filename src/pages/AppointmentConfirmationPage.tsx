@@ -69,8 +69,17 @@ export default function AppointmentConfirmationPage() {
 
   // Set initial state once data loads
   if (appointmentQuery.isSuccess && pageState === 'loading') {
-    setSelectedDoctorId(appointmentQuery.data.doctorId);
-    setPageState('initial');
+    const aptStatus = appointmentQuery.data.status?.toLowerCase?.() || '';
+    if (aptStatus === 'confirmed') {
+      setSuccessMessage('Tu cita ya fue confirmada anteriormente. ¡Nos vemos pronto!');
+      setPageState('confirmed');
+    } else if (aptStatus === 'rescheduled') {
+      setSuccessMessage('Tu cita ya fue reprogramada. La clínica ha sido notificada.');
+      setPageState('rescheduled');
+    } else {
+      setSelectedDoctorId(appointmentQuery.data.doctorId);
+      setPageState('initial');
+    }
   }
   if (appointmentQuery.isError && pageState === 'loading') {
     const errMsg = (appointmentQuery.error as Error).message?.toLowerCase() || '';
