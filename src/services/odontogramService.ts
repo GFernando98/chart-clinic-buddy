@@ -144,7 +144,8 @@ export const odontogramService = {
    */
   async getByPatient(patientId: string): Promise<Odontogram[]> {
     const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/Odontogram/GetByPatient/${patientId}`);
-    return extractData(response.data);
+    const data = extractData(response.data);
+    return data.map(normalizeOdontogram);
   },
 
   /**
@@ -162,7 +163,7 @@ export const odontogramService = {
    */
   async create(data: CreateOdontogramData): Promise<Odontogram> {
     const response = await apiClient.post<ApiResponse<Odontogram>>('/Odontogram/Create', data);
-    return extractData(response.data);
+    return normalizeOdontogram(extractData(response.data));
   },
 
   /**
@@ -171,7 +172,7 @@ export const odontogramService = {
    */
   async updateTooth(toothRecordId: string, data: UpdateToothData): Promise<ToothRecord> {
     const response = await apiClient.put<ApiResponse<ToothRecord>>(`/Odontogram/UpdateTooth/${toothRecordId}`, data);
-    return extractData(response.data);
+    return normalizeToothRecord(extractData(response.data));
   },
 
   /**
