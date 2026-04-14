@@ -3,8 +3,83 @@ import {
   ApiResponse, 
   Odontogram, 
   ToothRecord, 
-  ToothTreatmentRecord 
+  ToothTreatmentRecord,
+  ToothCondition,
+  ToothSurface,
+  ToothType,
+  ToothSurfaceRecord,
 } from '@/types';
+
+// ── String→Enum normalizers for backend responses ──
+
+const conditionMap: Record<string, ToothCondition> = {
+  Healthy: ToothCondition.Healthy,
+  Decayed: ToothCondition.Decayed,
+  Filled: ToothCondition.Filled,
+  Missing: ToothCondition.Missing,
+  Extracted: ToothCondition.Extracted,
+  Crown: ToothCondition.Crown,
+  Bridge: ToothCondition.Bridge,
+  Implant: ToothCondition.Implant,
+  RootCanal: ToothCondition.RootCanal,
+  Fracture: ToothCondition.Fracture,
+  Sealant: ToothCondition.Sealant,
+  Prosthesis: ToothCondition.Prosthesis,
+};
+
+const surfaceMap: Record<string, ToothSurface> = {
+  Mesial: ToothSurface.Mesial,
+  Distal: ToothSurface.Distal,
+  Buccal: ToothSurface.Buccal,
+  Vestibular: ToothSurface.Buccal,
+  Lingual: ToothSurface.Lingual,
+  Oclusal: ToothSurface.Occlusal,
+  Occlusal: ToothSurface.Occlusal,
+  Incisal: ToothSurface.Incisal,
+};
+
+const toothTypeMap: Record<string, ToothType> = {
+  Permanent: ToothType.Permanent,
+  Deciduous: ToothType.Deciduous,
+};
+
+function normalizeCondition(val: unknown): ToothCondition {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return conditionMap[val] ?? ToothCondition.Healthy;
+  return ToothCondition.Healthy;
+}
+
+function normalizeSurface(val: unknown): ToothSurface {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return surfaceMap[val] ?? ToothSurface.Occlusal;
+  return ToothSurface.Occlusal;
+}
+
+function normalizeToothType(val: unknown): ToothType {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return toothTypeMap[val] ?? ToothType.Permanent;
+  return ToothType.Permanent;
+}
+
+function normalizeSurfaceRecord(s: any): ToothSurfaceRecord {
+  return { ...s, surface: normalizeSurface(s.surface), condition: normalizeCondition(s.condition) };
+}
+
+function normalizeToothRecord(t: any): ToothRecord {
+  return {
+    ...t,
+    toothType: normalizeToothType(t.toothType),
+    condition: normalizeCondition(t.condition),
+    surfaces: (t.surfaces || []).map(normalizeSurfaceRecord),
+  };
+}
+
+function normalizeOdontogram(o: any): Odontogram {
+  return {
+    ...o,
+    teethRecords: (o.teethRecords || []).map(normalizeToothRecord),
+  };
+}
 
 // Match API: POST /api/Odontogram/Create
 export interface InitialSurfaceData {
@@ -69,7 +144,8 @@ export const odontogramService = {
    */
   async getByPatient(patientId: string): Promise<Odontogram[]> {
     const response = await apiClient.get<ApiResponse<Odontogram[]>>(`/Odontogram/GetByPatient/${patientId}`);
-    return extractData(response.data);
+    const data = extractData(response.data);
+    return data.map(normalizeOdontogram);
   },
 
   /**
@@ -78,7 +154,7 @@ export const odontogramService = {
    */
   async getById(id: string): Promise<Odontogram> {
     const response = await apiClient.get<ApiResponse<Odontogram>>(`/Odontogram/GetById/${id}`);
-    return extractData(response.data);
+    return normalizeOdontogram(extractData(response.data));
   },
 
   /**
@@ -87,7 +163,7 @@ export const odontogramService = {
    */
   async create(data: CreateOdontogramData): Promise<Odontogram> {
     const response = await apiClient.post<ApiResponse<Odontogram>>('/Odontogram/Create', data);
-    return extractData(response.data);
+    return normalizeOdontogram(extractData(response.data));
   },
 
   /**
@@ -96,7 +172,7 @@ export const odontogramService = {
    */
   async updateTooth(toothRecordId: string, data: UpdateToothData): Promise<ToothRecord> {
     const response = await apiClient.put<ApiResponse<ToothRecord>>(`/Odontogram/UpdateTooth/${toothRecordId}`, data);
-    return extractData(response.data);
+    return normalizeToothRecord(extractData(response.data));
   },
 
   /**
@@ -105,7 +181,7 @@ export const odontogramService = {
    */
   async addSurface(toothRecordId: string, data: AddSurfaceData): Promise<ToothRecord> {
     const response = await apiClient.post<ApiResponse<ToothRecord>>(`/Odontogram/AddSurface/${toothRecordId}`, data);
-    return extractData(response.data);
+    return normalizeToothRecord(extractData(response.data));
   },
 
   /**
