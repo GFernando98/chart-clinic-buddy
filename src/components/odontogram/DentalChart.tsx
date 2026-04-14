@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ToothRecord, ToothSurface } from '@/types';
 import { ToothSVG } from './ToothSVG';
-import { ToothOutline } from './ToothOutline';
 import { PERMANENT_TEETH, DECIDUOUS_TEETH } from './toothUtils';
 import { cn } from '@/lib/utils';
 
@@ -24,8 +23,7 @@ export function DentalChart({
   const { t } = useTranslation();
   
   const teeth = isPediatric ? DECIDUOUS_TEETH : PERMANENT_TEETH;
-  const toothSize = isPediatric ? 48 : 40;
-  const outlineSize = isPediatric ? 30 : 26;
+  const toothSize = isPediatric ? 48 : 42;
   
   const getToothRecord = (toothNumber: number): ToothRecord => {
     const record = teethRecords.find(t => t.toothNumber === toothNumber);
@@ -50,24 +48,15 @@ export function DentalChart({
           </span>
         </div>
         
-        {/* Upper Jaw - Outlines on top (roots up), then numbers, then squares */}
+        {/* Upper Jaw */}
         <div className="flex justify-center gap-0.5">
           {teeth.upper.map((toothNumber) => {
             const record = getToothRecord(toothNumber);
             return (
               <div key={toothNumber} className="flex flex-col items-center">
-                {/* Decorative tooth outline (roots up) — colored by condition */}
-                <ToothOutline
-                  toothNumber={toothNumber}
-                  condition={record.condition}
-                  isPresent={record.isPresent}
-                  size={outlineSize}
-                />
-                {/* Tooth number */}
                 <span className="text-[10px] font-semibold text-muted-foreground mb-0.5">
                   {toothNumber}
                 </span>
-                {/* Interactive surface squares */}
                 <div className={cn(
                   selectedTooth === toothNumber && 'rounded ring-2 ring-primary ring-offset-1'
                 )}>
@@ -93,13 +82,12 @@ export function DentalChart({
           <div className="flex-1 h-px bg-border" />
         </div>
         
-        {/* Lower Jaw - Squares on top, then outlines (roots down), then numbers */}
+        {/* Lower Jaw */}
         <div className="flex justify-center gap-0.5">
           {teeth.lower.map((toothNumber) => {
             const record = getToothRecord(toothNumber);
             return (
               <div key={toothNumber} className="flex flex-col items-center">
-                {/* Interactive surface squares */}
                 <div className={cn(
                   selectedTooth === toothNumber && 'rounded ring-2 ring-primary ring-offset-1'
                 )}>
@@ -111,17 +99,9 @@ export function DentalChart({
                     size={toothSize}
                   />
                 </div>
-                {/* Tooth number */}
                 <span className="text-[10px] font-semibold text-muted-foreground mt-0.5">
                   {toothNumber}
                 </span>
-                {/* Decorative tooth outline (roots down) — colored by condition */}
-                <ToothOutline
-                  toothNumber={toothNumber}
-                  condition={record.condition}
-                  isPresent={record.isPresent}
-                  size={outlineSize}
-                />
               </div>
             );
           })}
