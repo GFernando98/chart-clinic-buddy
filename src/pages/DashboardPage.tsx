@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BarChart3, LineChart as LineChartIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Users, Clock, ClipboardList, ArrowRight, Loader2, AlertCircle, TrendingUp, DollarSign, Package, ArrowDown, AlertTriangle, ShoppingCart } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { AppointmentStatus, PaymentMethod } from '@/types';
