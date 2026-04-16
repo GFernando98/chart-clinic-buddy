@@ -17,7 +17,7 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
-  const [tenantId, setTenantId] = useState(selectedTenantId || '');
+  const [tenantId, setTenantId] = useState(selectedTenantId || (clinics.length === 1 ? clinics[0]?.id : '') || '');
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
