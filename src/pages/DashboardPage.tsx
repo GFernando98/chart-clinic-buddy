@@ -249,10 +249,10 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {revenue.dailyRevenue.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Ingresos diarios</p>
-                  <div className="h-64">
+              <div>
+                <p className="text-sm font-medium mb-2">Ingresos diarios</p>
+                <div className="h-64">
+                  {revenue.dailyRevenue.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       {revenueChartType === 'bar' ? (
                         <BarChart data={revenue.dailyRevenue.map((d) => ({ ...d, dateLabel: format(new Date(d.date), 'dd/MM', { locale }) }))}>
@@ -272,9 +272,11 @@ export default function DashboardPage() {
                         </LineChart>
                       )}
                     </ResponsiveContainer>
-                  </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">{t('common.noData')}</div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {revenue.paymentMethodBreakdown.length > 0 && (
                 <div className="space-y-2">
