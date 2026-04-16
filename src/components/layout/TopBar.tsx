@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,12 +71,14 @@ export function TopBar() {
         {/* User Info */}
         {user && (
           <div className="hidden sm:flex items-center gap-2 pl-2 border-l">
+            {user.clinicName && (
+              <div className="text-right pr-2 border-r">
+                <p className="text-xs text-muted-foreground">Clínica: <span className="font-medium text-foreground">{user.clinicName}</span></p>
+              </div>
+            )}
             <div className="text-right">
-              <p className="text-sm font-medium">{user.fullName}</p>
+              <p className="text-sm font-medium">Dr. {user.fullName}</p>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              {t(`roles.${user.roles[0].toLowerCase()}`)}
-            </Badge>
           </div>
         )}
       </div>

@@ -89,14 +89,7 @@ export function AppSidebar() {
         {collapsed ? (
           <img src="/og-image.png" alt="SmileOS" className="w-8 h-8 object-contain" />
         ) : (
-          <div className="flex items-center gap-2">
-            <img src="/smileos-logo.png" alt="SmileOS" className="h-8 object-contain" />
-            {user?.clinicName && (
-              <span className="text-[10px] text-sidebar-foreground/60 truncate block max-w-[140px]">
-                {user.clinicName}
-              </span>
-            )}
-          </div>
+          <img src="/smileos-logo.png" alt="SmileOS" className="h-8 object-contain" />
         )}
       </SidebarHeader>
 
