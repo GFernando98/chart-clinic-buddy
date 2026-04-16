@@ -25,6 +25,7 @@ export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     authService.getPublicTenants()
