@@ -126,9 +126,12 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{t('dashboard.appointmentsByDay')}</CardTitle>
-            <CardDescription>{t('dashboard.last7Days')}</CardDescription>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">{t('dashboard.appointmentsByDay')}</CardTitle>
+              <CardDescription>{t('dashboard.last7Days')}</CardDescription>
+            </div>
+            <ChartToggle value={appointmentsChartType} onChange={setAppointmentsChartType} />
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -138,13 +141,23 @@ export default function DashboardPage() {
                 </div>
               ) : appointmentsByDay && appointmentsByDay.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={appointmentsByDay}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
-                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                  {appointmentsChartType === 'bar' ? (
+                    <BarChart data={appointmentsByDay}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={appointmentsByDay}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))' }} />
+                    </LineChart>
+                  )}
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">{t('common.noData')}</div>
@@ -236,19 +249,32 @@ export default function DashboardPage() {
               </div>
 
               {revenue.dailyRevenue.length > 0 && (
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenue.dailyRevenue.map((d) => ({
-                      ...d,
-                      dateLabel: format(new Date(d.date), 'dd/MM', { locale }),
-                    }))}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="dateLabel" />
-                      <YAxis />
-                      <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
-                      <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium">Ingresos diarios</p>
+                    <ChartToggle value={revenueChartType} onChange={setRevenueChartType} />
+                  </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      {revenueChartType === 'bar' ? (
+                        <BarChart data={revenue.dailyRevenue.map((d) => ({ ...d, dateLabel: format(new Date(d.date), 'dd/MM', { locale }) }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="dateLabel" />
+                          <YAxis />
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                          <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                        </BarChart>
+                      ) : (
+                        <LineChart data={revenue.dailyRevenue.map((d) => ({ ...d, dateLabel: format(new Date(d.date), 'dd/MM', { locale }) }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="dateLabel" />
+                          <YAxis />
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                          <Line type="monotone" dataKey="amount" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))' }} />
+                        </LineChart>
+                      )}
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               )}
 
@@ -313,21 +339,33 @@ export default function DashboardPage() {
               {/* Movements by Day Chart */}
               {inventoryStats.movementsByDay.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium mb-3">Entradas vs Salidas (últimos días)</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium">Entradas vs Salidas (últimos días)</p>
+                    <ChartToggle value={inventoryChartType} onChange={setInventoryChartType} />
+                  </div>
                   <div className="h-56">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={inventoryStats.movementsByDay.map((d) => ({
-                        ...d,
-                        dateLabel: format(new Date(d.date), 'dd/MM', { locale }),
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                        <XAxis dataKey="dateLabel" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                        <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} allowDecimals={false} />
-                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
-                        <Bar dataKey="entries" name="Entradas" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                        <Bar dataKey="exits" name="Salidas" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </BarChart>
+                      {inventoryChartType === 'bar' ? (
+                        <BarChart data={inventoryStats.movementsByDay.map((d) => ({ ...d, dateLabel: format(new Date(d.date), 'dd/MM', { locale }) }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="dateLabel" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} allowDecimals={false} />
+                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                          <Bar dataKey="entries" name="Entradas" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                          <Bar dataKey="exits" name="Salidas" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                          <Legend wrapperStyle={{ fontSize: '12px' }} />
+                        </BarChart>
+                      ) : (
+                        <LineChart data={inventoryStats.movementsByDay.map((d) => ({ ...d, dateLabel: format(new Date(d.date), 'dd/MM', { locale }) }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="dateLabel" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={{ stroke: 'hsl(var(--border))' }} allowDecimals={false} />
+                          <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                          <Line type="monotone" dataKey="entries" name="Entradas" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-2))' }} />
+                          <Line type="monotone" dataKey="exits" name="Salidas" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-1))' }} />
+                          <Legend wrapperStyle={{ fontSize: '12px' }} />
+                        </LineChart>
+                      )}
                     </ResponsiveContainer>
                   </div>
                 </div>
