@@ -16,7 +16,7 @@ interface ForgotPasswordDialogProps {
 export default function ForgotPasswordDialog({ clinics, selectedTenantId }: ForgotPasswordDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState('');
+  const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [tenantId, setTenantId] = useState(selectedTenantId || (clinics.length === 1 ? clinics[0]?.id : '') || '');
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -25,17 +25,16 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !tenantId) {
+    if (!userNameOrEmail.trim() || !tenantId) {
       setError('Todos los campos son requeridos');
       return;
     }
 
     setIsLoading(true);
     try {
-      await authService.forgotPassword(email.trim(), tenantId);
+      await authService.forgotPassword(userNameOrEmail.trim(), tenantId);
       setSent(true);
     } catch {
-      // Always show success to not reveal if email exists
       setSent(true);
     } finally {
       setIsLoading(false);
@@ -45,11 +44,10 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
     if (value) {
-      // Sync tenantId when opening
       setTenantId(selectedTenantId || (clinics.length === 1 ? clinics[0]?.id : '') || '');
     }
     if (!value) {
-      setEmail('');
+      setUserNameOrEmail('');
       setError('');
       setSent(false);
     }
@@ -66,7 +64,7 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
         <DialogHeader>
           <DialogTitle>Restablecer contraseña</DialogTitle>
           <DialogDescription>
-            Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+            Ingresa tu nombre de usuario o correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
           </DialogDescription>
         </DialogHeader>
 
@@ -74,7 +72,7 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
           <div className="flex flex-col items-center gap-4 py-6">
             <CheckCircle className="w-12 h-12 text-green-500" />
             <p className="text-center text-sm text-muted-foreground">
-              Si el correo está registrado, recibirás las instrucciones para restablecer tu contraseña.
+              Si el usuario está registrado, recibirás las instrucciones para restablecer tu contraseña.
             </p>
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               {t('common.close')}
@@ -99,13 +97,13 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="resetEmail">Correo electrónico</Label>
+              <Label htmlFor="resetUserNameOrEmail">Usuario o correo electrónico</Label>
               <Input
-                id="resetEmail"
-                type="email"
-                placeholder="ej: usuario@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="resetUserNameOrEmail"
+                type="text"
+                placeholder="ej: gmendoza o usuario@correo.com"
+                value={userNameOrEmail}
+                onChange={(e) => setUserNameOrEmail(e.target.value)}
                 disabled={isLoading}
                 autoFocus
                 className="h-11"

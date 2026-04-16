@@ -13,8 +13,8 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
   const tenantId = searchParams.get('tenantId') || '';
+  const email = decodeURIComponent(searchParams.get('email') ?? '');
 
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +22,7 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  if (!token || !tenantId) {
+  if (!token || !tenantId || !email) {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
 
-    if (!email.trim() || !password || !confirmPassword) {
+    if (!password || !confirmPassword) {
       setError('Todos los campos son requeridos');
       return;
     }
@@ -61,14 +61,14 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      const result = await authService.resetPassword(email.trim(), tenantId, token, password);
+      const result = await authService.resetPassword(email, tenantId, token, password);
       if (result) {
         setSuccess(true);
       } else {
-        setError('No se pudo restablecer la contraseña. El enlace puede haber expirado.');
+        setError('El enlace ha expirado. Solicita uno nuevo.');
       }
     } catch {
-      setError('No se pudo restablecer la contraseña. El enlace puede haber expirado.');
+      setError('El enlace ha expirado. Solicita uno nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -107,20 +107,6 @@ export default function ResetPasswordPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="resetEmail">Correo electrónico</Label>
-                  <Input
-                    id="resetEmail"
-                    type="email"
-                    placeholder="ej: usuario@correo.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                    autoFocus
-                    className="h-11"
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="newPassword">Nueva contraseña</Label>
                   <div className="relative">
                     <Input
@@ -130,6 +116,7 @@ export default function ResetPasswordPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
+                      autoFocus
                       className="h-11 pr-10"
                     />
                     <button

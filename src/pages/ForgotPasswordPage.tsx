@@ -12,7 +12,7 @@ import loginBg from '@/assets/login-bg.jpg';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
+  const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [tenantId, setTenantId] = useState('');
   const [clinics, setClinics] = useState<PublicTenant[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,17 +31,17 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !tenantId) {
+    if (!userNameOrEmail.trim() || !tenantId) {
       setError('Todos los campos son requeridos');
       return;
     }
 
     setIsLoading(true);
     try {
-      await authService.forgotPassword(email.trim(), tenantId);
+      await authService.forgotPassword(userNameOrEmail.trim(), tenantId);
       setSent(true);
     } catch {
-      // Always show success to not reveal if email exists
+      // Always show success to not reveal if user exists
       setSent(true);
     } finally {
       setIsLoading(false);
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-bold">Restablecer contraseña</CardTitle>
           <CardDescription>
-            Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+            Ingresa tu nombre de usuario o correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
           </CardDescription>
         </CardHeader>
 
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
             <div className="flex flex-col items-center gap-4 py-6">
               <CheckCircle className="w-12 h-12 text-primary" />
               <p className="text-center text-sm text-muted-foreground">
-                Si el correo está registrado, recibirás las instrucciones para restablecer tu contraseña.
+                Si el usuario está registrado, recibirás las instrucciones para restablecer tu contraseña.
               </p>
               <Link to="/login">
                 <Button variant="outline">
@@ -96,13 +96,13 @@ export default function ForgotPasswordPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="resetEmail">Correo electrónico</Label>
+                <Label htmlFor="resetUserNameOrEmail">Usuario o correo electrónico</Label>
                 <Input
-                  id="resetEmail"
-                  type="email"
-                  placeholder="ej: usuario@correo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="resetUserNameOrEmail"
+                  type="text"
+                  placeholder="ej: gmendoza o usuario@correo.com"
+                  value={userNameOrEmail}
+                  onChange={(e) => setUserNameOrEmail(e.target.value)}
                   disabled={isLoading}
                   autoFocus
                   className="h-11"
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <Button type="submit" className="w-full h-11" disabled={isLoading || !tenantId || !email.trim()}>
+              <Button type="submit" className="w-full h-11" disabled={isLoading || !tenantId || !userNameOrEmail.trim()}>
                 {isLoading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</>
                 ) : (
