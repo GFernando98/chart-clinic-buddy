@@ -44,6 +44,10 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
+    if (value) {
+      // Sync tenantId when opening
+      setTenantId(selectedTenantId || (clinics.length === 1 ? clinics[0]?.id : '') || '');
+    }
     if (!value) {
       setEmail('');
       setError('');
