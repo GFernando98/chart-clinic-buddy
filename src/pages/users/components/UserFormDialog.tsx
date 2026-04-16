@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -37,6 +37,7 @@ interface UserFormDialogProps {
 const availableRoles: UserRole[] = ['Admin', 'Doctor', 'Receptionist', 'Assistant'];
 
 export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = false }: UserFormDialogProps) => {
+  const [showPassword, setShowPassword] = useState(false);
   const { t } = useTranslation();
   const isEditing = !!user;
 
@@ -135,7 +136,18 @@ export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = fa
                   {t('auth.password')}
                   {isEditing && <span className="ml-2 text-xs text-muted-foreground font-normal">(dejar vacío para mantener actual)</span>}
                 </FormLabel>
-                <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                <FormControl>
+                  <div className="relative">
+                    <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} className="pr-10" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
