@@ -63,6 +63,15 @@ export default function LoginPage() {
     >
       <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
 
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-20 p-2 rounded-full bg-card/80 backdrop-blur-sm text-foreground hover:bg-card transition-colors shadow-lg"
+        title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+      >
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
+
       <div className="relative z-10 w-full max-w-md space-y-6">
         <Card className="shadow-2xl border-0 bg-card/90 backdrop-blur-md">
            <CardHeader className="space-y-4 text-center pb-2">
