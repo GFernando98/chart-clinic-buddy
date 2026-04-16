@@ -216,6 +216,7 @@ export default function DashboardPage() {
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
+            <ChartToggle value={revenueChartType} onChange={setRevenueChartType} />
             <Input type="date" value={revenueStart} onChange={(e) => setRevenueStart(e.target.value)} className="w-auto h-9" />
             <Input type="date" value={revenueEnd} onChange={(e) => setRevenueEnd(e.target.value)} className="w-auto h-9" />
           </div>
