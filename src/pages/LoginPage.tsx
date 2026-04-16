@@ -61,7 +61,7 @@ export default function LoginPage() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
 
       <button
         type="button"
