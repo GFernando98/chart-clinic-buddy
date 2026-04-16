@@ -76,8 +76,8 @@ export const authService = {
   /**
    * Reset password with token
    */
-  async resetPassword(token: string, newPassword: string, tenantId: string): Promise<boolean> {
-    const response = await apiClient.post<ApiResponse<boolean>>('/Auth/reset-password', { token, newPassword, tenantId });
+  async resetPassword(email: string, tenantId: string, token: string, newPassword: string): Promise<boolean> {
+    const response = await apiClient.post<ApiResponse<boolean>>('/Auth/reset-password', { email, tenantId, token, newPassword });
     return response.data.succeeded;
   },
 };
