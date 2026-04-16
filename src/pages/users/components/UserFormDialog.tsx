@@ -136,7 +136,18 @@ export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = fa
                   {t('auth.password')}
                   {isEditing && <span className="ml-2 text-xs text-muted-foreground font-normal">(dejar vacío para mantener actual)</span>}
                 </FormLabel>
-                <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                <FormControl>
+                  <div className="relative">
+                    <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} className="pr-10" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
