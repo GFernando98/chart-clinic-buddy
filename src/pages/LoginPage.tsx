@@ -76,7 +76,7 @@ export default function LoginPage() {
         <Card className="shadow-2xl border-0 bg-card/90 backdrop-blur-md">
            <CardHeader className="space-y-4 text-center pb-2">
             <div className="mx-auto">
-              <img src="/smileos-logo.png" alt="SmileOS" className="h-14 object-contain" />
+              <img src="/smileos-logo.png" alt="SmileOS" className="h-14 object-contain dark:drop-shadow-none [.light_&]:drop-shadow-[0_0_1px_rgba(0,0,0,0.8)] drop-shadow-[0_0_1px_rgba(0,0,0,0.8)]" style={{ filter: theme === 'dark' ? 'none' : 'drop-shadow(0 0 0.5px rgba(0,0,0,0.6)) drop-shadow(0 0 2px rgba(0,0,0,0.3))' }} />
             </div>
             <div>
               <CardDescription className="mt-2">{t('auth.loginSubtitle')}</CardDescription>
