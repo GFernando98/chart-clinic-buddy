@@ -101,7 +101,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-sm">
+          <Card key={index} className="shadow-sm border border-border/50">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
