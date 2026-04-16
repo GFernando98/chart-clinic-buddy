@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Stethoscope, Loader2, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { authService } from '@/services/authService';
+import loginBg from '@/assets/login-bg.jpg';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token') || '';
   const tenantId = searchParams.get('tenantId') || '';
 
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,8 +24,12 @@ export default function ResetPasswordPage() {
 
   if (!token || !tenantId) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+        style={{ backgroundImage: `url(${loginBg})` }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
+        <Card className="w-full max-w-md relative z-10">
           <CardContent className="flex flex-col items-center gap-4 py-10">
             <AlertCircle className="w-12 h-12 text-destructive" />
             <p className="text-center text-muted-foreground">
@@ -40,7 +46,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
 
-    if (!password || !confirmPassword) {
+    if (!email.trim() || !password || !confirmPassword) {
       setError('Todos los campos son requeridos');
       return;
     }
@@ -55,8 +61,12 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      await authService.resetPassword(token, password, tenantId);
-      setSuccess(true);
+      const result = await authService.resetPassword(email.trim(), tenantId, token, password);
+      if (result) {
+        setSuccess(true);
+      } else {
+        setError('No se pudo restablecer la contraseña. El enlace puede haber expirado.');
+      }
     } catch {
       setError('No se pudo restablecer la contraseña. El enlace puede haber expirado.');
     } finally {
@@ -65,8 +75,13 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-md space-y-6">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         <Card className="shadow-2xl">
           <CardHeader className="space-y-4 text-center pb-2">
             <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
@@ -92,6 +107,20 @@ export default function ResetPasswordPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
+                  <Label htmlFor="resetEmail">Correo electrónico</Label>
+                  <Input
+                    id="resetEmail"
+                    type="email"
+                    placeholder="ej: usuario@correo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                    autoFocus
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="newPassword">Nueva contraseña</Label>
                   <div className="relative">
                     <Input
@@ -101,7 +130,6 @@ export default function ResetPasswordPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
-                      autoFocus
                       className="h-11 pr-10"
                     />
                     <button
