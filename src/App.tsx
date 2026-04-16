@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import MasterLayout from "@/components/master/MasterLayout";
 import LoginPage from "@/pages/LoginPage";
 import MasterLoginPage from "@/pages/master/MasterLoginPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import MasterDashboardPage from "@/pages/master/MasterDashboardPage";
 import MasterTenantsPage from "@/pages/master/MasterTenantsPage";
 import TenantDetailPage from "@/pages/master/TenantDetailPage";
@@ -53,6 +54,7 @@ const App = () => (
               <Routes>
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/confirmar-cita" element={<AppointmentConfirmationPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
 

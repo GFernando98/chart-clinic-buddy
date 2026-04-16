@@ -64,6 +64,22 @@ export const authService = {
     const response = await apiClient.post<ApiResponse<boolean>>('/Auth/change-password', data);
     return extractData(response.data);
   },
+
+  /**
+   * Request password reset email
+   */
+  async forgotPassword(email: string, tenantId: string): Promise<boolean> {
+    const response = await apiClient.post<ApiResponse<boolean>>('/Auth/forgot-password', { email, tenantId });
+    return response.data.succeeded;
+  },
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string, tenantId: string): Promise<boolean> {
+    const response = await apiClient.post<ApiResponse<boolean>>('/Auth/reset-password', { token, newPassword, tenantId });
+    return response.data.succeeded;
+  },
 };
 
 export default authService;
