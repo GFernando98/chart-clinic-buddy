@@ -86,23 +86,18 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-sidebar-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <span className="font-semibold text-sidebar-foreground whitespace-nowrap block">
-                SmileOS
+        {collapsed ? (
+          <img src="/og-image.png" alt="SmileOS" className="w-8 h-8 object-contain" />
+        ) : (
+          <div className="flex items-center gap-2">
+            <img src="/smileos-logo.png" alt="SmileOS" className="h-8 object-contain" />
+            {user?.clinicName && (
+              <span className="text-[10px] text-sidebar-foreground/60 truncate block max-w-[140px]">
+                {user.clinicName}
               </span>
-              {user?.clinicName && (
-                <span className="text-[10px] text-sidebar-foreground/60 truncate block max-w-[140px]">
-                  {user.clinicName}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-4">
