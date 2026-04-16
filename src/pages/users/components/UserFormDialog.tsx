@@ -102,7 +102,7 @@ export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = fa
               <FormItem>
                 <FormLabel>Nombre de usuario</FormLabel>
                 <FormControl>
-                  <Input placeholder="ej: gmendoza" {...field} disabled={isEditing} />
+                  <Input placeholder="Ingrese nombre de usuario" {...field} disabled={isEditing} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

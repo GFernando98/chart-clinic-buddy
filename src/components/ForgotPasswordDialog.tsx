@@ -101,7 +101,7 @@ export default function ForgotPasswordDialog({ clinics, selectedTenantId }: Forg
               <Input
                 id="resetUserNameOrEmail"
                 type="text"
-                placeholder="ej: gmendoza o usuario@correo.com"
+                placeholder="Ingrese usuario o correo electrónico"
                 value={userNameOrEmail}
                 onChange={(e) => setUserNameOrEmail(e.target.value)}
                 disabled={isLoading}
