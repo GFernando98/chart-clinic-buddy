@@ -12,6 +12,7 @@ import MasterLayout from "@/components/master/MasterLayout";
 import LoginPage from "@/pages/LoginPage";
 import MasterLoginPage from "@/pages/master/MasterLoginPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import MasterDashboardPage from "@/pages/master/MasterDashboardPage";
 import MasterTenantsPage from "@/pages/master/MasterTenantsPage";
 import TenantDetailPage from "@/pages/master/TenantDetailPage";
@@ -55,6 +56,7 @@ const App = () => (
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/confirmar-cita" element={<AppointmentConfirmationPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
