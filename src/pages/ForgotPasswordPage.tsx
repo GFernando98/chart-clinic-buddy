@@ -79,21 +79,19 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {clinics.length > 1 && (
-                <div className="space-y-2">
-                  <Label>Clínica</Label>
-                  <Select value={tenantId} onValueChange={setTenantId}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Seleccione una clínica" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clinics.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>Clínica</Label>
+                <Select value={tenantId} onValueChange={setTenantId}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Seleccione una clínica" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clinics.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="resetUserNameOrEmail">Usuario o correo electrónico</Label>
