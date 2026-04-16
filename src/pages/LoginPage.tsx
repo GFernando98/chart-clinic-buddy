@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import loginBg from '@/assets/login-bg.jpg';
+const loginBg = '/wallpaper_login.png';
 
 export default function LoginPage() {
   const [userName, setUserName] = useState('');
