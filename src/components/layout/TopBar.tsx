@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
