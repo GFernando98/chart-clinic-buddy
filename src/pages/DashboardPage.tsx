@@ -101,7 +101,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-sm">
+          <Card key={index} className="shadow-sm border border-border/50">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="border-0 shadow-sm">
+        <Card className="shadow-sm border border-border/50">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">{t('dashboard.appointmentsByDay')}</CardTitle>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="shadow-sm border border-border/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">{t('dashboard.treatmentsByCategory')}</CardTitle>
             <CardDescription>{t('dashboard.thisMonth')}</CardDescription>
@@ -207,7 +207,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="shadow-sm border border-border/50">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -301,7 +301,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Inventory & Products Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="shadow-sm border border-border/50">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -409,7 +409,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Upcoming Appointments */}
-      <Card className="border-0 shadow-sm">
+      <Card className="shadow-sm border border-border/50">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="text-lg">{t('dashboard.upcomingAppointments')}</CardTitle>
