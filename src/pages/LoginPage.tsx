@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Stethoscope, Loader2, Eye, EyeOff } from 'lucide-react';
-import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import { Link } from 'react-router-dom';
 import loginBg from '@/assets/login-bg.jpg';
 
 export default function LoginPage() {
@@ -142,7 +142,9 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
-              <ForgotPasswordDialog clinics={clinics} selectedTenantId={tenantId} />
+              <Link to="/forgot-password" className="text-primary hover:underline">
+                {t('auth.forgotPassword')}
+              </Link>
             </div>
           </CardContent>
         </Card>
