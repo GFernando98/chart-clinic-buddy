@@ -37,6 +37,7 @@ interface UserFormDialogProps {
 const availableRoles: UserRole[] = ['Admin', 'Doctor', 'Receptionist', 'Assistant'];
 
 export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = false }: UserFormDialogProps) => {
+  const [showPassword, setShowPassword] = useState(false);
   const { t } = useTranslation();
   const isEditing = !!user;
 
