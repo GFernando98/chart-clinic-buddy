@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Stethoscope, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import loginBg from '@/assets/login-bg.jpg';
 
@@ -63,12 +63,11 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md space-y-6">
         <Card className="shadow-2xl border-0 bg-card/90 backdrop-blur-md">
-          <CardHeader className="space-y-4 text-center pb-2">
-            <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-              <Stethoscope className="w-9 h-9 text-primary-foreground" />
+           <CardHeader className="space-y-4 text-center pb-2">
+            <div className="mx-auto">
+              <img src="/smileos-logo.png" alt="SmileOS" className="h-14 object-contain" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold tracking-tight">SmileOS</CardTitle>
               <CardDescription className="mt-2">{t('auth.loginSubtitle')}</CardDescription>
             </div>
           </CardHeader>
