@@ -53,6 +53,8 @@ export default function DashboardPage() {
   const [revenueEnd, setRevenueEnd] = useState(format(new Date(now.getFullYear(), now.getMonth() + 1, 0), 'yyyy-MM-dd'));
   const { data: revenue, isLoading: loadingRevenue } = useRevenue(revenueStart, revenueEnd);
 
+  const formatCurrency = (n: number) => `L ${n.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+
   const [appointmentsChartType, setAppointmentsChartType] = useState<'bar' | 'line'>('bar');
   const [revenueChartType, setRevenueChartType] = useState<'bar' | 'line'>('bar');
   const [inventoryChartType, setInventoryChartType] = useState<'bar' | 'line'>('bar');
