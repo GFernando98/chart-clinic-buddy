@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-const loginBg = '/wallpaper_login.png';
+import { useTheme } from '@/contexts/ThemeContext';
+const loginBg = '/wallpaper_login.jpg';
 
 export default function LoginPage() {
   const [userName, setUserName] = useState('');
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     authService.getPublicTenants()
@@ -60,6 +62,15 @@ export default function LoginPage() {
       }}
     >
       <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
+
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-20 p-2 rounded-full bg-card/80 backdrop-blur-sm text-foreground hover:bg-card transition-colors shadow-lg"
+        title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+      >
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
 
       <div className="relative z-10 w-full max-w-md space-y-6">
         <Card className="shadow-2xl border-0 bg-card/90 backdrop-blur-md">
