@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  Stethoscope as _Stethoscope,
+  Stethoscope,
   ClipboardList,
   UserCog,
   Scan,
