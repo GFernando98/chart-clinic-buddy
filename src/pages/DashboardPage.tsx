@@ -251,10 +251,7 @@ export default function DashboardPage() {
 
               {revenue.dailyRevenue.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium">Ingresos diarios</p>
-                    <ChartToggle value={revenueChartType} onChange={setRevenueChartType} />
-                  </div>
+                  <p className="text-sm font-medium mb-2">Ingresos diarios</p>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       {revenueChartType === 'bar' ? (
