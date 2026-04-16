@@ -53,7 +53,16 @@ export default function DashboardPage() {
   const [revenueEnd, setRevenueEnd] = useState(format(new Date(now.getFullYear(), now.getMonth() + 1, 0), 'yyyy-MM-dd'));
   const { data: revenue, isLoading: loadingRevenue } = useRevenue(revenueStart, revenueEnd);
 
-  const formatCurrency = (n: number) => `L ${n.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+  const [appointmentsChartType, setAppointmentsChartType] = useState<'bar' | 'line'>('bar');
+  const [revenueChartType, setRevenueChartType] = useState<'bar' | 'line'>('bar');
+  const [inventoryChartType, setInventoryChartType] = useState<'bar' | 'line'>('bar');
+
+  const ChartToggle = ({ value, onChange }: { value: 'bar' | 'line'; onChange: (v: 'bar' | 'line') => void }) => (
+    <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
+      <button onClick={() => onChange('bar')} className={`p-1.5 rounded-md transition-colors ${value === 'bar' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><BarChart3 className="w-4 h-4" /></button>
+      <button onClick={() => onChange('line')} className={`p-1.5 rounded-md transition-colors ${value === 'line' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><LineChartIcon className="w-4 h-4" /></button>
+    </div>
+  );
 
   const paymentMethodLabel = (method: PaymentMethod) => {
     const keys: Record<number, string> = {
