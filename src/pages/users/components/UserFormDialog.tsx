@@ -15,13 +15,20 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { User, UserRole } from '@/types';
 
-const userFormSchema = z.object({
+const baseUserSchema = z.object({
   userName: z.string().min(3, 'Mínimo 3 caracteres').regex(/^[a-zA-Z0-9._-]+$/, 'Sin espacios ni caracteres especiales'),
   firstName: z.string().min(2, 'Mínimo 2 caracteres'),
   lastName: z.string().min(2, 'Mínimo 2 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres').optional().or(z.literal('')),
   roles: z.array(z.string()).min(1, 'Selecciona al menos un rol'),
+});
+
+const createUserSchema = baseUserSchema.extend({
+  password: z.string().min(6, 'Mínimo 6 caracteres'),
+});
+
+const editUserSchema = baseUserSchema.extend({
+  password: z.string().min(6, 'Mínimo 6 caracteres').optional().or(z.literal('')),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
