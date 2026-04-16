@@ -31,7 +31,7 @@ const editUserSchema = baseUserSchema.extend({
   password: z.string().min(6, 'Mínimo 6 caracteres').optional().or(z.literal('')),
 });
 
-type UserFormValues = z.infer<typeof userFormSchema>;
+type UserFormValues = z.infer<typeof createUserSchema>;
 
 interface UserFormDialogProps {
   open: boolean;
@@ -49,11 +49,7 @@ export const UserFormDialog = ({ open, onOpenChange, user, onSave, isSaving = fa
   const isEditing = !!user;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(
-      isEditing
-        ? userFormSchema.omit({ password: true }).extend({ password: z.string().optional().or(z.literal('')) })
-        : userFormSchema
-    ),
+    resolver: zodResolver(isEditing ? editUserSchema : createUserSchema),
     defaultValues: { userName: '', firstName: '', lastName: '', email: '', password: '', roles: [] },
   });
 
