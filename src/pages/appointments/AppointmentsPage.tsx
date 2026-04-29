@@ -1,44 +1,87 @@
-import { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Plus, List, CalendarDays, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { Plus, List, CalendarDays, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Appointment, AppointmentStatus } from '@/types';
-import { AppointmentListView } from './components/AppointmentListView';
-import { AppointmentCalendarView } from './components/AppointmentCalendarView';
-import { AppointmentFormDialog } from './components/AppointmentFormDialog';
-import { AppointmentDetailDialog } from './components/AppointmentDetailDialog';
-import { useAppointments, useCreateAppointment, useUpdateAppointment, useUpdateAppointmentStatus } from '@/hooks/useAppointments';
-import { useDoctors } from '@/hooks/useDoctors';
+} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Appointment, AppointmentStatus } from "@/types";
+import { AppointmentListView } from "./components/AppointmentListView";
+import { AppointmentCalendarView } from "./components/AppointmentCalendarView";
+import { AppointmentFormDialog } from "./components/AppointmentFormDialog";
+import { AppointmentDetailDialog } from "./components/AppointmentDetailDialog";
+import {
+  useAppointments,
+  useCreateAppointment,
+  useUpdateAppointment,
+  useUpdateAppointmentStatus,
+} from "@/hooks/useAppointments";
+import { useDoctors } from "@/hooks/useDoctors";
 
-type ViewMode = 'list' | 'calendar';
+type ViewMode = "list" | "calendar";
+export type CalendarMode = "week" | "month";
 
 export default function AppointmentsPage() {
   const { t } = useTranslation();
-  
-  // State
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+
+  // ─── State ───────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [calendarMode, setCalendarMode] = useState<CalendarMode>("week");
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [selectedDoctor, setSelectedDoctor] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | 'all'>('all');
-  
-  // Dialog states
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<
+    AppointmentStatus | "all"
+  >("all");
+
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
   const [defaultDate, setDefaultDate] = useState<Date | undefined>();
   const [defaultTime, setDefaultTime] = useState<string | undefined>();
 
-  // Fetch data from API
-  const { data: appointments = [], isLoading: appointmentsLoading } = useAppointments();
+  // ─── Rango dinámico ──────────────────────────────────────────
+  // Ahora depende de calendarMode (estado del padre) para saber
+  // exactamente cuántos datos pedir al navegar
+  const dateRange = useMemo(() => {
+    if (viewMode === "list") {
+      return {
+        from: startOfMonth(currentWeek).toISOString(),
+        to: endOfMonth(currentWeek).toISOString(),
+      };
+    }
+
+    if (calendarMode === "week") {
+      return {
+        from: startOfWeek(currentWeek, { weekStartsOn: 1 }).toISOString(),
+        to: endOfWeek(currentWeek, { weekStartsOn: 1 }).toISOString(),
+      };
+    }
+
+    // Modo mes: incluye el padding de semanas que muestra el grid
+    const monthStart = startOfMonth(currentWeek);
+    const monthEnd = endOfMonth(currentWeek);
+    return {
+      from: startOfWeek(monthStart, { weekStartsOn: 1 }).toISOString(),
+      to: endOfWeek(monthEnd, { weekStartsOn: 1 }).toISOString(),
+    };
+  }, [currentWeek, viewMode, calendarMode]);
+
+  // ─── Data ────────────────────────────────────────────────────
+  const { data: appointments = [], isLoading: appointmentsLoading } =
+    useAppointments({
+      from: dateRange.from,
+      to: dateRange.to,
+      doctorId: selectedDoctor !== "all" ? selectedDoctor : undefined,
+    });
+
   const { data: doctors = [], isLoading: doctorsLoading } = useDoctors();
   const createAppointment = useCreateAppointment();
   const updateAppointment = useUpdateAppointment();
@@ -46,16 +89,12 @@ export default function AppointmentsPage() {
 
   const isLoading = appointmentsLoading || doctorsLoading;
 
-  // Filter appointments
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
-      const doctorMatch = selectedDoctor === 'all' || apt.doctorId === selectedDoctor;
-      const statusMatch = selectedStatus === 'all' || apt.status === (selectedStatus as AppointmentStatus);
-      return doctorMatch && statusMatch;
-    });
-  }, [appointments, selectedDoctor, selectedStatus]);
+    if (selectedStatus === "all") return appointments;
+    return appointments.filter((apt) => apt.status === selectedStatus);
+  }, [appointments, selectedStatus]);
 
-  // Handlers
+  // ─── Handlers ────────────────────────────────────────────────
   const handleNewAppointment = () => {
     setSelectedAppointment(null);
     setDefaultDate(undefined);
@@ -75,11 +114,6 @@ export default function AppointmentsPage() {
     setDetailDialogOpen(true);
   };
 
-  const handleEditAppointment = () => {
-    setDetailDialogOpen(false);
-    setFormDialogOpen(true);
-  };
-
   const handleSaveAppointment = async (data: Partial<Appointment>) => {
     try {
       if (data.id) {
@@ -89,20 +123,23 @@ export default function AppointmentsPage() {
       }
       setFormDialogOpen(false);
     } catch {
-      // Error is handled by the mutation's onError callback
+      // manejado por onError del mutation
     }
   };
 
   const handleStatusChange = (
     appointmentId: string,
     newStatus: AppointmentStatus,
-    cancellationReason?: string
+    cancellationReason?: string,
   ) => {
-    updateStatus.mutate({ id: appointmentId, status: newStatus, cancellationReason });
+    updateStatus.mutate({
+      id: appointmentId,
+      status: newStatus,
+      cancellationReason,
+    });
     setDetailDialogOpen(false);
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -116,20 +153,26 @@ export default function AppointmentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold truncate">{t('appointments.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('appointments.subtitle')}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold truncate">
+            {t("appointments.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("appointments.subtitle")}
+          </p>
         </div>
-        <Button onClick={handleNewAppointment} className="gap-2 w-full sm:w-auto">
+        <Button
+          onClick={handleNewAppointment}
+          className="gap-2 w-full sm:w-auto"
+        >
           <Plus className="h-4 w-4" />
-          {t('appointments.newAppointment')}
+          {t("appointments.newAppointment")}
         </Button>
       </div>
 
-      {/* Filters & View Toggle */}
+      {/* Filters */}
       <Card>
         <CardContent className="pt-4 md:pt-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-            {/* View Toggle */}
             <ToggleGroup
               type="single"
               value={viewMode}
@@ -137,57 +180,65 @@ export default function AppointmentsPage() {
               className="justify-start"
               size="sm"
             >
-              <ToggleGroupItem value="calendar" aria-label="Calendar view">
+              <ToggleGroupItem value="calendar">
                 <CalendarDays className="h-4 w-4 mr-1.5" />
-                {t('appointments.viewCalendar')}
+                {t("appointments.viewCalendar")}
               </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view">
+              <ToggleGroupItem value="list">
                 <List className="h-4 w-4 mr-1.5" />
-                {t('appointments.viewList')}
+                {t("appointments.viewList")}
               </ToggleGroupItem>
             </ToggleGroup>
 
             <div className="flex-1" />
 
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-2">
               <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder={t('appointments.allDoctors')} />
+                  <SelectValue placeholder={t("appointments.allDoctors")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('appointments.allDoctors')}</SelectItem>
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id}>
-                      {doctor.fullName}
+                  <SelectItem value="all">
+                    {t("appointments.allDoctors")}
+                  </SelectItem>
+                  {doctors.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.fullName}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={selectedStatus as string} onValueChange={(value) => setSelectedStatus(value as AppointmentStatus | 'all')}>
+              <Select
+                value={selectedStatus as string}
+                onValueChange={(v) =>
+                  setSelectedStatus(v as AppointmentStatus | "all")
+                }
+              >
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder={t('appointments.allStatuses')} />
+                  <SelectValue placeholder={t("appointments.allStatuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('appointments.allStatuses')}</SelectItem>
+                  <SelectItem value="all">
+                    {t("appointments.allStatuses")}
+                  </SelectItem>
                   <SelectItem value="Scheduled">
-                    {t('appointments.statusScheduled')}
+                    {t("appointments.statusScheduled")}
                   </SelectItem>
                   <SelectItem value="Confirmed">
-                    {t('appointments.statusConfirmed')}
+                    {t("appointments.statusConfirmed")}
                   </SelectItem>
                   <SelectItem value="InProgress">
-                    {t('appointments.statusInProgress')}
+                    {t("appointments.statusInProgress")}
                   </SelectItem>
                   <SelectItem value="Completed">
-                    {t('appointments.statusCompleted')}
+                    {t("appointments.statusCompleted")}
                   </SelectItem>
                   <SelectItem value="Cancelled">
-                    {t('appointments.statusCancelled')}
+                    {t("appointments.statusCancelled")}
                   </SelectItem>
                   <SelectItem value="NoShow">
-                    {t('appointments.statusNoShow')}
+                    {t("appointments.statusNoShow")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -199,11 +250,13 @@ export default function AppointmentsPage() {
       {/* Content */}
       <Card>
         <CardContent className="pt-4 md:pt-6 px-2 sm:px-6">
-          {viewMode === 'calendar' ? (
+          {viewMode === "calendar" ? (
             <AppointmentCalendarView
               appointments={filteredAppointments}
               currentWeek={currentWeek}
+              calendarMode={calendarMode}
               onWeekChange={setCurrentWeek}
+              onCalendarModeChange={setCalendarMode}
               onSelectAppointment={handleSelectAppointment}
               onSlotClick={handleSlotClick}
             />
@@ -216,7 +269,6 @@ export default function AppointmentsPage() {
         </CardContent>
       </Card>
 
-      {/* Form Dialog */}
       <AppointmentFormDialog
         open={formDialogOpen}
         onOpenChange={setFormDialogOpen}
@@ -227,12 +279,14 @@ export default function AppointmentsPage() {
         isSaving={createAppointment.isPending || updateAppointment.isPending}
       />
 
-      {/* Detail Dialog */}
       <AppointmentDetailDialog
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
         appointment={selectedAppointment}
-        onEdit={handleEditAppointment}
+        onEdit={() => {
+          setDetailDialogOpen(false);
+          setFormDialogOpen(true);
+        }}
         onStatusChange={handleStatusChange}
       />
     </div>
