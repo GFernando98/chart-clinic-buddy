@@ -1,51 +1,71 @@
-import { useQuery } from '@tanstack/react-query';
-import { dashboardService } from '@/services/dashboardService';
+import { useQuery } from "@tanstack/react-query";
+import {
+  dashboardService,
+  DashboardFilters,
+} from "@/services/dashboardService";
 
 export const dashboardKeys = {
-  all: ['dashboard'] as const,
-  stats: () => [...dashboardKeys.all, 'stats'] as const,
-  appointmentsByDay: () => [...dashboardKeys.all, 'appointmentsByDay'] as const,
-  treatmentsByCategory: () => [...dashboardKeys.all, 'treatmentsByCategory'] as const,
-  upcomingAppointments: () => [...dashboardKeys.all, 'upcomingAppointments'] as const,
-  inventoryStats: () => [...dashboardKeys.all, 'inventoryStats'] as const,
+  all: ["dashboard"] as const,
+  stats: (f?: DashboardFilters) => [...dashboardKeys.all, "stats", f] as const,
+  appointmentsByDay: (f?: DashboardFilters) =>
+    [...dashboardKeys.all, "appointmentsByDay", f] as const,
+  treatmentsByCategory: (f?: DashboardFilters) =>
+    [...dashboardKeys.all, "treatmentsByCategory", f] as const,
+  upcomingAppointments: (from?: string, doctorId?: string, limit?: number) =>
+    [
+      ...dashboardKeys.all,
+      "upcomingAppointments",
+      from,
+      doctorId,
+      limit,
+    ] as const,
+  inventoryStats: (f?: Pick<DashboardFilters, "from" | "to">) =>
+    [...dashboardKeys.all, "inventoryStats", f] as const,
 };
 
-export function useDashboardStats() {
+export function useDashboardStats(filters?: DashboardFilters) {
   return useQuery({
-    queryKey: dashboardKeys.stats(),
-    queryFn: () => dashboardService.getStats(),
+    queryKey: dashboardKeys.stats(filters),
+    queryFn: () => dashboardService.getStats(filters),
     staleTime: 1000 * 60 * 5,
   });
 }
 
-export function useAppointmentsByDay() {
+export function useAppointmentsByDay(filters?: DashboardFilters) {
   return useQuery({
-    queryKey: dashboardKeys.appointmentsByDay(),
-    queryFn: () => dashboardService.getAppointmentsByDay(),
+    queryKey: dashboardKeys.appointmentsByDay(filters),
+    queryFn: () => dashboardService.getAppointmentsByDay(filters),
     staleTime: 1000 * 60 * 5,
   });
 }
 
-export function useTreatmentsByCategory() {
+export function useTreatmentsByCategory(filters?: DashboardFilters) {
   return useQuery({
-    queryKey: dashboardKeys.treatmentsByCategory(),
-    queryFn: () => dashboardService.getTreatmentsByCategory(),
+    queryKey: dashboardKeys.treatmentsByCategory(filters),
+    queryFn: () => dashboardService.getTreatmentsByCategory(filters),
     staleTime: 1000 * 60 * 5,
   });
 }
 
-export function useUpcomingAppointments(limit: number = 5) {
+export function useUpcomingAppointments(
+  from?: string,
+  doctorId?: string,
+  limit = 10,
+) {
   return useQuery({
-    queryKey: dashboardKeys.upcomingAppointments(),
-    queryFn: () => dashboardService.getUpcomingAppointments(limit),
+    queryKey: dashboardKeys.upcomingAppointments(from, doctorId, limit),
+    queryFn: () =>
+      dashboardService.getUpcomingAppointments(from, doctorId, limit),
     staleTime: 1000 * 60 * 2,
   });
 }
 
-export function useInventoryStats() {
+export function useInventoryStats(
+  filters?: Pick<DashboardFilters, "from" | "to">,
+) {
   return useQuery({
-    queryKey: dashboardKeys.inventoryStats(),
-    queryFn: () => dashboardService.getInventoryStats(),
+    queryKey: dashboardKeys.inventoryStats(filters),
+    queryFn: () => dashboardService.getInventoryStats(filters),
     staleTime: 1000 * 60 * 5,
   });
 }
